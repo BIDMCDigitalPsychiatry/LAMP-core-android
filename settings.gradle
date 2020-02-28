@@ -1,1 +1,1 @@
-include ':app', ':wearOS'
+include ':app'

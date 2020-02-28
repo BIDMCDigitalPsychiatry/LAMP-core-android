@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">mindLAMP</string>
+    <string name="app_name">LAMP POC</string>
+    <string name="lamp_service">Lamp Foreground  Service</string>
 </resources>
