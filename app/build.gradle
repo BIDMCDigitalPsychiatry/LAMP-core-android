@@ -58,6 +58,7 @@ android {
         dev {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.devBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.devLogUrl
             buildConfigField 'boolean', 'DO_LOG', 'true'
 
         }
@@ -65,17 +66,21 @@ android {
         qa {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.qaBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.qaLogUrl
+
         }
 
         beta {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.betaBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.betaLogUrl
 
         }
 
         prod {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.prodBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.prodLogUrl
             buildConfigField 'boolean', 'DO_LOG', 'false'
         }
 

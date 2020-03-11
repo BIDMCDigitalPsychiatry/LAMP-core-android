@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.utils
 
+import android.content.Context
 import android.util.Base64
 import java.io.UnsupportedEncodingException
 
@@ -14,5 +15,9 @@ object Utils {
             e.printStackTrace()
         }
         return null
+    }
+
+    fun getApplicationName(context: Context): String {
+        return context.applicationInfo.loadLabel(context.packageManager).toString()
     }
 }

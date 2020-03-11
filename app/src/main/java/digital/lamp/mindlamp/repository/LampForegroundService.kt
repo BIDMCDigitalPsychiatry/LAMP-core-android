@@ -12,6 +12,7 @@ import android.os.SystemClock
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.aware.*
+import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventRequest
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
@@ -131,7 +132,16 @@ class LampForegroundService : Service(),
             try {
                 val addSensorEventResult = homeRepository.addSensorData(participantId,sensorEventRequest)
                 LampLog.e(TAG," : $addSensorEventResult")
+            }catch (er: Exception){er.printStackTrace()}
+        }
+    }
 
+    fun invokeLogData(origin:String, level:String, logEventRequest: LogEventRequest) {
+        val homeRepository = HomeRepository()
+        GlobalScope.launch(Dispatchers.IO){
+            try {
+                val addLogEventResult = homeRepository.addLogData(origin, level, logEventRequest)
+                LampLog.e(TAG," : $addLogEventResult")
             }catch (er: Exception){er.printStackTrace()}
         }
     }

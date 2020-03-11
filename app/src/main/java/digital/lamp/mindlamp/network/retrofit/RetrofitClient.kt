@@ -57,4 +57,14 @@ object RetrofitClient {
 
         retrofit.create(ApiInterface::class.java)
     }
+
+    val logInstance: ApiInterface by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BuildConfig.HOST_LOG)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+
+        retrofit.create(ApiInterface::class.java)
+    }
 }

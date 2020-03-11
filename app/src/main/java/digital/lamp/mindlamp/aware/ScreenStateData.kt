@@ -4,8 +4,13 @@ import android.content.Context
 import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.Screen
+import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
+import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.UserAgent
+import digital.lamp.mindlamp.utils.Utils
+import java.lang.Exception
 
 
 /**
@@ -13,123 +18,128 @@ import digital.lamp.mindlamp.network.model.SensorEventRequest
  */
 class ScreenStateData constructor(awareListener: AwareListener, context: Context){
    init {
-        //Screen State Settings
-        Aware.setSetting(context, Aware_Preferences.STATUS_SCREEN, true)
-        Aware.startScreen(context)//Start Screen Sensor
-        //Sensor Observer
-        Screen.setSensorObserver(object : Screen.AWARESensorObserver {
-            override fun onScreenLocked() {
-                val data = DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    2,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
-                val sensorEventRequest =
-                    SensorEventRequest(
-                        data,
-                        "lamp.screen_state",
-                        System.currentTimeMillis()
-                    )
-                awareListener.getScreenState(sensorEventRequest)
-            }
+       try {
+           //Screen State Settings
+           Aware.setSetting(context, Aware_Preferences.STATUS_SCREEN, true)
+           Aware.startScreen(context)//Start Screen Sensor
+           //Sensor Observer
+           Screen.setSensorObserver(object : Screen.AWARESensorObserver {
+               override fun onScreenLocked() {
+                   val data = DimensionData(
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       2,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null
+                   )
+                   val sensorEventRequest =
+                       SensorEventRequest(
+                           data,
+                           "lamp.screen_state",
+                           System.currentTimeMillis()
+                       )
+                   awareListener.getScreenState(sensorEventRequest)
+               }
 
-            override fun onScreenOff() {
-                val data = DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    0,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
-                val sensorEventRequest =
-                    SensorEventRequest(
-                        data,
-                        "lamp.screen_state",
-                        System.currentTimeMillis()
-                    )
-                awareListener.getScreenState(sensorEventRequest)
-            }
+               override fun onScreenOff() {
+                   val data = DimensionData(
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       0,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null
+                   )
+                   val sensorEventRequest =
+                       SensorEventRequest(
+                           data,
+                           "lamp.screen_state",
+                           System.currentTimeMillis()
+                       )
+                   awareListener.getScreenState(sensorEventRequest)
+               }
 
-            override fun onScreenOn() {
-                val data = DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    1,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
-                val sensorEventRequest =
-                    SensorEventRequest(
-                        data,
-                        "lamp.screen_state",
-                        System.currentTimeMillis()
-                    )
-                awareListener.getScreenState(sensorEventRequest)
-            }
+               override fun onScreenOn() {
+                   val data = DimensionData(
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       1,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null
+                   )
+                   val sensorEventRequest =
+                       SensorEventRequest(
+                           data,
+                           "lamp.screen_state",
+                           System.currentTimeMillis()
+                       )
+                   awareListener.getScreenState(sensorEventRequest)
+               }
 
-            override fun onScreenUnlocked() {
-                val data = DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    3,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-                )
-                val sensorEventRequest =
-                    SensorEventRequest(
-                        data,
-                        "lamp.screen_state",
-                        System.currentTimeMillis()
-                    )
-                awareListener.getScreenState(sensorEventRequest)
-            }
-        })
-        Aware.stopScreen(context)
-    }
+               override fun onScreenUnlocked() {
+                   val data = DimensionData(
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null,
+                       3,
+                       null,
+                       null,
+                       null,
+                       null,
+                       null
+                   )
+                   val sensorEventRequest =
+                       SensorEventRequest(
+                           data,
+                           "lamp.screen_state",
+                           System.currentTimeMillis()
+                       )
+                   awareListener.getScreenState(sensorEventRequest)
+               }
+           })
+           Aware.stopScreen(context)
+       }catch (ex : Exception){
+           val logEventRequest = LogEventRequest("Exception Caught Screen State", UserAgent(), AppState.session.userId)
+           LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+       }
+   }
 }
