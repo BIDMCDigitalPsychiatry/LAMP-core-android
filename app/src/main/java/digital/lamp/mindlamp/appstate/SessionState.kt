@@ -6,6 +6,7 @@ class SessionState {
         const val PREF_KEY_IS_USER_LOGGED_IN = "isUserLoggedIn"
         const val PREF_KEY_TOKEN = "token"
         const val PREF_KEY_USER_ID = "user_id"
+        const val PREF_KEY_CRASH_VALUE = "crash_value"
     }
 
     var isLoggedIn by Pref(
@@ -20,10 +21,14 @@ class SessionState {
         PREF_KEY_USER_ID,
         ""
     )
-
+    var crashValue by Pref(
+        PREF_KEY_CRASH_VALUE,
+        ""
+    )
     fun clearData() {
         isLoggedIn = false
         token = ""
         userId = ""
+        crashValue = ""
     }
 }

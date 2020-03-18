@@ -19,10 +19,12 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
         buildConfigField 'boolean', 'DO_LOG', 'true'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk.abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+
     }
     buildTypes {
         release {

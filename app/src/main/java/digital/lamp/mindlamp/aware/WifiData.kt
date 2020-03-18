@@ -6,6 +6,7 @@ import android.os.Handler
 import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.WiFi
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -64,8 +65,8 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                             Aware.stopWiFi(context)
                         }, 3000)
                     }else{
-                        val logEventRequest = LogEventRequest("Null Caught Wifi Data", UserAgent(), AppState.session.userId)
-                        LogUtils.invokeLogData(Utils.getApplicationName(context), "warning", logEventRequest)
+                        val logEventRequest = LogEventRequest(context.getString(R.string.log_wifi_null), UserAgent(), AppState.session.userId)
+                        LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                     }
 
                 }
@@ -79,8 +80,8 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                 }
             })
         }catch (ex: Exception){
-            val logEventRequest = LogEventRequest("Exception Caught Wifi Data", UserAgent(), AppState.session.userId)
-            LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+            val logEventRequest = LogEventRequest(context.getString(R.string.log_wifi_error), UserAgent(), AppState.session.userId)
+            LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
         }
     }
 }

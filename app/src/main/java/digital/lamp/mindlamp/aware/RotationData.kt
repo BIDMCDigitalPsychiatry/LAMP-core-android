@@ -5,6 +5,7 @@ import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.Rotation
 import com.aware.providers.Rotation_Provider
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.model.RotationData
@@ -60,13 +61,13 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                     Aware.stopRotation(context)
                     awareListener.getRotationData(sensorEventRequest)
                 }else{
-                    val logEventRequest = LogEventRequest("Null Caught Rotation Data", UserAgent(), AppState.session.userId)
-                    LogUtils.invokeLogData(Utils.getApplicationName(context), "warning", logEventRequest)
+                    val logEventRequest = LogEventRequest(context.getString(R.string.log_rotation_null), UserAgent(), AppState.session.userId)
+                    LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                 }
             }
         }catch (ex : Exception){
-            val logEventRequest = LogEventRequest("Exception Caught Rotation Data", UserAgent(), AppState.session.userId)
-            LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+            val logEventRequest = LogEventRequest(context.getString(R.string.log_rotation_error), UserAgent(), AppState.session.userId)
+            LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
         }
     }
 }

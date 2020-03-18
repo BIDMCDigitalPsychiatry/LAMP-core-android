@@ -2,7 +2,6 @@ package digital.lamp.mindlamp.aware
 
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.repository.HomeRepository
-import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.LampLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

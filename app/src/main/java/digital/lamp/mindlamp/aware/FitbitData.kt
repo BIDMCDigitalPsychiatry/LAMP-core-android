@@ -9,6 +9,7 @@ import com.aware.plugin.fitbit.Provider
 import com.aware.providers.Aware_Provider
 import com.aware.utils.DatabaseHelper
 import digital.lamp.mindlamp.FitbitActivity
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -111,15 +112,15 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
             } catch (e : JSONException) {
                 e.printStackTrace()
                 val logEventRequest = LogEventRequest("Exception Caught Fitbit Steps", UserAgent(), AppState.session.userId)
-                LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+                LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
             } catch (e : android.net.ParseException) {
                 e.printStackTrace()
                 val logEventRequest = LogEventRequest("Exception Caught Fitbit Steps", UserAgent(), AppState.session.userId)
-                LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+                LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.error), logEventRequest)
             }
         }else{
             val logEventRequest = LogEventRequest("Null Caught Last Step Data", UserAgent(), AppState.session.userId)
-            LogUtils.invokeLogData(Utils.getApplicationName(context), "warning", logEventRequest)
+            LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.warning), logEventRequest)
         }
     }
 
@@ -176,16 +177,16 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
                 Log.e(TAG,"Hello :  $hrJSON")
             } catch (e: JSONException) {
                 e.printStackTrace()
-                val logEventRequest = LogEventRequest("Exception Caught Fitbit Heart Beat", UserAgent(), AppState.session.userId)
-                LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+                val logEventRequest = LogEventRequest("Aware error Fitbit Heart Beat", UserAgent(), AppState.session.userId)
+                LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
             } catch (e: ParseException) {
                 e.printStackTrace()
-                val logEventRequest = LogEventRequest("Exception Caught Fitbit Heart Beat", UserAgent(), AppState.session.userId)
-                LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+                val logEventRequest = LogEventRequest("Aware error Fitbit Heart Beat", UserAgent(), AppState.session.userId)
+                LogUtils.invokeLogData(Utils.getApplicationName(context),context.getString(R.string.error) , logEventRequest)
             }
         }else{
-            val logEventRequest = LogEventRequest("Null Caught Heart Beat Data", UserAgent(), AppState.session.userId)
-            LogUtils.invokeLogData(Utils.getApplicationName(context), "warning", logEventRequest)
+            val logEventRequest = LogEventRequest("Aware error Heart Beat Data", UserAgent(), AppState.session.userId)
+            LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.warning), logEventRequest)
         }
         latestHr!!.close()
     }

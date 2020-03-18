@@ -5,6 +5,7 @@ import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.Locations
 import com.aware.providers.Locations_Provider
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -61,16 +62,16 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
                    awareListener.getLocationData(sensorEventRequest)
 
                }else{
-                   val logEventRequest = LogEventRequest("Null Caught Location Data", UserAgent(), AppState.session.userId)
-                   LogUtils.invokeLogData(Utils.getApplicationName(context), "warning", logEventRequest)
+                   val logEventRequest = LogEventRequest(context.getString(R.string.log_location_null), UserAgent(), AppState.session.userId)
+                   LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                }
            }
            android.os.Handler().postDelayed({
                Aware.stopLocations(context)
            }, 3000)
        }catch (ex : Exception){
-           val logEventRequest = LogEventRequest("Exception Caught Location Data", UserAgent(), AppState.session.userId)
-           LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+           val logEventRequest = LogEventRequest(context.getString(R.string.log_location_error), UserAgent(), AppState.session.userId)
+           LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
        }
    }
 }

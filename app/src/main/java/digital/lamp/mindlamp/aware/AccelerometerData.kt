@@ -5,12 +5,12 @@ import com.aware.Accelerometer
 import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.providers.Accelerometer_Provider
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventRequest
 import digital.lamp.mindlamp.network.model.UserAgent
-import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.Utils
 
 
@@ -62,14 +62,14 @@ class AccelerometerData constructor(awareListener: AwareListener, context:Contex
                      Aware.stopAccelerometer(context)
                      awareListener.getAccelerometerData(sensorEventRequest)
                  }else{
-                     val logEventRequest = LogEventRequest("Null Caught Accelerometer Data", UserAgent(), AppState.session.userId)
-                     LogUtils.invokeLogData(Utils.getApplicationName(context), "warning", logEventRequest)
+                     val logEventRequest = LogEventRequest(context.getString(R.string.log_accelerometer_null), UserAgent(), AppState.session.userId)
+                     LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                  }
              }
          }catch (ex:Exception){
              ex.printStackTrace()
-             val logEventRequest = LogEventRequest("Exception Caught Accelerometer", UserAgent(), AppState.session.userId)
-             LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+             val logEventRequest = LogEventRequest(context.getString(R.string.log_accelerometer_error), UserAgent(), AppState.session.userId)
+             LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
          }
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.Screen
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -138,8 +139,8 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
            })
            Aware.stopScreen(context)
        }catch (ex : Exception){
-           val logEventRequest = LogEventRequest("Exception Caught Screen State", UserAgent(), AppState.session.userId)
-           LogUtils.invokeLogData(Utils.getApplicationName(context), "error", logEventRequest)
+           val logEventRequest = LogEventRequest(context.getString(R.string.log_screen_state_error), UserAgent(), AppState.session.userId)
+           LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
        }
    }
 }
