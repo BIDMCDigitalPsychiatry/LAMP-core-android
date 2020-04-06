@@ -207,7 +207,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showSignedIn() {
-
     }
 
     private fun showSignedOut() {
