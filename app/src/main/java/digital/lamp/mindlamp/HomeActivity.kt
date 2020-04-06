@@ -213,7 +213,6 @@ class HomeActivity : AppCompatActivity() {
     private fun showSignedOut() {
         AppState.session.clearData()
         stopLampService()
-
     }
 
     private fun showSignedIn(oLoginResponse: LoginResponse) {
