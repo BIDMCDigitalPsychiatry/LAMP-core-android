@@ -222,5 +222,4 @@ class HomeActivity : AppCompatActivity() {
 
         startLampService()
     }
-
 }
