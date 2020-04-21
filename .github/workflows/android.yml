@@ -19,13 +19,15 @@ jobs:
           java-version: 1.8
       - name: Build debug APK
         run: bash ./gradlew assembleDebug --stacktrace
-      - name: Upload APK
-        uses: actions/upload-artifact@v1
-        with:
-          name: app
-          path: app/app-debug.apk
           
-      - name: Decode service account key
-        env:
-          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
-        run: echo $SERVICE_ACCOUNT > app/service-account-key.json
+      - name: Upload to playstore
+        uses: r0adkll/upload-google-play@v1
+        with:
+           serviceAccountJson: ${{secrets.SERVICE_ACCOUNT}}
+           packageName: digital.lamp.mindlamp
+           releaseFile: ${{ SIGNED_RELEASE_FILE}}
+           track: beta
+           userFraction: 0.33
+           whatsNewDirectory: /distribution/whatsnew
+           mappingFile: /app/build/outputs/mapping/release/mapping.txt
+        
