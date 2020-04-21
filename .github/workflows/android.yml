@@ -25,3 +25,7 @@ jobs:
           name: app
           path: app/app-debug.apk
           
+      - name: Decode service account key
+        env:
+          SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
+        run: echo $SERVICE_ACCOUNT > app/service-account-key.json
