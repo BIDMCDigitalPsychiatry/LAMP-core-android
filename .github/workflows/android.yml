@@ -8,7 +8,7 @@ on:
 
 jobs:
    apk:
-    name: Generate APK
+    name: Deploy APK
     runs-on: ubuntu-18.04
 
     steps:
@@ -20,14 +20,5 @@ jobs:
       - name: Build debug APK
         run: bash ./gradlew assembleDebug --stacktrace
           
-      - name: Upload to playstore
-        uses: r0adkll/upload-google-play@v1
-        with:
-           serviceAccountJson: ${{secrets.SERVICE_ACCOUNT}}
-           packageName: digital.lamp.mindlamp
-           releaseFile: ${{ SIGNED_RELEASE_FILE}}
-           track: beta
-           userFraction: 0.33
-           whatsNewDirectory: /distribution/whatsnew
-           mappingFile: /app/build/outputs/mapping/release/mapping.txt
+ 
         
