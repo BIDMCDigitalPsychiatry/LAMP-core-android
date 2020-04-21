@@ -22,7 +22,7 @@ jobs:
       - name: Signed Apk
         uses:  r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: app/build/outputs/apk/release
+          releaseDirectory: app/build/outputs/apk/beta
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.RELEASE_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
