@@ -33,12 +33,6 @@ jobs:
     - name: Build Android Release
       run: ./gradlew assembleRelease
          
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v1
-      with:
-          name: app-release.apk
-          path: app/build/outputs/apk/release/
-          
     - name: Sign Android release
       uses: r0adkll/sign-android-release@v1
       with:
