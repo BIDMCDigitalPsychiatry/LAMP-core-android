@@ -15,9 +15,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           GITHUB_TOKEN: ${{ secrets.CICD.GITHUB_TOKEN }}
-		  java-version: 1.8
+   	java-version: 1.8
 		  
-	 - name: "Permission to gradle File"
+- name: "Permission to gradle File"
 
       run: chmod +x gradlew
 
