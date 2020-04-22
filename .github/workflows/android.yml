@@ -54,11 +54,11 @@ jobs:
 
         github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Build debug APK
-        run: bash ./gradlew assembleDebug --stacktrace
-      - name: Signed Apk
-        uses:  r0adkll/sign-android-release@v1
-        with:
-            releaseDirectory: .github
+      run: bash ./gradlew assembleDebug --stacktrace
+    - name: Signed Apk
+      uses:  r0adkll/sign-android-release@v1
+      with:
+            releaseDirectory: /
             signingKeyBase64: ${{ secrets.SIGNING_KEY }}
             alias: ${{ secrets.RELEASE_KEY_ALIAS }}
             keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
