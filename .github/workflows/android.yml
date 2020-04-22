@@ -32,7 +32,7 @@ jobs:
 
     - name: Publish APK
       env:
-          RELEASE_KEYSTORE_PASSWORD: ${{ secrests.RELEASE_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrests.RELEASE_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD: ${{ secrests.RELEASE_KEY_PASSWORD }}
+        RELEASE_KEYSTORE_PASSWORD: ${{ secrests.RELEASE_KEYSTORE_PASSWORD }}
+        RELEASE_KEY_ALIAS: ${{ secrests.RELEASE_KEY_ALIAS }}
+        RELEASE_KEY_PASSWORD: ${{ secrests.RELEASE_KEY_PASSWORD }}
       run: ./gradlew publishStagingRelease
