@@ -31,10 +31,21 @@ jobs:
       run: ./gradlew build
 
     - name: Build Android Release
-      run: |
-         ./gradlew assembleRelease
+      run: ./gradlew assembleRelease
+         
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
           name: app-release.apk
-          path: .github
+          path: app/build/outputs/apk/release/
+          
+    - name: Sign Android release
+      uses: r0adkll/sign-android-release@v1
+      with:
+       releaseDirectory: app/build/outputs/apk/release
+       signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+       alias: ${{ secrets.RELEASE_KEY_ALIAS}}
+       keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+       keyPassword: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      
+ 
