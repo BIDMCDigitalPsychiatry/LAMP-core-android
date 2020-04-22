@@ -28,30 +28,13 @@ jobs:
 
     - name: Build with Gradle
 
-      run: ./gradlew assemble
+      run: ./gradlew build
 
-    - name: Commit files
-
-      run: |
-
-        echo ${{ github.ref }}
-
-        git add .
-
-        git config --local user.email "arunvijayan@microobejcts.net"
-
-        git config --local user.name "arunvijayan"
-
-        git commit -m "ci: Automated build push" -a | exit 0
-
-    - name: Push changes
-
-      if: github.ref == 'refs/heads/master'
-
-      uses: ad-m/github-push-action@master
-
-      with:
-
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-  
-    
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+    - name: Releasing using Hub
+      uses: ShaunLWM/action-release-debugapk@master
+      env:
+       GITHUB_TOKEN: ${{ secrets.TOKEN }}
+       APP_FOLDER: app
+       RELEASE_TITLE: New Build
