@@ -3,8 +3,6 @@ name: Android CI
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
    apk:
@@ -22,11 +20,11 @@ jobs:
       - name: Signed Apk
         uses:  r0adkll/sign-android-release@v1
         with:
-          releaseDirectory: beta/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.RELEASE_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.RELEASE_KEY_PASSWORD }}
+            releaseDirectory: app/build/outputs/apk/release
+            signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+            alias: ${{ secrets.RELEASE_KEY_ALIAS }}
+            keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+            keyPassword: ${{ secrets.RELEASE_KEY_PASSWORD }}
           
   
           
