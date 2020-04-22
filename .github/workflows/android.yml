@@ -3,6 +3,8 @@ name: Android CI
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
    apk:
@@ -17,16 +19,6 @@ jobs:
           java-version: 1.8
       - name: Build debug APK
         run: bash ./gradlew assembleDebug --stacktrace
+          
       - name: Android Builder
-        uses: b4s36t4/Android-Action@0.0.1  
-      - name: Signed Apk
-        uses:  r0adkll/sign-android-release@v1
-        with:
-            releaseDirectory: .github
-            signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-            alias: ${{ secrets.RELEASE_KEY_ALIAS }}
-            keyStorePassword: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-            keyPassword: ${{ secrets.RELEASE_KEY_PASSWORD }}
-          
-  
-          
+        uses: b4s36t4/Android-Action@0.0.1 
