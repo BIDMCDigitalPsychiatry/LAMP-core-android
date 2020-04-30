@@ -21,4 +21,6 @@
         <string name="battery_low">Battery is low.</string>
         <string name="app_crash">The app has crashed.</string>
     <string name="gps_off">"GPS is disabled."</string>
+    <string name="channel_description">MindLamp Active Data Collection</string>
+    <string name="copy">Copy</string>
 </resources>

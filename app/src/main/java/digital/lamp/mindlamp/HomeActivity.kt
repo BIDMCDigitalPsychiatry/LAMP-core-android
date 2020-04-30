@@ -4,6 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -20,9 +22,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.firebase.iid.FirebaseInstanceId
 import com.google.gson.Gson
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
+import digital.lamp.mindlamp.network.model.SendTokenRequest
+import digital.lamp.mindlamp.network.model.TokenData
+import digital.lamp.mindlamp.network.model.UserAgent
+import digital.lamp.mindlamp.repository.HomeRepository
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.AppConstants.BASE_URL_WEB
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
@@ -32,6 +39,10 @@ import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -43,14 +54,14 @@ class HomeActivity : AppCompatActivity() {
         private val TAG = HomeActivity::class.java.simpleName
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-
+        retrieveCurrentToken()
         if(checkAndRequestPermissions(this))
             initializeWebview()
     }
+
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
@@ -80,6 +91,7 @@ class HomeActivity : AppCompatActivity() {
                 view.clearHistory()
             }
         }
+
     }
 
     override fun onRequestPermissionsResult(
@@ -221,7 +233,46 @@ class HomeActivity : AppCompatActivity() {
         AppState.session.userId = oLoginResponse.identityObject.id
 
         startLampService()
+//        retrieveCurrentToken()
     }
 
+    private fun retrieveCurrentToken() {
+        FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
+            if (!it.isSuccessful) {
+                Log.w(TAG, "getInstanceId failed", it.exception)
+                return@addOnCompleteListener
+            }
+
+            // Get new Instance ID token
+            val token = it.result?.token
+            Log.e(TAG, "FCM Token : $token")
+
+//            val homeRepository = HomeRepository()
+//            val tokenData = TokenData("login",token.toString(),"Android", UserAgent())
+//            val sendTokenRequest = SendTokenRequest(tokenData,"lamp.analytics",System.currentTimeMillis())
+//            GlobalScope.launch(Dispatchers.IO){
+//                try {
+//                    val response = homeRepository.sendTokenData(AppState.session.userId, sendTokenRequest)
+//                    if (response.code() == 200)
+//                        Log.e(TAG,"Token Updated to server")
+//                }catch (er: Exception){er.printStackTrace()}
+//            }
+            showAlert(token)
+        }
+    }
+
+    private fun showAlert(token: String?) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.app_name)
+        builder.setMessage(token)
+        builder.setPositiveButton(R.string.copy) { dialog, _ ->
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("RANDOM UUID",token)
+            clipboard.setPrimaryClip(clip)
+
+            dialog.dismiss()
+        }
+        builder.show()
+    }
 
 }
