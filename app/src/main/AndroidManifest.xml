@@ -100,7 +100,7 @@
         </receiver>
 
         <service
-            android:name=".notification.MyFirebaseMessagingService"
+            android:name=".notification.LampFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

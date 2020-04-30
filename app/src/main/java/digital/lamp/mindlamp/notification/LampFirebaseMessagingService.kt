@@ -7,7 +7,7 @@ import com.google.firebase.messaging.RemoteMessage
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
  */
-class MyFirebaseMessagingService: FirebaseMessagingService() {
+class LampFirebaseMessagingService: FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.e(TAG, "Message: ${remoteMessage.notification?.title}")
@@ -25,7 +25,7 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
     }
 
     companion object{
-        private val TAG = MyFirebaseMessagingService::class.java.simpleName
+        private val TAG = LampFirebaseMessagingService::class.java.simpleName
     }
 
 }
