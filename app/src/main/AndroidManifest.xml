@@ -67,7 +67,11 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
             />
-        <activity android:name=".CustomWebviewActivity"
+        <activity android:name=".NotificationActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
+        </activity>
+
+        <activity android:name=".NotificationActionActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
         </activity>
 

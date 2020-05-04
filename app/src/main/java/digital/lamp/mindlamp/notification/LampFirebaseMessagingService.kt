@@ -3,6 +3,11 @@ package digital.lamp.mindlamp.notification
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import digital.lamp.mindlamp.model.ActionData
+import digital.lamp.mindlamp.utils.LampLog
+
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
@@ -10,12 +15,24 @@ import com.google.firebase.messaging.RemoteMessage
 class LampFirebaseMessagingService: FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.e(TAG, "Message: ${remoteMessage.notification?.title}")
-        Log.e(TAG, "Remote Message: ${remoteMessage.data["title"]}")
-        Log.e(TAG, "Remote Message: ${remoteMessage.data["message"]}")
 
-        LampNotificationManager.showMessageNotification(this,remoteMessage)
+        val gson = Gson()
+        val actionList: List<ActionData> = gson.fromJson(remoteMessage.data["actions"], object : TypeToken<List<ActionData?>?>() {}.type) as List<ActionData>
 
+        Log.e(TAG, "Refreshed token: ${remoteMessage.data.toString()}")
+
+        //Notification with page and action Button
+        if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty() && actionList.isNotEmpty()){
+            LampNotificationManager.notificationWithActionButton(this,remoteMessage,actionList)
+        }
+        //Notification with page and no action Button
+        else if(remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty()){
+            LampNotificationManager.notificationWithoutAction(this,remoteMessage)
+        }
+        //Notification with page empty or action empty
+        else{
+            LampNotificationManager.notificationOpenApp(this,remoteMessage)
+        }
 
     }
 

@@ -22,5 +22,6 @@
         <string name="app_crash">The app has crashed.</string>
     <string name="gps_off">"GPS is disabled."</string>
     <string name="channel_description">MindLamp Active Data Collection</string>
+    <string name="channel_survey_description">MindLamp Notifications</string>
     <string name="copy">Copy</string>
 </resources>

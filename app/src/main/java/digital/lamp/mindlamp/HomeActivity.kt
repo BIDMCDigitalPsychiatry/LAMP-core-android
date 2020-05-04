@@ -57,7 +57,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-        retrieveCurrentToken()
+        retrieveCurrentToken(true)
         if(checkAndRequestPermissions(this))
             initializeWebview()
     }
@@ -233,31 +233,32 @@ class HomeActivity : AppCompatActivity() {
         AppState.session.userId = oLoginResponse.identityObject.id
 
         startLampService()
-//        retrieveCurrentToken()
+        retrieveCurrentToken(false)
     }
 
-    private fun retrieveCurrentToken() {
+    private fun retrieveCurrentToken(showDialog : Boolean) {
         FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
             if (!it.isSuccessful) {
                 Log.w(TAG, "getInstanceId failed", it.exception)
                 return@addOnCompleteListener
             }
-
             // Get new Instance ID token
             val token = it.result?.token
             Log.e(TAG, "FCM Token : $token")
-
-//            val homeRepository = HomeRepository()
-//            val tokenData = TokenData("login",token.toString(),"Android", UserAgent())
-//            val sendTokenRequest = SendTokenRequest(tokenData,"lamp.analytics",System.currentTimeMillis())
-//            GlobalScope.launch(Dispatchers.IO){
-//                try {
-//                    val response = homeRepository.sendTokenData(AppState.session.userId, sendTokenRequest)
-//                    if (response.code() == 200)
-//                        Log.e(TAG,"Token Updated to server")
-//                }catch (er: Exception){er.printStackTrace()}
-//            }
-            showAlert(token)
+            if(!showDialog) {
+            val homeRepository = HomeRepository()
+            val tokenData = TokenData("login",token.toString(),"Android", UserAgent())
+            val sendTokenRequest = SendTokenRequest(tokenData,"lamp.analytics",System.currentTimeMillis())
+            GlobalScope.launch(Dispatchers.IO){
+                try {
+                    val response = homeRepository.sendTokenData(AppState.session.userId, sendTokenRequest)
+                    if (response.code() == 200)
+                        Log.e(TAG,"Token Updated to server")
+                }catch (er: Exception){er.printStackTrace()}
+            }
+            }else{
+                showAlert(token)
+            }
         }
     }
 
