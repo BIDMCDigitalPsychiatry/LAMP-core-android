@@ -8,16 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.app.TaskStackBuilder
 import com.google.firebase.messaging.RemoteMessage
-import digital.lamp.mindlamp.CustomWebviewActivity
+import digital.lamp.mindlamp.NotificationActivity
 import digital.lamp.mindlamp.HomeActivity
 import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.SplashActivity
+import digital.lamp.mindlamp.NotificationActionActivity
+import digital.lamp.mindlamp.model.ActionData
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_CHANNEL
-import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_ID
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -43,10 +41,103 @@ object LampNotificationManager {
             .build()
     }
 
-    fun showMessageNotification(context: Context,remoteMessage: RemoteMessage){
+    fun notificationWithActionButton(
+        context: Context,
+        remoteMessage: RemoteMessage,
+        actionList: List<ActionData>
+    ) {
 
-        val notificationIntent: Intent
+           //Notification with open App Button with value
+            val notificationIntent = Intent(context, NotificationActivity::class.java)
+            notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
+            notificationIntent.putExtra("notification_id",remoteMessage.data["notificationId"]!!.toInt())
 
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val actionIntent = Intent(context, NotificationActionActivity::class.java)
+            actionIntent.putExtra("survey_path", actionList[0].page)
+            actionIntent.putExtra("notification_id",remoteMessage.data["notificationId"]!!.toInt())
+            actionIntent.putExtra("remote_message",remoteMessage.data.toString())
+
+            val actionPendingIntent = PendingIntent.getActivity(
+                context,
+                0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val notification =
+                NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
+                    .setContentTitle(remoteMessage.data["title"])
+                    .setContentText(remoteMessage.data["message"])
+                    .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                    .setLargeIcon(
+                        BitmapFactory.decodeResource(
+                            context.resources,
+                            R.mipmap.ic_launcher_round
+                        )
+                    )
+                    .setAutoCancel(true)
+                    .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
+                    .addAction(R.drawable.ic_stat_noti_icon, actionList[0].name, actionPendingIntent)
+                    .setContentIntent(pendingIntent)
+                    .setOngoing(true)
+
+            val manager =
+                context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    NOTIFICATION_CHANNEL,
+                    context.getString(R.string.channel_description),
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+                manager.createNotificationChannel(channel)
+            }
+            manager.notify(remoteMessage.data["notificationId"]!!.toInt(), notification.build())
+
+    }
+
+    fun notificationWithoutAction(context: Context, remoteMessage: RemoteMessage){
+        val notificationIntent = Intent(context, NotificationActivity::class.java)
+        notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
+        notificationIntent.putExtra("notification_id",remoteMessage.data["notificationId"]!!.toInt())
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notification =
+            NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
+                .setContentTitle(remoteMessage.data["title"])
+                .setContentText(remoteMessage.data["message"])
+                .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        context.resources,
+                        R.mipmap.ic_launcher_round
+                    )
+                )
+                .setAutoCancel(true)
+                .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
+                .setContentIntent(pendingIntent)
+
+        val manager =
+            context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL,
+                context.getString(R.string.channel_description),
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            manager.createNotificationChannel(channel)
+        }
+        manager.notify(remoteMessage.data["notificationId"]!!.toInt(), notification.build())
+
+    }
+
+    fun notificationOpenApp(context: Context, remoteMessage: RemoteMessage){
         val homeIntent = Intent(context, HomeActivity::class.java)
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
@@ -55,63 +146,31 @@ object LampNotificationManager {
             0, homeIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        if(remoteMessage.data["page"] != null && remoteMessage.data.isNotEmpty()){
-            notificationIntent = Intent(context, CustomWebviewActivity::class.java)
-            notificationIntent.putExtra("survey_path",remoteMessage.data["page"])
+        val notification =
+            NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
+                .setContentTitle(remoteMessage.data["title"])
+                .setContentText(remoteMessage.data["message"])
+                .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                .setLargeIcon(
+                    BitmapFactory.decodeResource(
+                        context.resources,
+                        R.mipmap.ic_launcher
+                    )
+                )
+                .setAutoCancel(true)
+                .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
+                .setContentIntent(homePendingIntent)
 
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        val manager =
+            context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL,
+                context.getString(R.string.channel_description),
+                NotificationManager.IMPORTANCE_DEFAULT
             )
-            val notification =
-                NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
-                    .setContentTitle(remoteMessage.data["title"])
-                    .setContentText(remoteMessage.data["message"])
-                    .setSmallIcon(R.drawable.ic_stat_noti_icon)
-                    .setLargeIcon(
-                        BitmapFactory.decodeResource(context.resources,
-                            R.mipmap.ic_launcher))
-                    .setAutoCancel(true)
-                    .addAction(R.drawable.ic_stat_noti_icon,"Open App",homePendingIntent)
-                    .setContentIntent(pendingIntent)
-                    .setOngoing(true)
-            val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val channel = NotificationChannel(NOTIFICATION_CHANNEL,
-                    context.getString(R.string.channel_description),
-                    NotificationManager.IMPORTANCE_DEFAULT)
-                manager.createNotificationChannel(channel)
-            }
-            manager.notify(NOTIFICATION_ID, notification.build())
-
-        }else{
-            notificationIntent = Intent(context, HomeActivity::class.java)
-            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
-
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            val notification =
-                NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
-                    .setContentTitle(remoteMessage.data["title"])
-                    .setContentText(remoteMessage.data["message"])
-                    .setSmallIcon(R.drawable.ic_stat_noti_icon)
-                    .setLargeIcon(
-                        BitmapFactory.decodeResource(context.resources,
-                            R.mipmap.ic_launcher))
-                    .setAutoCancel(true)
-                    .setContentIntent(pendingIntent)
-            val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val channel = NotificationChannel(NOTIFICATION_CHANNEL,
-                    context.getString(R.string.channel_description),
-                    NotificationManager.IMPORTANCE_DEFAULT)
-                manager.createNotificationChannel(channel)
-            }
-            manager.notify(NOTIFICATION_ID, notification.build())
+            manager.createNotificationChannel(channel)
         }
-
+        manager.notify(remoteMessage.data["notificationId"]!!.toInt(), notification.build())
     }
-
 }
