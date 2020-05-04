@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.gms.google-services'
+apply plugin:  'com.github.triplet.play'
 
 android {
     signingConfigs {
@@ -89,7 +90,16 @@ android {
 
     }
 }
+play {
+    serviceAccountCredentials = file("api-6882780734960683553-445906-55bd30e3b785.json")
 
+        // Overrides defaults
+        track = "alpha"
+        userFraction = 0.5
+        releaseStatus = "draft"  //completed/draft/inProgress/halted
+
+
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -117,4 +127,5 @@ dependencies {
     //Firebase
     implementation 'com.google.firebase:firebase-analytics:17.2.2'
     implementation 'com.google.firebase:firebase-messaging:20.1.5'
+
 }
