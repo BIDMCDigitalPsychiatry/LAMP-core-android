@@ -51,14 +51,13 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
                         null,
                         null
                     )
-                    val sensorEventRequest =
-                        SensorEventRequest(
+                    val sensorEventData =
+                        SensorEventData(
                             data,
-                            "lamp.accelerometer.motion",
-                            System.currentTimeMillis()
+                            "lamp.accelerometer.motion"
                         )
                     Aware.startMagnetometer(context)
-                    awareListener.getMagneticData(sensorEventRequest)
+                    awareListener.getMagneticData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest(context.getString(R.string.log_magnetometer_null), UserAgent(), AppState.session.userId)
                     LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)

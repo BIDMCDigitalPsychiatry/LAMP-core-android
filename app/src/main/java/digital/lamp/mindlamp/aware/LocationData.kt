@@ -9,7 +9,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
@@ -53,13 +53,12 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
                            null,
                            null
                        )
-                   val sensorEventRequest =
-                       SensorEventRequest(
+                   val sensorEventData =
+                       SensorEventData(
                            dimensionData,
-                           "lamp.gps",
-                           System.currentTimeMillis()
+                           "lamp.gps"
                        )
-                   awareListener.getLocationData(sensorEventRequest)
+                   awareListener.getLocationData(sensorEventData)
 
                }else{
                    val logEventRequest = LogEventRequest(context.getString(R.string.log_location_null), UserAgent(), AppState.session.userId)

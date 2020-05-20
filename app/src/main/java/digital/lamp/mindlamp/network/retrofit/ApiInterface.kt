@@ -1,9 +1,6 @@
 package digital.lamp.mindlamp.network.retrofit
 
-import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.NotificationEventRequest
-import digital.lamp.mindlamp.network.model.SendTokenRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*

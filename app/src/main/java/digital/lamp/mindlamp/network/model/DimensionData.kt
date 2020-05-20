@@ -19,7 +19,7 @@ data class DimensionData(
     val ssid: String?,
     val steps: Int?,
     val unit: String?,
-    val value: Int?
+    val value: Any?
 )
 
 data class RotationData(

@@ -13,7 +13,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.Utils
 import org.json.JSONArray
@@ -101,13 +101,7 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
                     null,
                     null
                 )
-                val sensorEventRequest =
-                    SensorEventRequest(
-                        data,
-                        "lamp.steps",
-                        System.currentTimeMillis()
-                    )
-                listener.getFitbitData(sensorEventRequest)
+
 
             } catch (e : JSONException) {
                 e.printStackTrace()
@@ -164,15 +158,8 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
                     null,
                     null,
                     "count/min",
-                    restingHR
+                    restingHR.toDouble()
                 )
-                val sensorEventRequest =
-                    SensorEventRequest(
-                        data,
-                        "lamp.heart_rate",
-                        System.currentTimeMillis()
-                    )
-                listener.getFitbitData(sensorEventRequest)
 
                 Log.e(TAG,"Hello :  $hrJSON")
             } catch (e: JSONException) {

@@ -117,4 +117,8 @@ dependencies {
     //Firebase
     implementation 'com.google.firebase:firebase-analytics:17.2.2'
     implementation 'com.google.firebase:firebase-messaging:20.1.5'
+
+    //fitness and auth
+    implementation "com.google.android.gms:play-services-fitness:18.0.0"
+    implementation "com.google.android.gms:play-services-auth:18.0.0"
 }

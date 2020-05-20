@@ -4,11 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -22,6 +18,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.gson.Gson
 import digital.lamp.mindlamp.appstate.AppState
@@ -52,14 +52,32 @@ class HomeActivity : AppCompatActivity() {
 
     companion object{
         private val TAG = HomeActivity::class.java.simpleName
+        private const val REQUEST_OAUTH_REQUEST_CODE = 1010
+
+    }
+
+    private val fitnessOptions: FitnessOptions by lazy {
+        FitnessOptions.builder()
+            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
+            .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         retrieveCurrentToken(true)
-        if(checkAndRequestPermissions(this))
+        if(checkAndRequestPermissions(this)){
+            //Fit SignIn Auth
+            fitSignIn()
             initializeWebview()
+        }
     }
 
 
@@ -124,6 +142,8 @@ class HomeActivity : AppCompatActivity() {
                         && perms[Manifest.permission.READ_SYNC_SETTINGS] == PackageManager.PERMISSION_GRANTED
                         && perms[Manifest.permission.READ_SYNC_STATS] == PackageManager.PERMISSION_GRANTED
                     ) {
+                        //Fit SignIn Auth
+                        fitSignIn()
                         initializeWebview()
                         //else any one or both the permissions are not granted
                     }
@@ -232,14 +252,42 @@ class HomeActivity : AppCompatActivity() {
         AppState.session.token = oLoginResponse.authorizationToken
         AppState.session.userId = oLoginResponse.identityObject.id
 
+        //Start Foreground service for retrieving data
         startLampService()
+        //Updating current user token
         retrieveCurrentToken(false)
+    }
+
+    private fun fitSignIn() {
+        if (oAuthPermissionsApproved()) {
+            accessGoogleFit()
+        } else {
+            GoogleSignIn.requestPermissions(this,REQUEST_OAUTH_REQUEST_CODE, getGoogleAccount(), fitnessOptions)
+        }
+    }
+
+    /**
+     * Handles the callback from the OAuth sign in flow, executing the post sign in function
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (resultCode) {
+            RESULT_OK -> {
+                if(requestCode == REQUEST_OAUTH_REQUEST_CODE){
+                    accessGoogleFit()
+                }
+            }
+            else -> oAuthErrorMsg(requestCode, resultCode)
+        }
+    }
+
+    private fun accessGoogleFit() {
+        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
 
     private fun retrieveCurrentToken(showDialog : Boolean) {
         FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
             if (!it.isSuccessful) {
-                Log.w(TAG, "getInstanceId failed", it.exception)
                 return@addOnCompleteListener
             }
             // Get new Instance ID token
@@ -257,12 +305,29 @@ class HomeActivity : AppCompatActivity() {
                 }catch (er: Exception){er.printStackTrace()}
             }
             }else{
-                showAlert(token)
+                showTokenAlert(token)
             }
         }
     }
 
-    private fun showAlert(token: String?) {
+    private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
+        val message = """
+            There was an error signing into Fit. Check the troubleshooting section of the README
+            for potential issues.
+            Request code was: $requestCode
+            Result code was: $resultCode
+        """.trimIndent()
+        Log.e(TAG, message)
+    }
+
+    private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(getGoogleAccount(), fitnessOptions)
+
+    /**
+     * Gets a Google account for use in creating the Fitness client.
+     */
+    private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
+
+    private fun showTokenAlert(token: String?) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.app_name)
         builder.setMessage(token)

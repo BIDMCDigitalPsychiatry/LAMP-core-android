@@ -1,29 +1,29 @@
 package digital.lamp.mindlamp.aware
 
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 interface AwareListener {
     //Callback to Acclerometer Data
-    fun getAccelerometerData(sensorEventRequest: SensorEventRequest)
+    fun getAccelerometerData(sensorEventData: SensorEventData)
     //Callback to Rotation Data
-    fun getRotationData(sensorEventRequest: SensorEventRequest)
+    fun getRotationData(sensorEventData: SensorEventData)
     //Callback to Magnetic Data
-    fun getMagneticData(sensorEventRequest: SensorEventRequest)
+    fun getMagneticData(sensorEventData: SensorEventData)
     //Callback to gyroscope Data
-    fun getGyroscopeData(sensorEventRequest: SensorEventRequest)
+    fun getGyroscopeData(sensorEventData: SensorEventData)
     //Callback to Location Data
-    fun getLocationData(sensorEventRequest: SensorEventRequest)
+    fun getLocationData(sensorEventData: SensorEventData)
     //Callback to wifi Data
-    fun getWifiData(sensorEventRequest: SensorEventRequest)
+    fun getWifiData(sensorEventData: SensorEventData)
     //Callback to ScreenState Data
-    fun getScreenState(sensorEventRequest: SensorEventRequest)
+    fun getScreenState(sensorEventData: SensorEventData)
     //Callback to SMS data
-    fun getSmsData(sensorEventRequest: SensorEventRequest)
+    fun getSmsData(sensorEventData: SensorEventData)
     //Callback to Bluetooth Data
-    fun getBluetoothData(sensorEventRequest: SensorEventRequest)
+    fun getBluetoothData(sensorEventData: SensorEventData)
     //Callback to Fitbit Data
-    fun getFitbitData(sensorEventRequest: SensorEventRequest)
+    fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>)
 }

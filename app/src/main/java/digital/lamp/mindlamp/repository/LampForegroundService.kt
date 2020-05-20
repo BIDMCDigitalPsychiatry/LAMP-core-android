@@ -14,6 +14,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.aware.*
 import digital.lamp.mindlamp.network.model.LogEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.network.model.SensorEventRequest
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.notification.LampNotificationManager
@@ -41,6 +42,7 @@ class LampForegroundService : Service(),
     private var isAlarm: Boolean = false
     private lateinit var alarmManager: AlarmManager
     private lateinit var alarmIntent: PendingIntent
+    private var sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
 
     override fun onCreate() {
         super.onCreate()
@@ -80,7 +82,7 @@ class LampForegroundService : Service(),
             override fun onTick(millisUntilFinished: Long) {
                 count++
                 when (count) {
-                    1 -> FitbitData(
+                    1 -> GoogleFit(
                         this@LampForegroundService,
                         applicationContext
                     )
@@ -112,6 +114,10 @@ class LampForegroundService : Service(),
                         this@LampForegroundService,
                         applicationContext
                     )
+                    9 -> {
+                        val sensorEventRequest = SensorEventRequest(System.currentTimeMillis(),sensorEventDataList)
+                        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+                    }
                 }
 
             }
@@ -273,44 +279,53 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getAccelerometerData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getAccelerometerData(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
     }
 
-    override fun getRotationData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getRotationData(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
+
     }
 
-    override fun getMagneticData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getMagneticData(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
     }
 
-    override fun getGyroscopeData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getGyroscopeData(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
     }
 
-    override fun getLocationData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getLocationData(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
     }
 
-    override fun getWifiData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getWifiData(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
     }
 
-    override fun getScreenState(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getScreenState(sensorEventData: SensorEventData) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.add(sensorEventData)
     }
 
-    override fun getSmsData(sensorEventRequest: SensorEventRequest) {
+    override fun getSmsData(sensorEventData: SensorEventData) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getBluetoothData(sensorEventRequest: SensorEventRequest) {
+    override fun getBluetoothData(sensorEventData: SensorEventData) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun getFitbitData(sensorEventRequest: SensorEventRequest) {
-        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+    override fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>) {
+//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+        sensorEventDataList.addAll(sensorEventData)
     }
 
 }
