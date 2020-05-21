@@ -250,6 +250,7 @@ class LampForegroundService : Service(),
                                 logEventRequest
                             )
                         }
+
                     }
                 } catch (er: Exception) {
                     er.printStackTrace()
@@ -264,8 +265,9 @@ class LampForegroundService : Service(),
                         logEventRequest
                     )
                 }
+                stopForeground(true)
+                stopSelf()
             }
-
         }
     }
 
