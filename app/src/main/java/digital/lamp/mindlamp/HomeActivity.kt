@@ -68,7 +68,7 @@ class HomeActivity : AppCompatActivity() {
             .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM,FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
@@ -79,7 +79,10 @@ class HomeActivity : AppCompatActivity() {
             .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
             .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
             .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
-
+            .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
             .build()
     }
 

@@ -47,6 +47,10 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
                 .build()
         }
 
@@ -205,10 +209,29 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                     val sensorEvenData: SensorEventData = getVaginalSpottingData(dp.getValue(field))
                     sensorEventDataList.add(sensorEvenData)
                 }
+                "com.google.cycling.pedaling.cadence" -> {
+                    val field = dp.dataType.fields[0]
+                    val sensorEvenData: SensorEventData = getCyclingPedalingCadenceData(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
+                "com.google.heart_minutes" -> {
+                    val field = dp.dataType.fields[0]
+                    val sensorEvenData: SensorEventData = getHeartMinuteData(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
+                "com.google.power.sample" -> {
+                    val field = dp.dataType.fields[0]
+                    val sensorEvenData: SensorEventData = getPowerData(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
+                "com.google.step_count.cadence" -> {
+                    val field = dp.dataType.fields[0]
+                    val sensorEvenData: SensorEventData = getStepCountCadenceData(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
             }
         }
     }
-
 
     private fun queryFitnessData(): DataReadRequest {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
@@ -230,14 +253,20 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
             .read(DataType.TYPE_BASAL_METABOLIC_RATE)
             .read(DataType.TYPE_BODY_FAT_PERCENTAGE)
             .read(DataType.TYPE_SPEED)
+            .read(DataType.TYPE_CYCLING_WHEEL_RPM)
             .read(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE)
             .read(DataType.TYPE_HYDRATION)
+            .read(DataType.TYPE_NUTRITION)
             .read(HealthDataTypes.TYPE_BLOOD_GLUCOSE)
             .read(HealthDataTypes.TYPE_BLOOD_PRESSURE)
             .read(HealthDataTypes.TYPE_OXYGEN_SATURATION)
             .read(HealthDataTypes.TYPE_BODY_TEMPERATURE)
             .read(HealthDataTypes.TYPE_MENSTRUATION)
             .read(HealthDataTypes.TYPE_VAGINAL_SPOTTING)
+            .read(DataType.TYPE_CYCLING_PEDALING_CADENCE)
+            .read(DataType.TYPE_HEART_POINTS)
+            .read(DataType.TYPE_POWER_SAMPLE)
+            .read(DataType.TYPE_STEP_COUNT_CADENCE)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .setLimit(1)
             .build()
@@ -746,6 +775,98 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
             )
         return SensorEventData(dimensionData, "lamp.type_vaginal_spotting",System.currentTimeMillis())
     }
+//22
+    private fun getCyclingPedalingCadenceData(cyclingPedalingCadence: Value): SensorEventData {
+    val dimensionData =
+        DimensionData(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null, null,null,
+            "rpm",
+            cyclingPedalingCadence.asFloat()
+        )
+    return SensorEventData(dimensionData, "lamp.cycling_pedaling_cadence",System.currentTimeMillis())
+    }
+//23
+    private fun getHeartMinuteData(heartMinute: Value): SensorEventData {
+    val dimensionData =
+        DimensionData(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null, null,null,
+            "heart points",
+            heartMinute.asFloat()
+        )
+        return SensorEventData(dimensionData, "lamp.heart_minutes",System.currentTimeMillis())
+    }
+//24
+    private fun getPowerData(powerData: Value): SensorEventData {
+    val dimensionData =
+        DimensionData(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null, null,null,
+            "watt",
+            powerData.asFloat()
+        )
+    return SensorEventData(dimensionData, "lamp.power",System.currentTimeMillis())    }
+//25
+    private fun getStepCountCadenceData(count: Value): SensorEventData {
+    val dimensionData =
+        DimensionData(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null, null,null,
+            "steps/minute",
+            count.asFloat()
+        )
+    return SensorEventData(dimensionData, "lamp.step_count_cadence",System.currentTimeMillis())
+    }
+//25
 
 
 }
