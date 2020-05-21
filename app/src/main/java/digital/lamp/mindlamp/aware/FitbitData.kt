@@ -99,7 +99,7 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
                     null,
                     totalSteps.toInt(),
                     null,
-                    null
+                    null,null,null
                 )
 
 
@@ -157,8 +157,8 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
                     null,
                     null,
                     null,
-                    "count/min",
-                    restingHR.toDouble()
+                    null,
+                    null,null,null
                 )
 
                 Log.e(TAG,"Hello :  $hrJSON")

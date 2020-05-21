@@ -51,12 +51,12 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
                            null,
                            null,
                            null,
-                           null
+                           null,null,null
                        )
                    val sensorEventData =
                        SensorEventData(
                            dimensionData,
-                           "lamp.gps"
+                           "lamp.gps",System.currentTimeMillis()
                        )
                    awareListener.getLocationData(sensorEventData)
 

@@ -15,7 +15,6 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.aware.*
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
-import digital.lamp.mindlamp.network.model.SensorEventRequest
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
@@ -115,8 +114,7 @@ class LampForegroundService : Service(),
                         applicationContext
                     )
                     9 -> {
-                        val sensorEventRequest = SensorEventRequest(System.currentTimeMillis(),sensorEventDataList)
-                        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
+                        invokeAddSensorData(AppState.session.userId,sensorEventDataList)
                     }
                 }
 
@@ -183,12 +181,12 @@ class LampForegroundService : Service(),
     }
 
 
-    private fun invokeAddSensorData(participantId: String, sensorEventRequest: SensorEventRequest) {
+    private fun invokeAddSensorData(participantId: String, sensorEventDataList: ArrayList<SensorEventData>) {
         if (NetworkUtils.isNetworkAvailable(this)) {
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    val response = homeRepository.addSensorData(participantId, sensorEventRequest)
+                    val response = homeRepository.addSensorData(participantId, sensorEventDataList)
                     when (response.code()) {
                         400 -> {
                             val logEventRequest = LogEventRequest(

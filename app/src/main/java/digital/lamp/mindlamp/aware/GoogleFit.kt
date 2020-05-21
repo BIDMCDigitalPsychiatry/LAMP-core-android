@@ -4,10 +4,7 @@ import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
-import com.google.android.gms.fitness.data.DataSet
-import com.google.android.gms.fitness.data.DataType
-import com.google.android.gms.fitness.data.HealthDataTypes
-import com.google.android.gms.fitness.data.Value
+import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.SensorEventData
@@ -43,10 +40,13 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
                 .build()
         }
 
@@ -163,6 +163,12 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                     val sensorEvenData: SensorEventData = getHydrationData(dp.getValue(field))
                     sensorEventDataList.add(sensorEvenData)
                 }
+                "com.google.nutrition" -> {
+                    val field = dp.dataType.fields[0]
+                    LampLog.e(TAG, "Nutrition : " + dp.getValue(field))
+                    val sensorEvenData: SensorEventData = getNutritionData(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
                 "com.google.blood_glucose" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Blood Glucose : " + dp.getValue(field))
@@ -170,7 +176,10 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                     sensorEventDataList.add(sensorEvenData)
                 }
                 "com.google.blood_pressure" -> {
-
+                    val field1 = dp.dataType.fields[0]
+                    val field2 = dp.dataType.fields[1]
+                    val sensorEvenData: SensorEventData = getBloodPressure(dp.getValue(field1).asFloat(),dp.getValue(field2).asFloat())
+                    sensorEventDataList.add(sensorEvenData)
                 }
                 "com.google.oxygen_saturation" -> {
                     val field = dp.dataType.fields[0]
@@ -182,6 +191,18 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Body Temperature: " + dp.getValue(field))
                     val sensorEvenData: SensorEventData = getBodyTemperature(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
+                "com.google.menstruation" -> {
+                    val field = dp.dataType.fields[0]
+                    LampLog.e(TAG, "Menstruation Data: " + dp.getValue(field))
+                    val sensorEvenData: SensorEventData = getMenstruationData(dp.getValue(field))
+                    sensorEventDataList.add(sensorEvenData)
+                }
+                "com.google.vaginal_spotting" -> {
+                    val field = dp.dataType.fields[0]
+                    LampLog.e(TAG, "Vaginal Spotting: " + dp.getValue(field))
+                    val sensorEvenData: SensorEventData = getVaginalSpottingData(dp.getValue(field))
                     sensorEventDataList.add(sensorEvenData)
                 }
             }
@@ -215,6 +236,8 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
             .read(HealthDataTypes.TYPE_BLOOD_PRESSURE)
             .read(HealthDataTypes.TYPE_OXYGEN_SATURATION)
             .read(HealthDataTypes.TYPE_BODY_TEMPERATURE)
+            .read(HealthDataTypes.TYPE_MENSTRUATION)
+            .read(HealthDataTypes.TYPE_VAGINAL_SPOTTING)
             .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
             .setLimit(1)
             .build()
@@ -238,10 +261,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
+                null, null,
                 "Kg",
                 weight.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.weight")
+        return SensorEventData(dimensionData, "lamp.weight",System.currentTimeMillis())
     }
 
     //2
@@ -262,10 +286,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
+                null,null,
                 "Cm",
                 height.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.height")
+        return SensorEventData(dimensionData, "lamp.height",System.currentTimeMillis())
     }
 
     //3
@@ -285,11 +310,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 null,
                 sleep.asInt()
             )
-        return SensorEventData(dimensionData, "lamp.sleep")
+        return SensorEventData(dimensionData, "lamp.sleep",System.currentTimeMillis())
     }
 
     //4
@@ -309,11 +334,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "kcal",
                 calories.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.calories")
+        return SensorEventData(dimensionData, "lamp.calories",System.currentTimeMillis())
     }
 
     //5
@@ -335,9 +360,9 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 steps.asInt(),
                 null,
-                null
+                null,null, null
             )
-        return SensorEventData(dimensionData, "lamp.steps")
+        return SensorEventData(dimensionData, "lamp.steps",System.currentTimeMillis())
     }
 
     //6
@@ -357,11 +382,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "meter",
                 distanceDelta.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.distance")
+        return SensorEventData(dimensionData, "lamp.distance",System.currentTimeMillis())
     }
 
     //7
@@ -383,9 +408,9 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                minute.asInt()
+                null,null,minute.asInt()
             )
-        return SensorEventData(dimensionData, "lamp.active_minute")
+        return SensorEventData(dimensionData, "lamp.active_minute",System.currentTimeMillis())
     }
 
     //8
@@ -405,11 +430,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "Kcal",
                 bmrCalorie.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.calories_bmr")
+        return SensorEventData(dimensionData, "lamp.calories_bmr",System.currentTimeMillis())
     }
 
     //9
@@ -429,11 +454,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "bpm",
                 heart_rate.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.heart_rate")
+        return SensorEventData(dimensionData, "lamp.heart_rate",System.currentTimeMillis())
     }
 
     //10
@@ -453,11 +478,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "Percentage",
                 body_fat_percentage.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.body_fat_percentage")
+        return SensorEventData(dimensionData, "lamp.body_fat_percentage",System.currentTimeMillis())
     }
 
     //11
@@ -477,11 +502,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "rpm",
                 cycling_wheel_rpm.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.cycling_wheel_rpm")
+        return SensorEventData(dimensionData, "lamp.cycling_wheel_rpm",System.currentTimeMillis())
     }
 
     //12
@@ -501,11 +526,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "count",
                 pedalingCumulative.asInt()
             )
-        return SensorEventData(dimensionData, "lamp.wheel_revolution_cumalative")
+        return SensorEventData(dimensionData, "lamp.wheel_revolution_cumalative",System.currentTimeMillis())
     }
 
     //13
@@ -525,11 +550,11 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "meters per second",
                 speed.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.speed")
+        return SensorEventData(dimensionData, "lamp.speed",System.currentTimeMillis())
     }
 
     //14
@@ -549,14 +574,38 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "liters",
                 hydration.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.hydration")
+        return SensorEventData(dimensionData, "lamp.hydration",System.currentTimeMillis())
     }
 
     //15
+    private fun getNutritionData(nutrition: Value): SensorEventData {
+        val dimensionData =
+            DimensionData(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,null,null,
+                "enum",
+                nutrition.asInt()
+            )
+        return SensorEventData(dimensionData, "lamp.nutrition",System.currentTimeMillis())
+    }
+
+    //16
     private fun getBloodGlucose(bloodGlucose: Value): SensorEventData {
         val dimensionData =
             DimensionData(
@@ -573,17 +622,38 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "mmol/L",
                 bloodGlucose.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.blood_glucose")
+        return SensorEventData(dimensionData, "lamp.blood_glucose",System.currentTimeMillis())
     }
 
-    //16
-    private fun getBloodPressure(){}
-
     //17
+    private fun getBloodPressure(bpSystolic: Float, bpDiastolic: Float): SensorEventData {
+        val dimensionData =
+            DimensionData(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,bpSystolic,bpDiastolic,
+                "mmHg",
+                null
+            )
+        return SensorEventData(dimensionData, "lamp.blood_pressure",System.currentTimeMillis())
+    }
+
+    //18
     private fun getOxygenSaturation(oxygenSaturation: Value): SensorEventData {
         val dimensionData =
             DimensionData(
@@ -600,14 +670,14 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null,null,null,
                 "percentage",
                 oxygenSaturation.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.oxygen_saturation")
+        return SensorEventData(dimensionData, "lamp.oxygen_saturation",System.currentTimeMillis())
     }
 
-    //18
+    //19
     private fun getBodyTemperature(bodyTemperature: Value): SensorEventData{
         val dimensionData =
             DimensionData(
@@ -624,10 +694,58 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                 null,
                 null,
                 null,
-                null,
+                null, null,null,
                 "celsius",
                 bodyTemperature.asFloat()
             )
-        return SensorEventData(dimensionData, "lamp.body_temperature")
+        return SensorEventData(dimensionData, "lamp.body_temperature",System.currentTimeMillis())
     }
+    //20
+    private fun getMenstruationData(mentruationData: Value): SensorEventData {
+        val dimensionData =
+            DimensionData(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null, null,null,
+                "enum",
+                mentruationData.asInt()
+            )
+        return SensorEventData(dimensionData, "lamp.type_menstruation",System.currentTimeMillis())
+    }
+    //21
+    private fun getVaginalSpottingData(vaginalSpotting: Value): SensorEventData {
+        val dimensionData =
+            DimensionData(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null, null,null,
+                "count",
+                vaginalSpotting.asInt()
+            )
+        return SensorEventData(dimensionData, "lamp.type_vaginal_spotting",System.currentTimeMillis())
+    }
+
+
 }

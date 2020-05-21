@@ -72,10 +72,13 @@ class HomeActivity : AppCompatActivity() {
             .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
             .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
             .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
             .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
             .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
 
             .build()
     }

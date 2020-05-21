@@ -49,12 +49,12 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
                         null,
                         null,
                         null,
-                        null
+                        null,null,null
                     )
                     val sensorEventData =
                         SensorEventData(
                             data,
-                            "lamp.accelerometer.motion"
+                            "lamp.accelerometer.motion",System.currentTimeMillis()
                         )
                     Aware.startMagnetometer(context)
                     awareListener.getMagneticData(sensorEventData)

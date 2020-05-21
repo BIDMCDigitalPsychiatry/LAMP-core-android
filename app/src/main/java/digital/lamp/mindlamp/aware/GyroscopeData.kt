@@ -51,12 +51,12 @@ class GyroscopeData constructor(awareListener: AwareListener, context: Context) 
                             null,
                             null,
                             null,
-                            null
+                            null,null,null
                         )
                     val sensorEventData =
                         SensorEventData(
                             dimensionData,
-                            "lamp.gyroscope"
+                            "lamp.gyroscope",System.currentTimeMillis()
                         )
                     Aware.stopGyroscope(context)
                     awareListener.getGyroscopeData(sensorEventData)

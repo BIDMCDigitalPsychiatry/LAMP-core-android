@@ -12,7 +12,7 @@ class HomeRepository {
     private var apiInterface: ApiInterface = RetrofitClient.instance
     private  var apiLogInstance: ApiInterface = RetrofitClient.logInstance
 
-    suspend fun addSensorData(participantId:String, sensorEventRequest: SensorEventRequest) = apiInterface.addSensorEvent(participantId,sensorEventRequest)
+    suspend fun addSensorData(participantId:String, sensorEventDataList: ArrayList<SensorEventData>) = apiInterface.addSensorEvent(participantId,sensorEventDataList)
 
     suspend fun addLogData(origin: String, level: String, logEventRequest: LogEventRequest) = apiLogInstance.addLogEvent(origin,level,logEventRequest)
 

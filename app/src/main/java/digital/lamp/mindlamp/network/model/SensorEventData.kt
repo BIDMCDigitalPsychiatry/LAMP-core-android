@@ -11,5 +11,6 @@ data class SensorEventData(
     @SerializedName("data")
     @Expose
     val dimensionData: DimensionData?,
-    val sensor: String
+    val sensor: String,
+    val timestamp: Long
 )

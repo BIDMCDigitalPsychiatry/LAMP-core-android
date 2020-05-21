@@ -18,6 +18,8 @@ data class DimensionData(
     val bssid: String?,
     val ssid: String?,
     val steps: Int?,
+    val bp_systolic: Float?,
+    val bp_diastolic: Float?,
     val unit: String?,
     val value: Any?
 )
