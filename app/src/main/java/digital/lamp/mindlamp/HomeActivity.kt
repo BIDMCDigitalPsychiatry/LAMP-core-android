@@ -299,7 +299,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun accessGoogleFit() {
-        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
 
     private fun retrieveCurrentToken(showDialog : Boolean) {
@@ -321,9 +321,10 @@ class HomeActivity : AppCompatActivity() {
                         Log.e(TAG,"Token Updated to server")
                 }catch (er: Exception){er.printStackTrace()}
             }
-            }else{
-                showTokenAlert(token)
             }
+//            else{
+//                showTokenAlert(token)
+//            }
         }
     }
 

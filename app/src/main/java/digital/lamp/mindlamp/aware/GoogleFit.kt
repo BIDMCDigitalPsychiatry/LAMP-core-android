@@ -239,7 +239,7 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
         calendar.time = now
         val endTime = calendar.timeInMillis
         calendar.add(Calendar.DAY_OF_WEEK, -1)
-        val startTime = calendar.timeInMillis
+        val startTime : Long = 1
 
         return DataReadRequest.Builder()
             .read(DataType.TYPE_STEP_COUNT_DELTA)
