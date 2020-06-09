@@ -10,7 +10,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
@@ -52,15 +52,14 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                             data.getAsString("ssid"),
                             null,
                             null,
-                            null
+                            null,null,null
                         )
-                        val sensorEventRequest =
-                            SensorEventRequest(
+                        val sensorEventData =
+                            SensorEventData(
                                 data,
-                                "lamp.wifi",
-                                System.currentTimeMillis()
+                                "lamp.wifi",System.currentTimeMillis()
                             )
-                        awareListener.getWifiData(sensorEventRequest)
+                        awareListener.getWifiData(sensorEventData)
                         Handler().postDelayed({
                             Aware.stopWiFi(context)
                         }, 3000)

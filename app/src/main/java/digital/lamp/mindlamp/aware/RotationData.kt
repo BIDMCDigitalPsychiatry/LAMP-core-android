@@ -50,16 +50,15 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                         null,
                         null,
                         null,
-                        null
+                        null,null,null
                     )
-                    val sensorEventRequest =
-                        SensorEventRequest(
+                    val sensorEventData =
+                        SensorEventData(
                             data,
-                            "lamp.accelerometer.motion",
-                            System.currentTimeMillis()
+                            "lamp.accelerometer.motion",System.currentTimeMillis()
                         )
                     Aware.stopRotation(context)
-                    awareListener.getRotationData(sensorEventRequest)
+                    awareListener.getRotationData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest(context.getString(R.string.log_rotation_null), UserAgent(), AppState.session.userId)
                     LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)

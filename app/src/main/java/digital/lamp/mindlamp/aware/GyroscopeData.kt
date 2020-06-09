@@ -9,7 +9,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.Utils
 
@@ -51,16 +51,15 @@ class GyroscopeData constructor(awareListener: AwareListener, context: Context) 
                             null,
                             null,
                             null,
-                            null
+                            null,null,null
                         )
-                    val sensorEventRequest =
-                        SensorEventRequest(
+                    val sensorEventData =
+                        SensorEventData(
                             dimensionData,
-                            "lamp.gyroscope",
-                            System.currentTimeMillis()
+                            "lamp.gyroscope",System.currentTimeMillis()
                         )
                     Aware.stopGyroscope(context)
-                    awareListener.getGyroscopeData(sensorEventRequest)
+                    awareListener.getGyroscopeData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest(context.getString(R.string.log_gyroscope_null), UserAgent(), AppState.session.userId)
                     LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)

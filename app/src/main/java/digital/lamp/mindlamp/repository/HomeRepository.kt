@@ -1,9 +1,6 @@
 package digital.lamp.mindlamp.repository
 
-import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.NotificationEventRequest
-import digital.lamp.mindlamp.network.model.SendTokenRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.retrofit.ApiInterface
 import digital.lamp.mindlamp.network.retrofit.RetrofitClient
 
@@ -15,7 +12,7 @@ class HomeRepository {
     private var apiInterface: ApiInterface = RetrofitClient.instance
     private  var apiLogInstance: ApiInterface = RetrofitClient.logInstance
 
-    suspend fun addSensorData(participantId:String, sensorEventRequest: SensorEventRequest) = apiInterface.addSensorEvent(participantId,sensorEventRequest)
+    suspend fun addSensorData(participantId:String, sensorEventDataList: ArrayList<SensorEventData>) = apiInterface.addSensorEvent(participantId,sensorEventDataList)
 
     suspend fun addLogData(origin: String, level: String, logEventRequest: LogEventRequest) = apiLogInstance.addLogEvent(origin,level,logEventRequest)
 

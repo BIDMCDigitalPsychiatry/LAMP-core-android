@@ -8,7 +8,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.SensorEventRequest
+import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.Utils
 import java.lang.Exception
@@ -42,15 +42,14 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                        null,
                        null,
                        null,
-                       null
+                       null,null,null
                    )
-                   val sensorEventRequest =
-                       SensorEventRequest(
+                   val sensorEventData =
+                       SensorEventData(
                            data,
-                           "lamp.screen_state",
-                           System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis()
                        )
-                   awareListener.getScreenState(sensorEventRequest)
+                   awareListener.getScreenState(sensorEventData)
                }
 
                override fun onScreenOff() {
@@ -70,13 +69,12 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                        null,
                        null,
                        null,
-                       null
+                       null,null,null
                    )
                    val sensorEventRequest =
-                       SensorEventRequest(
+                       SensorEventData(
                            data,
-                           "lamp.screen_state",
-                           System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis()
                        )
                    awareListener.getScreenState(sensorEventRequest)
                }
@@ -98,13 +96,12 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                        null,
                        null,
                        null,
-                       null
+                       null,null,null
                    )
                    val sensorEventRequest =
-                       SensorEventRequest(
+                       SensorEventData(
                            data,
-                           "lamp.screen_state",
-                           System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis()
                        )
                    awareListener.getScreenState(sensorEventRequest)
                }
@@ -126,13 +123,12 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                        null,
                        null,
                        null,
-                       null
+                       null,null, null
                    )
                    val sensorEventRequest =
-                       SensorEventRequest(
+                       SensorEventData(
                            data,
-                           "lamp.screen_state",
-                           System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis()
                        )
                    awareListener.getScreenState(sensorEventRequest)
                }

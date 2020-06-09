@@ -30,6 +30,7 @@ object LampNotificationManager {
                 message,
                 NotificationManager.IMPORTANCE_DEFAULT
             )
+            serviceChannel.setSound(null,null)
             val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(serviceChannel)
         }
@@ -37,6 +38,8 @@ object LampNotificationManager {
         return NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
             .setContentTitle("MindLamp Service")
             .setContentText(message)
+            .setSound(null)
+            .setVibrate(longArrayOf(0L))
             .setSmallIcon(R.drawable.ic_stat_noti_icon)
             .build()
     }

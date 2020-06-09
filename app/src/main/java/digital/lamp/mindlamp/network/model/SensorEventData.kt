@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
-data class SensorEventRequest(
+data class SensorEventData(
 
     @SerializedName("data")
     @Expose
