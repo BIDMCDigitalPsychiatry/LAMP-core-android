@@ -27,13 +27,13 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
             }
         }else{
             LampLog.e("Receiver Triggered ")
-            if(AppState.session.isLoggedIn) {
+//            if(AppState.session.isLoggedIn) {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
                     putExtra("set_alarm", false)
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
-            }
+//            }
         }
     }
 }

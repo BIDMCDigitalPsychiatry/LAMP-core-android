@@ -21,8 +21,8 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 7
-        versionName "1.0"
+        versionCode 8
+        versionName "1.1.0"
         buildConfigField 'boolean', 'DO_LOG', 'true'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk.abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
@@ -30,6 +30,7 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             debuggable = false
@@ -131,4 +132,8 @@ dependencies {
     //fitness and auth
     implementation "com.google.android.gms:play-services-fitness:18.0.0"
     implementation "com.google.android.gms:play-services-auth:18.0.0"
+
+    wearApp project(':wear')
+    implementation 'com.google.android.gms:play-services-wearable:17.0.0'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 }

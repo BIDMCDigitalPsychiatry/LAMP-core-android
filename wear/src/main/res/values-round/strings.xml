@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="sensor_register_error">Sensor is not supported!!</string>
+</resources>

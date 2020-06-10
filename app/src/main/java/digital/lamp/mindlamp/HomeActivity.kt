@@ -104,6 +104,7 @@ class HomeActivity : AppCompatActivity() {
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
         webView.settings.javaScriptEnabled = true
+        startLampService()
         if(AppState.session.isLoggedIn){
             webView.addJavascriptInterface(
                 WebAppInterface(

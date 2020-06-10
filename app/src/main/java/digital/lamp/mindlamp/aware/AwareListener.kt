@@ -6,6 +6,9 @@ import digital.lamp.mindlamp.network.model.SensorEventData
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 interface AwareListener {
+
+    //Callback to Watch Data
+    fun getWatchData(sensorEventData: ArrayList<SensorEventData>)
     //Callback to Acclerometer Data
     fun getAccelerometerData(sensorEventData: SensorEventData)
     //Callback to Rotation Data
