@@ -24,7 +24,6 @@ class SplashActivity : WearableActivity() {
         Handler().postDelayed({
 
             var mainIntent = Intent()
-            AppState.session.clearData()
             if (!AppState.session.isLoggedIn) {
                 /* Create an Intent that will start the WEarlogin-Activity. */
                 mainIntent = Intent(this, WearLoginActivity::class.java)
