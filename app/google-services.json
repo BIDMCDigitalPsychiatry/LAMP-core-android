@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "842311295758",
-    "firebase_url": "https://mindlamp-2c14f.firebaseio.com",
-    "project_id": "mindlamp-2c14f",
-    "storage_bucket": "mindlamp-2c14f.appspot.com"
+    "project_number": "409917633812",
+    "firebase_url": "https://mindlamp-watch.firebaseio.com",
+    "project_id": "mindlamp-watch",
+    "storage_bucket": "mindlamp-watch.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:842311295758:android:52704bedc53b183dc1ed5f",
+        "mobilesdk_app_id": "1:409917633812:android:c49fde0abf1de40f507e01",
         "android_client_info": {
-          "package_name": "digital.lamp.mindlamp"
+          "package_name": "digital.lamp.mindlamp.standalone"
         }
       },
       "oauth_client": [
         {
-          "client_id": "842311295758-qlskt4re37f4r2hpigovgeqia6o77jm5.apps.googleusercontent.com",
+          "client_id": "409917633812-pi8aldscesmckminclkmf8ab788m3eka.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAMjuL242Dbs8lTQnas0tnWzs8cplzg5UU"
+          "current_key": "AIzaSyApZbB0ItTfRyKgxNMLdA2OrTD5crqg0hM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "842311295758-qlskt4re37f4r2hpigovgeqia6o77jm5.apps.googleusercontent.com",
+              "client_id": "409917633812-pi8aldscesmckminclkmf8ab788m3eka.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

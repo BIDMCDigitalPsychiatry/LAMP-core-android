@@ -1,1 +1,2 @@
+rootProject.name='LampV2_Watch_Alone'
 include ':app'
