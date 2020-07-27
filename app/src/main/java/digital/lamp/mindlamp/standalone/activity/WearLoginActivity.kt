@@ -42,7 +42,6 @@ class WearLoginActivity : FragmentActivity() {
 
             override fun onClick(v: View?) {
 
-                AppState.session.clearData()
                 if (NetworkUtils.isNetworkAvailable(this@WearLoginActivity)) {
                     WebConstant.UN = txtusername.text.toString().trim()
                     WebConstant.PWD = txtpwd.text.toString().trim()
