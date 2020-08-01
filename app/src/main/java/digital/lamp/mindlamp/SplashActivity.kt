@@ -46,7 +46,7 @@ class SplashActivity : AppCompatActivity() {
         startNodeServer()
         Handler().postDelayed({
             /* Create an Intent that will start the Menu-Activity. */
-            if(moveToHome) {
+            if (moveToHome) {
                 val mainIntent = Intent(this, HomeActivity::class.java)
                 startActivity(mainIntent)
                 finish()
@@ -85,7 +85,10 @@ class SplashActivity : AppCompatActivity() {
             Thread(Runnable {
                 //The path where we expect the node project to be at runtime.
                 var nodeDir =
-                    getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";
+                    getApplicationContext().getFilesDir().getAbsolutePath() + "/lampBuild";
+
+               /* var nodeDir =
+                    getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";*/
 
                 Log.d("NODE", nodeDir)
                 if (wasAPKUpdated()) {
@@ -97,7 +100,8 @@ class SplashActivity : AppCompatActivity() {
 
                     Log.d("NODE", "Assets " + getApplicationContext().getAssets())
                     //Copy the node project from assets into the application's data path.
-                    copyAssetFolder(getApplicationContext().getAssets(), "nodejs-project", nodeDir);
+                    copyAssetFolder(getApplicationContext().getAssets(), "lampBuild", nodeDir);
+//                    copyAssetFolder(getApplicationContext().getAssets(), "nodejs-project", nodeDir);
 
                     saveLastUpdateTime();
                 }
@@ -112,10 +116,17 @@ class SplashActivity : AppCompatActivity() {
                                 "}); " +
                                 "versions_server.listen(3001);")
                 )*/
-                startNodeWithArguments(
+               /* startNodeWithArguments(
                     arrayOf(
                         "node",
                         nodeDir + "/main.js"
+                    )
+                );*/
+
+                startNodeWithArguments(
+                    arrayOf(
+                        "node",
+                        nodeDir + "/index.js"
                     )
                 );
             }).start();
@@ -123,8 +134,8 @@ class SplashActivity : AppCompatActivity() {
 
             ////////////////////////////////////////////
 ///for directly calling javascript from code and execute
-           //Network operations should be done in the background.
-        /* object : AsyncTask<Void?, Void?, String?>() {
+            //Network operations should be done in the background.
+            /* object : AsyncTask<Void?, Void?, String?>() {
 
              override fun onPostExecute(result: String?) {
  //                textViewVersions.setText(result)
@@ -149,6 +160,7 @@ class SplashActivity : AppCompatActivity() {
                  return nodeResponse
              }
          }.execute()*/
+        }
     }
 
     private fun deleteFolderRecursively(file: File): Boolean {
@@ -255,20 +267,20 @@ class SplashActivity : AppCompatActivity() {
 
     private fun saveLastUpdateTime(): kotlin.Unit {
         var lastUpdateTime: kotlin.Long = 1
-         try {
-             val packageInfo = applicationContext.packageManager
-                 .getPackageInfo(applicationContext.packageName, 0)
-             lastUpdateTime = packageInfo.lastUpdateTime
-         } catch (e: PackageManager.NameNotFoundException) {
-             e.printStackTrace()
-         }
-         val prefs = applicationContext.getSharedPreferences(
-             "NODEJS_MOBILE_PREFS",
-             MODE_PRIVATE
-         )
-         val editor = prefs.edit()
-         editor.putLong("NODEJS_MOBILE_APK_LastUpdateTime", lastUpdateTime)
-         editor.commit()
+        try {
+            val packageInfo = applicationContext.packageManager
+                .getPackageInfo(applicationContext.packageName, 0)
+            lastUpdateTime = packageInfo.lastUpdateTime
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+        val prefs = applicationContext.getSharedPreferences(
+            "NODEJS_MOBILE_PREFS",
+            MODE_PRIVATE
+        )
+        val editor = prefs.edit()
+        editor.putLong("NODEJS_MOBILE_APK_LastUpdateTime", lastUpdateTime)
+        editor.commit()
     }
 
 
