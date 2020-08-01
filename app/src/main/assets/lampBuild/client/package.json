@@ -1,0 +1,17 @@
+{
+  "name": "react-express-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Nicolas Burgess",
+  "scripts": {
+    "start": "node index.js",
+    "build": "cd jewels && npm run-script build"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {    
+    "express": "^4.16.3",
+    "request": "^2.88.0"
+  }
+}
