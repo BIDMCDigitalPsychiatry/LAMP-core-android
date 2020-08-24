@@ -7,6 +7,7 @@ class SessionState {
         const val PREF_KEY_TOKEN = "token"
         const val PREF_KEY_USER_ID = "user_id"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
+        const val CURRENT_VERSION = "currentversion"
     }
 
     var isLoggedIn by Pref(
@@ -19,6 +20,10 @@ class SessionState {
     )
     var userId by Pref(
         PREF_KEY_USER_ID,
+        ""
+    )
+    var currentversion by Pref(
+        CURRENT_VERSION,
         ""
     )
     var crashValue by Pref(

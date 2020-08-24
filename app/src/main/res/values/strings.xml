@@ -24,4 +24,7 @@
     <string name="channel_description">MindLamp Active Data Collection</string>
     <string name="channel_survey_description">MindLamp Notifications</string>
     <string name="copy">Copy</string>
+    <string name="permission_error">Service Permissions are required for this app</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>

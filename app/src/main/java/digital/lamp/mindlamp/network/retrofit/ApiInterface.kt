@@ -10,6 +10,9 @@ import retrofit2.http.*
  */
 interface ApiInterface {
 
+    @GET("version/get")
+    suspend fun getVersionUrl() : Response<ResponseBody>
+
     @POST("participant/{participant_id}/sensor_event")
     suspend fun addSensorEvent(@Path("participant_id") participantId:String, @Body sensorEventDataList: ArrayList<SensorEventData>) : Response<ResponseBody>
 

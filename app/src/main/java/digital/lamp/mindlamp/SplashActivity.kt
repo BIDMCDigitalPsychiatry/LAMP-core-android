@@ -1,5 +1,10 @@
 package digital.lamp.mindlamp
 
+import android.Manifest
+import android.app.Activity
+import android.app.DownloadManager
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.AssetManager
 import android.os.AsyncTask
@@ -19,6 +24,26 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 
 import android.content.pm.PackageInfo
+import android.database.Cursor
+import android.net.Uri
+import android.os.Environment
+import android.provider.Settings
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.aware.LogUtils
+import digital.lamp.mindlamp.network.model.LogEventRequest
+import digital.lamp.mindlamp.network.model.UserAgent
+import digital.lamp.mindlamp.repository.HomeRepository
+import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.LampLog
+import kotlinx.android.synthetic.main.activity_splash.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 
 /**
@@ -38,42 +63,92 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private var moveToHome: Boolean = true
+    var msg: String? = ""
+    var lastMsg = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        startNodeServer()
+
+        AppState.iv = RandomString.getStringVal(16)!!
+        AppState.encrypteddata =
+            Utils.AESEncrypt(AppState.deviceid!!, AppState.key!!, AppState.iv!!).toString()
+        invokeGetVersionUrl()
+
+//        startNodeServer()
+//        }
+
         Handler().postDelayed({
             /* Create an Intent that will start the Menu-Activity. */
             if (moveToHome) {
                 val mainIntent = Intent(this, HomeActivity::class.java)
-                startActivity(mainIntent)
-                finish()
+//                startActivity(mainIntent)
+//                finish()
             }
         }, 3000)
 
+        displayProgress(true, "Lasfdsdf")
 
-//        val bundle = intent.extras
-//        if (bundle != null) {
-//            try {
-//                if (bundle.containsKey("page")) {
-//                    val path = bundle.getString("page")
-//                    if(path != null && path.isNotEmpty()){
-//                        moveToHome = false
-//                        val mainIntent = Intent(this, CustomWebviewActivity::class.java)
-//                        mainIntent.putExtra("survey_path",path)
-//                        startActivity(mainIntent)
-//                        finish()
-//                    }
-//                    Log.e("Splash : "," : $path")
-//                }
-//            } catch (ex: JSONException) {
-//                ex.printStackTrace()
-//            }
-//        }
+
+//        val decryptedstring: String? = Utils.AESDecrypt(AESCipher1, key1, iv1)
+//        Log.d("ENCRYPT", decryptedstring)
+//        downloadImage("https://johncodeos.com/images/funnycat.png")
 
     }
+
+    /*  @SuppressWarnings
+      private fun downloadNode(context: Context, url: String) {
+
+          val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+          val directory = File(Environment.DIRECTORY_DOWNLOADS)
+
+          if (!directory.exists()) {
+              directory.mkdirs()
+          }
+
+          val downloadUri = Uri.parse(url)
+
+          val request = DownloadManager.Request(downloadUri).apply {
+              setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+                  .setAllowedOverRoaming(false)
+                  .setTitle(url.substring(url.lastIndexOf("/") + 1))
+                  .setDescription("")
+                  .setDestinationInExternalPublicDir(
+                      directory.toString(),
+                      url.substring(url.lastIndexOf("/") + 1)
+                  )
+          }
+
+          val downloadId = downloadManager.enqueue(request)
+          val query = DownloadManager.Query().setFilterById(downloadId)
+          Thread(Runnable {
+              var downloading = true
+              while (downloading) {
+                  val cursor: Cursor = downloadManager.query(query)
+                  cursor.moveToFirst()
+                  if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
+                      downloading = false
+                      var zipHelper: ZipHelper = ZipHelper()
+                      val directory = getExternalFilesDir(Context.MODE_PRIVATE.toString())
+                      zipHelper.unzip(
+                          directory?.absolutePath + "/" + "sample-large-zip-file.zip",
+                          Environment.DIRECTORY_DOWNLOADS
+                      )
+                  }
+                  val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                  *//* val msg = statusMessage(url, directory, status)
+                 if (msg != lastMsg) {
+                     this@SplashActivity.runOnUiThread {
+                         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                     }
+                     lastMsg = msg ?: ""
+                 }*//*
+                cursor.close()
+            }
+        }).start()
+    }*/
 
     private fun startNodeServer() {
 
@@ -87,8 +162,8 @@ class SplashActivity : AppCompatActivity() {
                 var nodeDir =
                     getApplicationContext().getFilesDir().getAbsolutePath() + "/lampBuild";
 
-               /* var nodeDir =
-                    getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";*/
+                /* var nodeDir =
+                     getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";*/
 
                 Log.d("NODE", nodeDir)
                 if (wasAPKUpdated()) {
@@ -116,12 +191,12 @@ class SplashActivity : AppCompatActivity() {
                                 "}); " +
                                 "versions_server.listen(3001);")
                 )*/
-               /* startNodeWithArguments(
-                    arrayOf(
-                        "node",
-                        nodeDir + "/main.js"
-                    )
-                );*/
+                /* startNodeWithArguments(
+                     arrayOf(
+                         "node",
+                         nodeDir + "/main.js"
+                     )
+                 );*/
 
                 startNodeWithArguments(
                     arrayOf(
@@ -290,4 +365,261 @@ class SplashActivity : AppCompatActivity() {
      */
     external fun startNodeWithArguments(arguments: Array<String?>?): Int?
 
+    fun loadHomeScreenDelayed() {
+
+        Handler().postDelayed({
+            /* Create an Intent that will start the Menu-Activity. */
+            if (moveToHome) {
+                val mainIntent = Intent(this, HomeActivity::class.java)
+                startActivity(mainIntent)
+                finish()
+            }
+        }, 25000)
+
+    }
+
+    fun displayProgress(state: Boolean, txt: String) {
+
+        var statusprogress = progressbar;
+        var txtpg = pgtext
+
+        if (null != statusprogress) {
+            if (state) {
+                statusprogress.visibility = View.VISIBLE;
+                txtpg?.visibility = View.VISIBLE;
+                txtpg?.text = txt;
+            } else {
+                statusprogress.visibility = View.GONE;
+                txtpg?.visibility = View.GONE;
+            }
+
+
+        }
+
+
+    }
+
+    fun invokeGetVersionUrl() {
+        val homeRepository = HomeRepository()
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                var response = homeRepository.getVersionUrl()
+                LampLog.e("RESPONSE", " : $response")
+
+                when (response.code()) {
+                    400 -> {
+                        val logEventRequest = LogEventRequest(
+                            "Network error - 400 Bad Request",
+                            UserAgent(),
+                            AppState.session.userId
+                        )
+                        LogUtils.invokeLogData(
+                            Utils.getApplicationName(this@SplashActivity),
+                            "error",
+                            logEventRequest
+                        )
+                    }
+                    401 -> {
+                        val logEventRequest = LogEventRequest(
+                            "Network error - 401 Unauthorized",
+                            UserAgent(),
+                            AppState.session.userId
+                        )
+                        LogUtils.invokeLogData(
+                            Utils.getApplicationName(this@SplashActivity),
+                            "error",
+                            logEventRequest
+                        )
+                    }
+                    403 -> {
+                        val logEventRequest = LogEventRequest(
+                            "Network error - 403 Forbidden",
+                            UserAgent(),
+                            AppState.session.userId
+                        )
+                        LogUtils.invokeLogData(
+                            Utils.getApplicationName(this@SplashActivity),
+                            "error",
+                            logEventRequest
+                        )
+                    }
+                    404 -> {
+                        val logEventRequest = LogEventRequest(
+                            "Network error - 404 Not Found",
+                            UserAgent(),
+                            AppState.session.userId
+                        )
+                        LogUtils.invokeLogData(
+                            Utils.getApplicationName(this@SplashActivity),
+                            "error",
+                            logEventRequest
+                        )
+                    }
+                    500 -> {
+                        val logEventRequest = LogEventRequest(
+                            "Network error - 500 Internal Server Error",
+                            UserAgent(),
+                            AppState.session.userId
+                        )
+                        LogUtils.invokeLogData(
+                            Utils.getApplicationName(this@SplashActivity),
+                            "error",
+                            logEventRequest
+                        )
+                    }
+
+                }
+
+
+                var strresponse = response.body()!!.string()
+                //creating json object
+                val jsoncontact: JSONObject = JSONObject(strresponse)
+                val url: String = jsoncontact.getString("url")
+                val latestversion: String = jsoncontact.getString("version")
+                val currentversion: String = AppState.session.currentversion
+                LampLog.e("RESPONSE", " : $url")
+                LampLog.e("VERSION", "latest version : $latestversion")
+                LampLog.e("VERSION", "current version : $currentversion")
+
+                if (latestversion.equals(currentversion)) {
+                    loadHomeScreenDelayed()
+
+                } else {
+
+                    if (PermissionCheck.checkAndRequestReadWritePermission(this@SplashActivity)) {
+                        downloadNodeFromServer("https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-large-zip-file.zip")
+                    }
+
+                }
+
+
+            } catch (er: Exception) {
+                er.printStackTrace()
+            }
+        }
+    }
+
+    private fun downloadNodeFromServer(url: String) {
+        /* val directory = cacheDir
+
+         if (!directory.exists()) {
+             directory.mkdirs()
+         }*/
+
+        val downloadManager = this.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+        val downloadUri = Uri.parse(url)
+//        val uri = Uri.parse(File(directory.toString() + url.substring(url.lastIndexOf("/") + 1)))
+
+        val request = DownloadManager.Request(downloadUri).apply {
+            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+                .setAllowedOverRoaming(false)
+                .setTitle(url.substring(url.lastIndexOf("/") + 1))
+                .setDescription("")
+                .setDestinationInExternalFilesDir(
+                    this@SplashActivity,
+                    Context.MODE_PRIVATE.toString(),
+                    url.substring(url.lastIndexOf("/") + 1)
+                )
+        }
+
+        val downloadId = downloadManager.enqueue(request)
+        val query = DownloadManager.Query().setFilterById(downloadId)
+        Thread(Runnable {
+            var downloading = true
+            while (downloading) {
+                val cursor: Cursor = downloadManager.query(query)
+                cursor.moveToFirst()
+                if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
+                    downloading = false
+
+                    var zipHelper: ZipHelper = ZipHelper()
+
+                    val directory = getExternalFilesDir(Context.MODE_PRIVATE.toString())
+                    val toPath = getApplicationContext().getFilesDir().getAbsolutePath() + "/lampBuild"
+                    if(zipHelper.unzip(directory?.absolutePath + "/" + url.substring(url.lastIndexOf("/") + 1),toPath)!!){
+                        startNodeServer()
+                    }
+                    Log.d("ENCRYPT", AppState.encrypteddata)
+                }
+                val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                msg = statusMessage(url, status)
+                if (msg != lastMsg) {
+                    this.runOnUiThread {
+                        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                    }
+                    lastMsg = msg ?: ""
+                }
+                cursor.close()
+            }
+        }).start()
+    }
+
+    private fun statusMessage(url: String, status: Int): String? {
+        var msg = ""
+        msg = when (status) {
+            DownloadManager.STATUS_FAILED -> "Download has been failed, please try again"
+            DownloadManager.STATUS_PAUSED -> "Paused"
+            DownloadManager.STATUS_PENDING -> "Pending"
+            DownloadManager.STATUS_RUNNING -> "Downloading..."
+            DownloadManager.STATUS_SUCCESSFUL -> "Image downloaded successfully"
+
+            else -> "There's nothing to download"
+        }
+        return msg
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS -> {
+                val perms = HashMap<String, Int>()
+                // Initialize the map with both permissions
+                perms[Manifest.permission.READ_EXTERNAL_STORAGE] = PackageManager.PERMISSION_GRANTED
+                perms[Manifest.permission.WRITE_EXTERNAL_STORAGE] =
+                    PackageManager.PERMISSION_GRANTED
+                if (grantResults.isNotEmpty()) {
+                    for (i in permissions.indices)
+                        perms[permissions[i]] = grantResults[i]
+                    // Check for both permissions
+                    if (perms[Manifest.permission.READ_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED
+                        && perms[Manifest.permission.WRITE_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED
+                    ) {
+
+                        downloadNodeFromServer("https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-large-zip-file.zip")
+
+
+                        //else any one or both the permissions are not granted
+                    } else {
+                        //Now further we check if used denied permanently or not
+                        // case 4 User has denied permission but not permanently
+                        showDialogOK(getString(R.string.permission_error),
+                            DialogInterface.OnClickListener { _, which ->
+                                when (which) {
+                                    DialogInterface.BUTTON_POSITIVE -> PermissionCheck.checkAndRequestPermissions(
+                                        this
+                                    )
+                                    DialogInterface.BUTTON_NEGATIVE ->
+                                        // proceed with logic by disabling the related features or quit the app.
+                                        finish()
+                                }
+                            })
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showDialogOK(message: String, okListener: DialogInterface.OnClickListener) {
+        AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton(getString(R.string.ok), okListener)
+            .setNegativeButton(getString(R.string.cancel), okListener)
+            .create()
+            .show()
+    }
 }

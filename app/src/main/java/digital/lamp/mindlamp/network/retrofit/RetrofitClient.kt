@@ -13,14 +13,14 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
-object RetrofitClient {
+object RetrofitClient{
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(1, TimeUnit.MINUTES)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(15, TimeUnit. SECONDS)
         .addInterceptor(loggingInterceptor())
-        .addInterceptor(authorizationInterceptor())
+        .addInterceptor(authorizationInterceptor2())
         .build()
 
     private fun loggingInterceptor(): HttpLoggingInterceptor {
@@ -48,6 +48,22 @@ object RetrofitClient {
         }
     }
 
+    private fun authorizationInterceptor2(): Interceptor {
+        return Interceptor { chain ->
+            val requestOriginal = chain.request()
+
+            val request = requestOriginal.newBuilder()
+                .addHeader("Authorization", "Basic ${AppState.encrypteddata.trim()}")
+                .addHeader("device_id", AppState.deviceid!!)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("iv", AppState.iv!!)
+                .build()
+
+
+
+            chain.proceed(request)
+        }
+    }
     val instance: ApiInterface by lazy {
         val retrofit = Retrofit.Builder()
             .baseUrl(BuildConfig.HOST)
