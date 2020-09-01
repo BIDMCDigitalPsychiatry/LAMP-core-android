@@ -16,11 +16,12 @@ android {
     }
 
     defaultConfig {
-        applicationId "digital.lamp.mindlamp.standalone"
+        applicationId "digital.lamp.mindlamp"
         minSdkVersion 25
         targetSdkVersion 29
-        versionCode 1
+        versionCode 150
         versionName "1.0.0"
+
     }
     buildTypes {
         release {
@@ -87,7 +88,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.android.support:wearable:2.7.0'
-    implementation 'com.google.android.gms:play-services-wearable:17.0.0'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
@@ -107,10 +107,15 @@ dependencies {
     compileOnly 'com.google.android.wearable:wearable:2.7.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
+    //sensor module
+    implementation project(':sensormodule')
+
     //Coroutines
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
+    implementation "android.arch.lifecycle:extensions:1.1.0"
+
 
     apply plugin: "com.google.gms.google-services"
 

@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="digital.lamp.mindlamp.standalone">
+    package="digital.lamp.mindlamp">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <uses-feature
         android:name="android.hardware.type.watch"
         android:required="true" />
 
     <application
-        android:name="digital.lamp.mindlamp.standalone.app.App"
+        android:name="digital.lamp.mindlamp.app.App"
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_app"
         android:label="@string/app_name"
+
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
         <uses-library
@@ -55,6 +53,8 @@
         </activity>
         <activity
             android:name=".activity.MainWearActivity"
+            android:theme="@style/Theme.AppCompat.Light"
+            android:launchMode="singleTop"
             android:label="@string/title_activity_main_wear"></activity>
 
         <service
@@ -62,6 +62,18 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <service android:name=".service.WearListenerService">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+
+                <data
+                    android:host="*"
+                    android:pathPrefix="/getSensorVals"
+                    android:scheme="wear" />
+                <!--<action android:name="com.google.android.gms.wearable.BIND_LISTENER" />-->
             </intent-filter>
         </service>
 
