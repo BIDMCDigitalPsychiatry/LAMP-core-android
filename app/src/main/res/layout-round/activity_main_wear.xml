@@ -10,22 +10,12 @@
     tools:context=".activity.MainWearActivity"
     tools:deviceIds="wear">
 
-    <TextView
-        android:id="@+id/txtsignedin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/signedin"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toTopOf="@id/image"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
     <ImageView
         android:id="@+id/image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_app"
+        android:paddingBottom="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -55,5 +45,18 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="parent" />
+
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="@dimen/dp_15"
+        android:layout_marginRight="@dimen/dp_15"
+        android:text="@string/logout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/image" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

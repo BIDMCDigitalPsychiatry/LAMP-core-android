@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -42,6 +43,9 @@ import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.PermissionCheck
 import digital.lamp.mindlamp.utils.Utils
 import kotlinx.android.synthetic.main.activity_login_wear.*
+import kotlinx.android.synthetic.main.activity_login_wear.pgtext
+import kotlinx.android.synthetic.main.activity_login_wear.progressbar
+import kotlinx.android.synthetic.main.activity_main_wear.*
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.*
 import java.util.concurrent.CopyOnWriteArrayList
@@ -89,6 +93,8 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             .addOnConnectionFailedListener(this)
             .build()
 
+
+        initializecontrols()
         val messageFilter = IntentFilter(Intent.ACTION_SEND)
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter)
 
@@ -115,6 +121,18 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             }
         }
 
+    }
+
+    fun initializecontrols() {
+        btnLogout.setOnClickListener {
+
+            //logout
+            AppState.session.clearData()
+            val intent = Intent(this@MainWearActivity, WearLoginActivity::class.java)
+            startActivity(intent)
+            finish()
+
+        }
     }
 
     fun initialize() {
@@ -315,11 +333,11 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             // Get new Instance ID token
             val token = it.result?.token
             Log.e("FCM", "FCM Token : $token")
-            val tokenData = TokenData("login", token.toString(), "Android.Watch", UserAgent())
+            val tokenData = TokenData("login", token.toString(), "Google wearOS", UserAgent())
             val sendTokenRequest =
                 SendTokenRequest(
                     tokenData,
-                    "lamp.android.watch.analytics",
+                    "lamp.analytics",
                     System.currentTimeMillis()
                 )
 

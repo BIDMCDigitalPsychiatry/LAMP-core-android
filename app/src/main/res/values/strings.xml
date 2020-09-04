@@ -16,7 +16,7 @@
     <string name="un_hint">Username</string>
     <string name="pwd_hint">Password</string>
     <string name="loading">Loading....</string>
-    <string name="signedin">Signed In</string>
+    <string name="logout">Logout</string>
 
 
     <string name="log_accelerometer_null">Aware error NULL : Accelerometer data does not exist.</string>

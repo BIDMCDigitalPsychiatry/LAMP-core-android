@@ -8,6 +8,19 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
+    <permission
+        android:name="com.aware.READ_CONTEXT_DATA"
+        android:description="@string/read_permission"
+        android:icon="@drawable/ic_launcher_settings"
+        android:label="Read AWARE&apos;s Context data"
+        android:protectionLevel="signature" />
+    <permission
+        android:name="com.aware.WRITE_CONTEXT_DATA"
+        android:description="@string/write_permission"
+        android:icon="@drawable/ic_launcher_settings"
+        android:label="Write to AWARE&apos;s Context data"
+        android:protectionLevel="signature" />
+
     <uses-feature
         android:name="android.hardware.type.watch"
         android:required="true" />
@@ -53,8 +66,6 @@
         </activity>
         <activity
             android:name=".activity.MainWearActivity"
-            android:theme="@style/Theme.AppCompat.Light"
-            android:launchMode="singleTop"
             android:label="@string/title_activity_main_wear"></activity>
 
         <service
