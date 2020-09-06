@@ -20,6 +20,9 @@ import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
 import digital.lamp.mindlamp.web.pojo.response.UserExistResponse
 import kotlinx.android.synthetic.main.activity_login_wear.*
+import kotlinx.android.synthetic.main.activity_login_wear.pgtext
+import kotlinx.android.synthetic.main.activity_login_wear.progressbar
+import kotlinx.android.synthetic.main.activity_main_wear.*
 
 
 /**
@@ -45,6 +48,13 @@ class WearLoginActivity : FragmentActivity() {
         if (BuildConfig.DEBUG) {
             txtusername.setText("U3998365801")
             txtpwd.setText("12345")
+
+        }
+
+        imgicon.setOnClickListener {
+            imgicon.visibility = View.GONE
+            txturl.visibility = View.VISIBLE
+            txturl.setText(AppState.session.urlvalue)
 
         }
 
@@ -91,6 +101,11 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
+
+                            //if user has edited or is viewing it then save it
+                            if (txturl.visibility == View.VISIBLE)
+                                AppState.session.urlvalue = txturl.text.toString().trim()
+
                             AppState.session.username = txtusername.text.toString().trim()
                             AppState.session.userId =
                                 Utils.toBase64(

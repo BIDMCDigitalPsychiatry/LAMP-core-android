@@ -1,74 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollview"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/black"
-    android:padding="@dimen/box_inset_layout_padding"
-    android:keepScreenOn="true"
-    tools:context=".activity.WearLoginActivity"
-    tools:deviceIds="wear">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/txtusername"
-        android:layout_width="150dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="32dp"
-        android:gravity="center"
-        android:hint="@string/un_hint"
-        android:inputType="textCapWords"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:keepScreenOn="true"
+        android:padding="@dimen/box_inset_layout_padding"
+        tools:context=".activity.WearLoginActivity"
+        tools:deviceIds="wear">
 
-    <EditText
-        android:id="@+id/txtpwd"
-        android:layout_width="150dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="3dp"
-        android:gravity="center"
-        android:inputType="textPassword"
-        android:hint="@string/pwd_hint"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtusername" />
+        <EditText
+            android:id="@+id/txtusername"
+            android:layout_width="150dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:hint="@string/un_hint"
+            android:inputType="textCapWords"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <ProgressBar
-        android:id="@+id/progressbar"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginBottom="100dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <EditText
+            android:id="@+id/txtpwd"
+            android:layout_width="150dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="3dp"
+            android:gravity="center"
+            android:hint="@string/pwd_hint"
+            android:inputType="textPassword"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/txtusername" />
 
-    <TextView
-        android:id="@+id/pgtext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/darker_gray"
-        android:textSize="@dimen/dp_15"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="parent" />
+        <ImageView
+            android:id="@+id/imgicon"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_marginBottom="@dimen/dp_15"
+            android:background="@drawable/info"
+            android:clickable="true"
+            app:layout_constraintBottom_toBottomOf="@id/txtpwd"
+            app:layout_constraintLeft_toRightOf="@id/txtpwd"
+            app:layout_constraintRight_toRightOf="parent" />
 
-    <Button
-        android:id="@+id/btndone"
-        android:layout_width="150dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginLeft="@dimen/dp_15"
-        android:layout_marginRight="@dimen/dp_15"
-        android:text="@string/txt_done"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtpwd" />
+        <EditText
+            android:id="@+id/txturl"
+            android:layout_width="150dp"
+            android:layout_height="45dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:hint="@string/url_hint"
+            android:visibility="gone"
+            android:lines="1"
+            android:scrollHorizontally="true"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/txtpwd" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="100dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/pgtext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="@dimen/dp_15"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
+
+        <Button
+            android:id="@+id/btndone"
+            android:layout_width="150dp"
+            android:layout_height="45dp"
+            android:layout_marginLeft="@dimen/dp_15"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="@dimen/dp_15"
+            android:text="@string/txt_done"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/txturl" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -15,6 +15,7 @@
 
     <string name="un_hint">Username</string>
     <string name="pwd_hint">Password</string>
+    <string name="url_hint">Url</string>
     <string name="loading">Loading....</string>
     <string name="logout">Logout</string>
 
