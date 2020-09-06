@@ -42,38 +42,7 @@ class RetrofitConnector private constructor() {
                 .addInterceptor(logging)
                 .build()
             return Retrofit.Builder()
-                .baseUrl(BuildConfig.HOST)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(httpClient)
-                .build()
-        }
-
-    /**
-     * method to call connector with header
-     *
-     * @return
-     */
-    val retrofitWithHeader: Retrofit
-        get() {
-            val logging = HttpLoggingInterceptor()
-            logging.level = HttpLoggingInterceptor.Level.BODY
-            val httpClient = OkHttpClient.Builder()
-                .connectTimeout(WebConstant.SOCKET_TIME_OUT, TimeUnit.SECONDS)
-                .readTimeout(WebConstant.SOCKET_TIME_OUT, TimeUnit.SECONDS)
-                .addNetworkInterceptor { chain ->
-                    val request = chain.request().newBuilder()
-                        /*.addHeader(
-                            WebConstant.SESSION_TOKEN,
-                            WebConstant.BEARER *//*+ PrefernceManager.getInstance().getUserDetails()
-                                .getSessionToken()*//*
-                        )*/
-                        .build()
-                    chain.proceed(request)
-                }
-                .addInterceptor(logging)
-                .build()
-            return Retrofit.Builder()
-                .baseUrl(BuildConfig.HOST)
+                .baseUrl(AppState.session.urlvalue)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(httpClient)
                 .build()

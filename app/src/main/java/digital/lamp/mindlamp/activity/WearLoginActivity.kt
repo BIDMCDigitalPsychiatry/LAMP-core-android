@@ -64,6 +64,11 @@ class WearLoginActivity : FragmentActivity() {
 
                 Utils.displayProgress(progressbar, pgtext, true, "")
                 if (NetworkUtils.isNetworkAvailable(this@WearLoginActivity)) {
+
+                    //if user has edited or is viewing it then save it
+                    if (txturl.visibility == View.VISIBLE)
+                        AppState.session.urlvalue = txturl.text.toString().trim()
+
                     WebConstant.USERID =
                         Utils.toBase64(
                             txtusername.text.toString().trim() + ":" + txtpwd.text.toString().trim()
@@ -101,10 +106,6 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
-
-                            //if user has edited or is viewing it then save it
-                            if (txturl.visibility == View.VISIBLE)
-                                AppState.session.urlvalue = txturl.text.toString().trim()
 
                             AppState.session.username = txtusername.text.toString().trim()
                             AppState.session.userId =

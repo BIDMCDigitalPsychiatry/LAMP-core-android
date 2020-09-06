@@ -26,24 +26,6 @@ object LampNotificationManager {
             null
         ).build()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            /* // Create an intent for the reply action
-             val actionPendingIntent = Intent(this, ActionActivity::class.java).let { actionIntent ->
-                 PendingIntent.getActivity(this, 0, actionIntent,
-                     PendingIntent.FLAG_UPDATE_CURRENT)
-             }*/
-            val serviceChannel = NotificationChannel(
-                NOTIFICATION_CHANNEL,
-                message,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            serviceChannel.setSound(null, null)
-            val manager =
-                context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(serviceChannel)
-        }
-
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
             .setContentTitle(title)
             .setContentText(message)

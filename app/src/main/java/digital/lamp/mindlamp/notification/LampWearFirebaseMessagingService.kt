@@ -24,13 +24,12 @@ class LampWearFirebaseMessagingService : FirebaseMessagingService() {
         Log.e("Received Token", "Received token: ${remoteMessage.data.toString()}")
 
         val title = remoteMessage.data.get("title")
-        val body = remoteMessage.data.get("body")
         val actionval = remoteMessage.data.get("action")
         val contentval = remoteMessage.data.get("content")
 
 
         //silent notification. get sensor vals
-        if (title!!.isEmpty() && actionval!!.isEmpty() && body!!.isEmpty()) {
+        if (title!!.isEmpty() && actionval!!.isEmpty() && contentval!!.isEmpty()) {
             val intentNotification = Intent()
             intentNotification.action = "com.from.notification"
             sendBroadcast(intentNotification)
