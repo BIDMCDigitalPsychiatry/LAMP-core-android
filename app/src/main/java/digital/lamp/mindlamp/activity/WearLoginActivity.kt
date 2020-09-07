@@ -45,12 +45,6 @@ class WearLoginActivity : FragmentActivity() {
 //        dataViewModel = ViewModelProviders.of(this@WearLoginActivity).get(DataViewModel::class.java)
         dataViewModel = ViewModelProvider(this@WearLoginActivity).get(DataViewModel::class.java)
 
-        if (BuildConfig.DEBUG) {
-            txtusername.setText("U3998365801")
-            txtpwd.setText("12345")
-
-        }
-
         imgicon.setOnClickListener {
             imgicon.visibility = View.GONE
             txturl.visibility = View.VISIBLE
