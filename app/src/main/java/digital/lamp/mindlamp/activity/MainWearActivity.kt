@@ -420,7 +420,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             arrsensorvals = arrayOfNulls(14)
 
-//            bringtofrontIfNeeded()
+            bringtofrontIfNeeded()
 
             Log.v("myTag", "Main activity received message: $arraySensors")
 
