@@ -1,12 +1,10 @@
 package digital.lamp.mindlamp.notification
 
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import digital.lamp.mindlamp.activity.MainWearActivity
-import digital.lamp.mindlamp.activity.SplashActivity
-import digital.lamp.mindlamp.app.App
 
 
 /**
@@ -25,20 +23,28 @@ class LampWearFirebaseMessagingService : FirebaseMessagingService() {
 
         val title = remoteMessage.data.get("title")
         val actionval = remoteMessage.data.get("action")
-        val contentval = remoteMessage.data.get("content")
+        val content = remoteMessage.data.get("content")
 
 
         //silent notification. get sensor vals
-        if (title!!.isEmpty() && actionval!!.isEmpty() && contentval!!.isEmpty()) {
+        if (content.isNullOrEmpty()) {
+
             val intentNotification = Intent()
             intentNotification.action = "com.from.notification"
-            sendBroadcast(intentNotification)
+            intentNotification.putExtra("title", title)
+            intentNotification.putExtra("action", actionval)
+            intentNotification.putExtra("content", content)
+            applicationContext.sendBroadcast(intentNotification)
+
+
         } else {
+
             LampNotificationManager.displayNotification(
                 this,
-                contentval.toString(),
+                content.toString(),
                 title.toString()
             )
+
         }
     }
 

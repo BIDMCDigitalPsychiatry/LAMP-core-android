@@ -3,6 +3,7 @@ package digital.lamp.mindlamp.viewmodels.repositories
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import digital.lamp.mindlamp.model.LogEventRequest
+import digital.lamp.mindlamp.model.NotificatonRequest
 import digital.lamp.mindlamp.model.SendTokenRequest
 import digital.lamp.mindlamp.web.WebServiceManager
 import digital.lamp.mindlamp.web.WebServiceResponseData
@@ -34,6 +35,16 @@ class WebServiceRepository {
     ) {
         WebServiceManager.instance?.addSensorData(
             participantId, lstSensorEventData,
+            webServiceResponseDataLiveData
+        )
+    }
+
+    fun callNotificationdataWS(
+        participantId: String, notificatonRequest: NotificatonRequest,
+        webServiceResponseDataLiveData: LiveData<WebServiceResponseData>
+    ) {
+        WebServiceManager.instance?.addNotificationData(
+            participantId, notificatonRequest,
             webServiceResponseDataLiveData
         )
     }

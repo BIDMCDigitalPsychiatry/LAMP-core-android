@@ -3,10 +3,8 @@ package digital.lamp.mindlamp.web
 import android.util.Log
 import androidx.lifecycle.LiveData
 import digital.lamp.mindlamp.model.LogEventRequest
+import digital.lamp.mindlamp.model.NotificatonRequest
 import digital.lamp.mindlamp.model.SendTokenRequest
-import digital.lamp.mindlamp.web.RetrofitConnector
-import digital.lamp.mindlamp.web.WebServiceResponseData
-import digital.lamp.mindlamp.web.RestApi
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 
 class WebServiceManager {
@@ -27,6 +25,32 @@ class WebServiceManager {
             service?.addSensorEvent(participantId, lstSensoerdata)!!.enqueue(
                 WebServiceCallback(
                     WebConstant.ADDSENSOREVENT_REQ_CODE,
+                    webserviceResponseLiveData
+                )
+            )
+        } catch (ignored: java.lang.Exception) {
+
+            Log.d("exception", ignored.message)
+        }
+    }
+
+    /**
+     * methods to add device token
+     * @param participantId Id
+     * @param notificatonRequest
+     * @param webserviceResponseLiveData
+     * @return
+     */
+    fun addNotificationData(
+        participantId: String, notificatonRequest: NotificatonRequest,
+        webserviceResponseLiveData: LiveData<WebServiceResponseData>
+    ) {
+        val service: RestApi? = RetrofitConnector.instance?.retrofit?.create(RestApi::class.java)
+        try {
+
+            service?.addNotification(participantId, notificatonRequest)!!.enqueue(
+                WebServiceCallback(
+                    WebConstant.ADDNOTIFICATION_REQ_CODE,
                     webserviceResponseLiveData
                 )
             )

@@ -15,7 +15,9 @@ class SensorBroadcastReceiver : BroadcastReceiver() {
 
         val messageIntent = Intent()
         messageIntent.action = Intent.ACTION_SEND
-        messageIntent.putExtra("isfrompush", true)
+        messageIntent.putExtra("title", intent.getStringExtra("title"))
+        messageIntent.putExtra("action", intent.getStringExtra("action"))
+        messageIntent.putExtra("content", intent.getStringExtra("content"))
         LocalBroadcastManager.getInstance(context).sendBroadcast(messageIntent)
 
     }

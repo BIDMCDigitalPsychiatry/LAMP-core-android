@@ -24,6 +24,7 @@ class WebConstant {
         const val ADDDEVICETOKEN_REQ_CODE = 1004
         const val ISUSEREXISTS_REQ_CODE = 1005
         const val LOGEVENT_REQ_CODE = 1006
+        const val ADDNOTIFICATION_REQ_CODE = 1007
 
     }
 }

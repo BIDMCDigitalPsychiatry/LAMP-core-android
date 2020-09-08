@@ -29,11 +29,8 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.aware.*
 import digital.lamp.mindlamp.broadcastreceiver.SensorBroadcastReceiver
-import digital.lamp.mindlamp.model.CustomMap
-import digital.lamp.mindlamp.model.SendTokenRequest
-import digital.lamp.mindlamp.model.TokenData
-import digital.lamp.mindlamp.model.UserAgent
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.model.*
 import digital.lamp.mindlamp.viewmodels.DataViewModel
 import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
@@ -420,23 +417,63 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             arrsensorvals = arrayOfNulls(14)
 
+            var bundle:Bundle ?= intent.extras
+            var title:String ?= bundle?.getString("title")
+            var actionval = bundle?.getString("action")
+            var content = bundle?.getString("content")
+
             bringtofrontIfNeeded()
+
+            postResponse(content!!, actionval!!)
 
             Log.v("myTag", "Main activity received message: $arraySensors")
 
-            var isfrompush = intent.getBooleanExtra("isfrompush", false)
+
             // Display message in UI
             for (item in arraySensors) {
 
                 fillvalues(item)
             }
 
-            sendValues(isfrompush)
+            sendValues()
 
 
         }
 
-        fun sendValues(isfrompush: Boolean) {
+        fun postResponse(content: String, action: String) {
+
+
+
+            if (NetworkUtils.isNetworkAvailable(this@MainWearActivity)) {
+
+                val notdata = NotificationData(action, content)
+
+                var request: NotificatonRequest = NotificatonRequest(notdata,
+                    System.currentTimeMillis(),
+                    "lamp.analytics")
+
+                dataViewModel?.addNotificationEvent(AppState.session.username, request)
+
+/*
+                Log.d("myTag", "post response to server")
+                dataViewModel!!.addNotificationEvent(
+                    AppState.session.username,
+                    lst
+                )*/
+
+                sensorEventDataList.clear()
+            } else {
+
+                Toast.makeText(
+                    this@MainWearActivity,
+                    getString(R.string.internet_error),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+        }
+
+        fun sendValues() {
 
             Handler().postDelayed({
 

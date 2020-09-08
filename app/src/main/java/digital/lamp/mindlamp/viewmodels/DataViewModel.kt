@@ -2,6 +2,7 @@ package digital.lamp.mindlamp.viewmodels
 
 import android.app.Application
 import digital.lamp.mindlamp.model.LogEventRequest
+import digital.lamp.mindlamp.model.NotificatonRequest
 import digital.lamp.mindlamp.model.SendTokenRequest
 import digital.lamp.mindlamp.viewmodels.repositories.WebServiceRepository
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
@@ -13,6 +14,12 @@ class DataViewModel(application: Application) : BaseViewModel(application) {
     fun addSensoreEvent(participantId: String, lstSensorEventData: ArrayList<SensorEventData>) {
         webServiceRepository.callUpdateSensordataWS(
             participantId, lstSensorEventData,
+            getWebServiceResponseLiveData()
+        )
+    }
+    fun addNotificationEvent(participantId: String, notificatonRequest: NotificatonRequest) {
+        webServiceRepository.callNotificationdataWS(
+            participantId, notificatonRequest,
             getWebServiceResponseLiveData()
         )
     }

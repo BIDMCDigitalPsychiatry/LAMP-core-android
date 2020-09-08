@@ -1,6 +1,7 @@
 package digital.lamp.mindlamp.web
 
 import digital.lamp.mindlamp.model.LogEventRequest
+import digital.lamp.mindlamp.model.NotificatonRequest
 import digital.lamp.mindlamp.model.SendTokenRequest
 import digital.lamp.mindlamp.web.pojo.response.AddDeviceTokenResponse
 import digital.lamp.mindlamp.web.pojo.response.SensorEventResponse
@@ -22,8 +23,11 @@ interface RestApi {
     fun sendDeviceToken(@Path("participant_id") participantId:String, @Body sendTokenRequest: SendTokenRequest) : Call<AddDeviceTokenResponse>
 
     @POST(WebConstant.ADD_SENSOR_DATA)
+    fun addNotification(@Path("participant_id") participantId:String, @Body notificationRequest: NotificatonRequest): Call<AddDeviceTokenResponse?>?
+
+    @POST(WebConstant.ADD_SENSOR_DATA)
     fun addSensorEvent(@Path("participant_id") participantId:String, @Body sensorEventDataList: ArrayList<SensorEventData>): Call<SensorEventResponse?>?
 
-    @GET(WebConstant.PARTICIPANT_ID)
+        @GET(WebConstant.PARTICIPANT_ID)
     fun isUserExists(@Path("participant_id") participantId:String): Call<UserExistResponse?>?
 }
