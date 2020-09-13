@@ -61,11 +61,14 @@
         <activity
             android:name=".activity.WearLoginActivity"
             android:label="@string/title_activity_main_wear">
-            <!--<intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+        </activity>
+        <activity
+            android:name=".activity.PreLoginActivity"
+            android:label="@string/title_activity_main_wear">
+        </activity>
+        <activity
+            android:name=".activity.SeverUrlActivity"
+            android:label="@string/title_activity_main_wear">
         </activity>
         <activity
             android:name=".activity.MainWearActivity"

@@ -2,5 +2,6 @@
     <string name="app_name">mindLAMP</string>
     <string name="sensor_register_error">Sensor is not supported!!</string>
     <string name="txt_done">Done!</string>
+    <string name="speech_prompt">Please speak URL</string>
 
 </resources>

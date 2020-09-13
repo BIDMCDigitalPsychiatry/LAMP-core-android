@@ -105,7 +105,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             if (NetworkUtils.isNetworkAvailable(this)) {
                 //only need to update once for first time
                 if (!AppState.session.isLoggedIn)
-                    retrieveUpdateCurrentToken(AppState.session.username)
+                    retrieveUpdateCurrentToken(AppState.session.userId)
                 //will update from here else the token updation to server wont be done
                 AppState.session.isLoggedIn = true
 
@@ -119,6 +119,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         }
 
     }
+
 
     fun initializecontrols() {
         btnLogout.setOnClickListener {
@@ -417,8 +418,8 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             arrsensorvals = arrayOfNulls(14)
 
-            var bundle:Bundle ?= intent.extras
-            var title:String ?= bundle?.getString("title")
+            var bundle: Bundle? = intent.extras
+            var title: String? = bundle?.getString("title")
             var actionval = bundle?.getString("action")
             var content = bundle?.getString("content")
 
@@ -443,16 +444,17 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         fun postResponse(content: String, action: String) {
 
 
-
             if (NetworkUtils.isNetworkAvailable(this@MainWearActivity)) {
 
                 val notdata = NotificationData(action, content)
 
-                var request: NotificatonRequest = NotificatonRequest(notdata,
+                var request: NotificatonRequest = NotificatonRequest(
+                    notdata,
                     System.currentTimeMillis(),
-                    "lamp.analytics")
+                    "lamp.analytics"
+                )
 
-                dataViewModel?.addNotificationEvent(AppState.session.username, request)
+                dataViewModel?.addNotificationEvent(AppState.session.userId, request)
 
 /*
                 Log.d("myTag", "post response to server")
@@ -483,7 +485,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                     populatesensorList()
                     Log.d("myTag", "send values to server")
                     dataViewModel!!.addSensoreEvent(
-                        AppState.session.username,
+                        AppState.session.userId,
                         sensorEventDataList
                     )
 
@@ -540,7 +542,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                         if (NetworkUtils.isNetworkAvailable(this)) {
                             //only need to update once for first time
                             if (!AppState.session.isLoggedIn)
-                                retrieveUpdateCurrentToken(AppState.session.username)
+                                retrieveUpdateCurrentToken(AppState.session.userId)
                             //will update from here else the token updation to server wont be done
                             AppState.session.isLoggedIn = true
 

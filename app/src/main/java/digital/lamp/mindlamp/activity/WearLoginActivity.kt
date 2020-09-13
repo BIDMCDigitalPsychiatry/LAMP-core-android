@@ -46,10 +46,8 @@ class WearLoginActivity : FragmentActivity() {
         dataViewModel = ViewModelProvider(this@WearLoginActivity).get(DataViewModel::class.java)
 
         imgicon.setOnClickListener {
-            imgicon.visibility = View.GONE
-            txturl.visibility = View.VISIBLE
-            txturl.setText(AppState.session.urlvalue)
-
+            var mainIntent = Intent(this@WearLoginActivity, SeverUrlActivity::class.java)
+            startActivity(mainIntent)
         }
 
         btndone.setOnClickListener(object : View.OnClickListener {
@@ -59,16 +57,28 @@ class WearLoginActivity : FragmentActivity() {
                 Utils.displayProgress(progressbar, pgtext, true, "")
                 if (NetworkUtils.isNetworkAvailable(this@WearLoginActivity)) {
 
-                    //if user has edited or is viewing it then save it
-                    if (txturl.visibility == View.VISIBLE)
-                        AppState.session.urlvalue = txturl.text.toString().trim()
+                    if ((AppState.session.urlvalue.startsWith("http://")) || (AppState.session.urlvalue
+                            .startsWith("https://"))
+                    ) {
+                        WebConstant.USERID =
+                            Utils.toBase64(
+                                txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
+                                    .trim()
+                            ).toString().trim()
 
-                    WebConstant.USERID =
-                        Utils.toBase64(
-                            txtusername.text.toString().trim() + ":" + txtpwd.text.toString().trim()
-                        ).toString().trim()
+                        dataViewModel!!.isUserExists(txtusername.text.toString())
 
-                    dataViewModel!!.isUserExists(txtusername.text.toString())
+                    } else {
+
+                        Utils.displayProgress(progressbar, pgtext, false, "")
+                        Toast.makeText(
+                            this@WearLoginActivity,
+                            getString(R.string.url_error),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+
                 } else {
 
                     Utils.displayProgress(progressbar, pgtext, false, "")
@@ -100,14 +110,10 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
-
+                            val userId =
+                                (t?.responseBase as UserExistResponse).lstuserdetails.get(0).id
                             AppState.session.username = txtusername.text.toString().trim()
-                            AppState.session.userId =
-                                Utils.toBase64(
-                                    txtusername.text.toString()
-                                        .trim() + ":" + txtpwd.text.toString().trim()
-                                ).toString()
-                                    .trim()
+                            AppState.session.userId = userId
 
                             val intent =
                                 Intent(this@WearLoginActivity, MainWearActivity::class.java)

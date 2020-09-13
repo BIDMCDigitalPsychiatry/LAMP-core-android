@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:keepScreenOn="true"
+    android:padding="@dimen/box_inset_layout_padding"
+    tools:context=".activity.SeverUrlActivity"
+    tools:deviceIds="wear">
+
+
+    <EditText
+        android:id="@+id/txtserverurl"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:hint="@string/url_hint"
+        android:inputType="textCapWords"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imgservericon"
+        android:layout_width="@dimen/dp_20"
+        android:layout_height="@dimen/dp_20"
+        android:background="@drawable/info"
+        android:layout_marginTop="@dimen/dp_15"
+        android:clickable="true"
+        app:layout_constraintRight_toRightOf="@id/txtserverurl"
+        app:layout_constraintTop_toBottomOf="@id/txtserverurl" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
