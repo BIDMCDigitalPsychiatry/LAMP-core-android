@@ -45,6 +45,11 @@ class WearLoginActivity : FragmentActivity() {
 //        dataViewModel = ViewModelProviders.of(this@WearLoginActivity).get(DataViewModel::class.java)
         dataViewModel = ViewModelProvider(this@WearLoginActivity).get(DataViewModel::class.java)
 
+        if (BuildConfig.DEBUG) {
+            txtusername.setText("U3998365801")
+            txtpwd.setText("12345")
+
+        }
         imgicon.setOnClickListener {
             var mainIntent = Intent(this@WearLoginActivity, SeverUrlActivity::class.java)
             startActivity(mainIntent)
@@ -57,26 +62,13 @@ class WearLoginActivity : FragmentActivity() {
                 Utils.displayProgress(progressbar, pgtext, true, "")
                 if (NetworkUtils.isNetworkAvailable(this@WearLoginActivity)) {
 
-                    if ((AppState.session.urlvalue.startsWith("http://")) || (AppState.session.urlvalue
-                            .startsWith("https://"))
-                    ) {
-                        WebConstant.USERID =
-                            Utils.toBase64(
-                                txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
-                                    .trim()
-                            ).toString().trim()
+                    WebConstant.USERID =
+                        Utils.toBase64(
+                            txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
+                                .trim()
+                        ).toString().trim()
 
-                        dataViewModel!!.isUserExists(txtusername.text.toString())
-
-                    } else {
-
-                        Utils.displayProgress(progressbar, pgtext, false, "")
-                        Toast.makeText(
-                            this@WearLoginActivity,
-                            getString(R.string.url_error),
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+                    dataViewModel!!.isUserExists(txtusername.text.toString())
 
 
                 } else {

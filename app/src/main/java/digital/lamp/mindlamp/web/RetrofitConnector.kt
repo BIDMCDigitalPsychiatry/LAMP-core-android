@@ -41,8 +41,13 @@ class RetrofitConnector private constructor() {
                 }
                 .addInterceptor(logging)
                 .build()
+
+            var url = AppState.session.urlvalue
+            if (!AppState.session.urlvalue.startsWith("https://")) {
+                url = "https://" + AppState.session.urlvalue
+            }
             return Retrofit.Builder()
-                .baseUrl(AppState.session.urlvalue)
+                .baseUrl(url)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(httpClient)
                 .build()
