@@ -45,11 +45,6 @@ class WearLoginActivity : FragmentActivity() {
 //        dataViewModel = ViewModelProviders.of(this@WearLoginActivity).get(DataViewModel::class.java)
         dataViewModel = ViewModelProvider(this@WearLoginActivity).get(DataViewModel::class.java)
 
-        if (BuildConfig.DEBUG) {
-            txtusername.setText("U3998365801")
-            txtpwd.setText("12345")
-
-        }
         imgicon.setOnClickListener {
             var mainIntent = Intent(this@WearLoginActivity, SeverUrlActivity::class.java)
             startActivity(mainIntent)
