@@ -19,7 +19,7 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion 25
         targetSdkVersion 29
-        versionCode 15
+        versionCode 16
         versionName "1.0"
 
     }
