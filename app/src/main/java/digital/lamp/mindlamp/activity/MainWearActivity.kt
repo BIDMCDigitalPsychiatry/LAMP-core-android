@@ -105,7 +105,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             if (NetworkUtils.isNetworkAvailable(this)) {
                 //only need to update once for first time
                 if (!AppState.session.isLoggedIn)
-                    retrieveUpdateCurrentToken(AppState.session.userId)
+                    retrieveUpdateCurrentToken(AppState.session.username)
                 //will update from here else the token updation to server wont be done
                 AppState.session.isLoggedIn = true
 
@@ -425,7 +425,8 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             bringtofrontIfNeeded()
 
-            postResponse(content!!, actionval!!)
+            if (null != content && (null != actionval))
+                postResponse(content!!, actionval!!)
 
             Log.v("myTag", "Main activity received message: $arraySensors")
 
@@ -454,7 +455,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                     "lamp.analytics"
                 )
 
-                dataViewModel?.addNotificationEvent(AppState.session.userId, request)
+                dataViewModel?.addNotificationEvent(AppState.session.username, request)
 
 /*
                 Log.d("myTag", "post response to server")
@@ -485,7 +486,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                     populatesensorList()
                     Log.d("myTag", "send values to server")
                     dataViewModel!!.addSensoreEvent(
-                        AppState.session.userId,
+                        AppState.session.username,
                         sensorEventDataList
                     )
 
@@ -542,7 +543,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                         if (NetworkUtils.isNetworkAvailable(this)) {
                             //only need to update once for first time
                             if (!AppState.session.isLoggedIn)
-                                retrieveUpdateCurrentToken(AppState.session.userId)
+                                retrieveUpdateCurrentToken(AppState.session.username)
                             //will update from here else the token updation to server wont be done
                             AppState.session.isLoggedIn = true
 

@@ -10,7 +10,6 @@
     tools:context=".activity.WearLoginActivity"
     tools:deviceIds="wear">
 
-
     <EditText
         android:id="@+id/txtserverurl"
         android:layout_width="150dp"
@@ -20,7 +19,6 @@
         android:layout_marginRight="30dp"
         android:hint="@string/url_hint"
         android:textColor="@color/white"
-        android:windowSoftInputMode="stateHidden"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

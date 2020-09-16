@@ -97,10 +97,18 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
-                            val userId =
-                                (t?.responseBase as UserExistResponse).lstuserdetails.get(0).id
-                            AppState.session.username = txtusername.text.toString().trim()
-                            AppState.session.userId = userId
+
+                            /* txtusername.text.toString()
+                                 .trim() + ":" + txtpwd.text.toString().trim()
+                         ).toString()
+                             .trim()*/
+
+                            AppState.session.userId = Utils.toBase64(
+                                txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
+                                    .trim()
+                            ).toString().trim()
+                            AppState.session.username =
+                                ((t?.responseBase as UserExistResponse).lstuserdetails.get(0).id.trim())
 
                             val intent =
                                 Intent(this@WearLoginActivity, MainWearActivity::class.java)
