@@ -13,7 +13,7 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
+import digital.lamp.mindlamp.BuildConfig
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -109,7 +109,7 @@ class HomeActivity : AppCompatActivity() {
                 WebAppInterface(
                     this
                 ), JAVASCRIPT_OBJ_LOGOUT)
-            val url = MAIN_PAGE_URL+ Utils.toBase64(
+            val url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
                 AppState.session.token)
             webView.loadUrl(url)
         }else{
@@ -117,7 +117,7 @@ class HomeActivity : AppCompatActivity() {
                 WebAppInterface(
                     this
                 ), JAVASCRIPT_OBJ_LOGIN)
-            webView.loadUrl(BASE_URL_WEB)
+            webView.loadUrl(BuildConfig.BASE_URL_WEB)
         }
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
@@ -317,6 +317,7 @@ class HomeActivity : AppCompatActivity() {
             GlobalScope.launch(Dispatchers.IO){
                 try {
                     val response = homeRepository.sendTokenData(AppState.session.userId, sendTokenRequest)
+
                     if (response.code() == 200)
                         Log.e(TAG,"Token Updated to server")
                 }catch (er: Exception){er.printStackTrace()}

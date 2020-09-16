@@ -63,6 +63,8 @@ android {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.devBaseUrl
             buildConfigField 'String', 'HOST_LOG', project.devLogUrl
+            buildConfigField 'String', 'BASE_URL_WEB', project.devBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.devMainPageUrlWeb
             buildConfigField 'boolean', 'DO_LOG', 'true'
 
         }
@@ -71,14 +73,16 @@ android {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.qaBaseUrl
             buildConfigField 'String', 'HOST_LOG', project.qaLogUrl
-
+            buildConfigField 'String', 'BASE_URL_WEB', project.qaBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.qaMainPageUrlWeb
         }
 
         beta {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.betaBaseUrl
             buildConfigField 'String', 'HOST_LOG', project.betaLogUrl
-
+            buildConfigField 'String', 'BASE_URL_WEB', project.betaBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.betaMainPageUrlWeb
         }
 
         prod {
@@ -86,6 +90,9 @@ android {
             buildConfigField 'String', 'HOST', project.prodBaseUrl
             buildConfigField 'String', 'HOST_LOG', project.prodLogUrl
             buildConfigField 'boolean', 'DO_LOG', 'false'
+            buildConfigField 'String', 'BASE_URL_WEB', project.prodBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.prodMainPageUrlWeb
+
         }
 
     }
