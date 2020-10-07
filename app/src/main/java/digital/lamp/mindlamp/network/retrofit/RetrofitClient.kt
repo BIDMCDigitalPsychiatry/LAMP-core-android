@@ -41,7 +41,7 @@ object RetrofitClient {
 
             val request = requestOriginal.newBuilder()
                 .addHeader("Authorization", "Basic ${Utils.toBase64(
-                    AppState.session.token).toString().trim()}")
+                    AppState.session.token+":"+AppState.session.serverAddress.removePrefix("https://").removePrefix("http://")).toString().trim()}")
                 .build()
 
             chain.proceed(request)
@@ -50,7 +50,7 @@ object RetrofitClient {
 
     val instance: ApiInterface by lazy {
         val retrofit = Retrofit.Builder()
-            .baseUrl(BuildConfig.HOST)
+            .baseUrl(AppState.session.serverAddress)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()

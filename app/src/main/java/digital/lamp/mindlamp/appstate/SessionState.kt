@@ -6,6 +6,7 @@ class SessionState {
         const val PREF_KEY_IS_USER_LOGGED_IN = "isUserLoggedIn"
         const val PREF_KEY_TOKEN = "token"
         const val PREF_KEY_USER_ID = "user_id"
+        const val PREF_KEY_SERVER_ADDRESS= "serverAddress"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
     }
 
@@ -21,6 +22,10 @@ class SessionState {
         PREF_KEY_USER_ID,
         ""
     )
+    var serverAddress by Pref(
+        PREF_KEY_SERVER_ADDRESS,
+        "https://api.lamp.digital/"
+    )
     var crashValue by Pref(
         PREF_KEY_CRASH_VALUE,
         ""
@@ -29,6 +34,7 @@ class SessionState {
         isLoggedIn = false
         token = ""
         userId = ""
+        serverAddress = ""
         crashValue = ""
     }
 }

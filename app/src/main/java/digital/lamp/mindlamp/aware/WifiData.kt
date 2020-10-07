@@ -11,7 +11,6 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
-import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 
@@ -64,7 +63,8 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                             Aware.stopWiFi(context)
                         }, 3000)
                     }else{
-                        val logEventRequest = LogEventRequest(context.getString(R.string.log_wifi_null), UserAgent(), AppState.session.userId)
+                        val logEventRequest = LogEventRequest()
+                        logEventRequest.message = context.getString(R.string.log_wifi_null)
                         LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                     }
 
@@ -79,7 +79,8 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                 }
             })
         }catch (ex: Exception){
-            val logEventRequest = LogEventRequest(context.getString(R.string.log_wifi_error), UserAgent(), AppState.session.userId)
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = context.getString(R.string.log_wifi_error)
             LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
         }
     }

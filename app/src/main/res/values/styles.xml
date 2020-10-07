@@ -20,5 +20,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-
+    <style name="AppTheme.ProgressAccent">
+        <item name="colorAccent">@color/colorPrimary</item> <!-- Whatever color you want-->
+    </style>
 </resources>

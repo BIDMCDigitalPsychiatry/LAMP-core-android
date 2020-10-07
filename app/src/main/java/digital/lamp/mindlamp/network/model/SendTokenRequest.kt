@@ -1,7 +1,9 @@
 package digital.lamp.mindlamp.network.model
 
+import android.os.Build
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
+import digital.lamp.mindlamp.BuildConfig
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
@@ -15,8 +17,10 @@ data class SendTokenRequest(
 )
 
 data class TokenData(
-    val action: String,
-    val device_token: String,
-    val device_type: String,
-    val user_agent: UserAgent? =null
-    )
+    var action: String,
+    var device_token: String,
+    var device_type: String,
+    val user_agent: String
+    ){
+    constructor() : this("","","",BuildConfig.VERSION_NAME+","+Build.VERSION.INCREMENTAL+","+Build.MANUFACTURER+","+Build.MODEL)
+}

@@ -10,7 +10,6 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
-import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.utils.Utils
 
 
@@ -61,13 +60,15 @@ class AccelerometerData constructor(awareListener: AwareListener, context:Contex
                      Aware.stopAccelerometer(context)
                      awareListener.getAccelerometerData(sensorEventData)
                  }else{
-                     val logEventRequest = LogEventRequest(context.getString(R.string.log_accelerometer_null), UserAgent(), AppState.session.userId)
+                     val logEventRequest = LogEventRequest()
+                     logEventRequest.message = context.getString(R.string.log_accelerometer_null)
                      LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                  }
              }
          }catch (ex:Exception){
              ex.printStackTrace()
-             val logEventRequest = LogEventRequest(context.getString(R.string.log_accelerometer_error), UserAgent(), AppState.session.userId)
+             val logEventRequest = LogEventRequest()
+             logEventRequest.message = context.getString(R.string.log_accelerometer_error)
              LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
          }
     }

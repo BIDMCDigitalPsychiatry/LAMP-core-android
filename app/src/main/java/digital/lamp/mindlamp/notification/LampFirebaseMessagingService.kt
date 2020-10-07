@@ -16,10 +16,10 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
+        Log.e(TAG, "Remote Message: ${remoteMessage.data}")
+
         val gson = Gson()
         val actionList: List<ActionData> = gson.fromJson(remoteMessage.data["actions"], object : TypeToken<List<ActionData?>?>() {}.type) as List<ActionData>
-
-        Log.e(TAG, "Refreshed token: ${remoteMessage.data.toString()}")
 
         //Notification with page and action Button
         if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty() && actionList.isNotEmpty()){

@@ -10,10 +10,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import digital.lamp.mindlamp.BuildConfig
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -28,13 +28,10 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.network.model.SendTokenRequest
 import digital.lamp.mindlamp.network.model.TokenData
-import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.repository.HomeRepository
 import digital.lamp.mindlamp.repository.LampForegroundService
-import digital.lamp.mindlamp.utils.AppConstants.BASE_URL_WEB
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
-import digital.lamp.mindlamp.utils.AppConstants.MAIN_PAGE_URL
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
@@ -89,7 +86,6 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-        retrieveCurrentToken(true)
         if(checkAndRequestPermissions(this)){
             //Fit SignIn Auth
             fitSignIn()
@@ -104,13 +100,16 @@ class HomeActivity : AppCompatActivity() {
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
         webView.settings.javaScriptEnabled = true
+        progressBar.visibility = View.VISIBLE;
+
         if(AppState.session.isLoggedIn){
             webView.addJavascriptInterface(
                 WebAppInterface(
                     this
                 ), JAVASCRIPT_OBJ_LOGOUT)
+
             val url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
-                AppState.session.token)
+                AppState.session.token+":"+AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
             webView.loadUrl(url)
         }else{
             webView.addJavascriptInterface(
@@ -122,6 +121,7 @@ class HomeActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 Log.e(TAG, " : $url")
+                progressBar.visibility = View.GONE;
                 view.clearCache(true)
                 view.clearHistory()
             }
@@ -268,11 +268,15 @@ class HomeActivity : AppCompatActivity() {
         AppState.session.isLoggedIn = true
         AppState.session.token = oLoginResponse.authorizationToken
         AppState.session.userId = oLoginResponse.identityObject.id
+        if(!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains("http://")){
+            AppState.session.serverAddress = "https://"+oLoginResponse.serverAddress
+        }
+        else AppState.session.serverAddress = oLoginResponse.serverAddress
 
         //Start Foreground service for retrieving data
         startLampService()
         //Updating current user token
-        retrieveCurrentToken(false)
+        retrieveCurrentToken()
     }
 
     private fun fitSignIn() {
@@ -302,7 +306,7 @@ class HomeActivity : AppCompatActivity() {
 //        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
 
-    private fun retrieveCurrentToken(showDialog : Boolean) {
+    private fun retrieveCurrentToken() {
         FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
             if (!it.isSuccessful) {
                 return@addOnCompleteListener
@@ -310,9 +314,11 @@ class HomeActivity : AppCompatActivity() {
             // Get new Instance ID token
             val token = it.result?.token
             Log.e(TAG, "FCM Token : $token")
-            if(!showDialog) {
             val homeRepository = HomeRepository()
-            val tokenData = TokenData("login",token.toString(),"Android", UserAgent())
+            val tokenData = TokenData()
+            tokenData.action = "login"
+            tokenData.device_token = token.toString()
+            tokenData.device_type = "Android"
             val sendTokenRequest = SendTokenRequest(tokenData,"lamp.analytics",System.currentTimeMillis())
             GlobalScope.launch(Dispatchers.IO){
                 try {
@@ -322,10 +328,6 @@ class HomeActivity : AppCompatActivity() {
                         Log.e(TAG,"Token Updated to server")
                 }catch (er: Exception){er.printStackTrace()}
             }
-            }
-//            else{
-//                showTokenAlert(token)
-//            }
         }
     }
 
@@ -345,19 +347,5 @@ class HomeActivity : AppCompatActivity() {
      * Gets a Google account for use in creating the Fitness client.
      */
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
-
-    private fun showTokenAlert(token: String?) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle(R.string.app_name)
-        builder.setMessage(token)
-        builder.setPositiveButton(R.string.copy) { dialog, _ ->
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("RANDOM UUID",token)
-            clipboard.setPrimaryClip(clip)
-
-            dialog.dismiss()
-        }
-        builder.show()
-    }
 
 }

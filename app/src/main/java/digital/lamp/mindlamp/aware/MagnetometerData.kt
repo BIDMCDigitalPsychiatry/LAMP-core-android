@@ -59,12 +59,14 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
                     Aware.startMagnetometer(context)
                     awareListener.getMagneticData(sensorEventData)
                 }else{
-                    val logEventRequest = LogEventRequest(context.getString(R.string.log_magnetometer_null), UserAgent(), AppState.session.userId)
+                    val logEventRequest = LogEventRequest()
+                    logEventRequest.message = context.getString(R.string.log_magnetometer_null)
                     LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                 }
             }
         }catch (ex : Exception){
-            val logEventRequest = LogEventRequest(context.getString(R.string.log_magnetometer_error), UserAgent(), AppState.session.userId)
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = context.getString(R.string.log_magnetometer_error)
             LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
         }
     }

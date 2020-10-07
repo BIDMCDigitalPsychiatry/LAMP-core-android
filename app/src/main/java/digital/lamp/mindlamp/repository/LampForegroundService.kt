@@ -15,7 +15,6 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.aware.*
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
-import digital.lamp.mindlamp.network.model.UserAgent
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
 import digital.lamp.mindlamp.utils.LampLog
@@ -132,11 +131,8 @@ class LampForegroundService : Service(),
 
         //check for GPS
         if(!NetworkUtils.isGPSEnabled(this@LampForegroundService)){
-            val logEventRequest = LogEventRequest(
-                getString(R.string.gps_off),
-                UserAgent(),
-                AppState.session.userId
-            )
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = getString(R.string.gps_off)
             LogUtils.invokeLogData(
                 Utils.getApplicationName(this@LampForegroundService),
                 "info",
@@ -145,11 +141,8 @@ class LampForegroundService : Service(),
         }
         //Battery value
         if(NetworkUtils.getBatteryPercentage(this@LampForegroundService) < 15){
-            val logEventRequest = LogEventRequest(
-                getString(R.string.battery_low),
-                UserAgent(),
-                AppState.session.userId
-            )
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = getString(R.string.battery_low)
             LogUtils.invokeLogData(
                 Utils.getApplicationName(this@LampForegroundService),
                 getString(R.string.info),
@@ -158,11 +151,8 @@ class LampForegroundService : Service(),
         }
         //Upload Crash Details
         if(AppState.session.crashValue.isNotEmpty()){
-            val logEventRequest = LogEventRequest(
-                getString(R.string.app_crash)+" : "+AppState.session.crashValue,
-                UserAgent(),
-                AppState.session.userId
-            )
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = getString(R.string.app_crash)+" : "+AppState.session.crashValue
             LogUtils.invokeLogData(
                 Utils.getApplicationName(this@LampForegroundService),
                 getString(R.string.error),
@@ -189,11 +179,8 @@ class LampForegroundService : Service(),
                     val response = homeRepository.addSensorData(participantId, sensorEventDataList)
                     when (response.code()) {
                         400 -> {
-                            val logEventRequest = LogEventRequest(
-                                "Network error - 400 Bad Request",
-                                UserAgent(),
-                                AppState.session.userId
-                            )
+                            val logEventRequest = LogEventRequest()
+                            logEventRequest.message = "Network error - 400 Bad Request"
                             LogUtils.invokeLogData(
                                 Utils.getApplicationName(this@LampForegroundService),
                                 "error",
@@ -201,11 +188,8 @@ class LampForegroundService : Service(),
                             )
                         }
                         401 -> {
-                            val logEventRequest = LogEventRequest(
-                                "Network error - 401 Unauthorized",
-                                UserAgent(),
-                                AppState.session.userId
-                            )
+                            val logEventRequest = LogEventRequest()
+                            logEventRequest.message = "Network error - 401 Unauthorized"
                             LogUtils.invokeLogData(
                                 Utils.getApplicationName(this@LampForegroundService),
                                 "error",
@@ -213,11 +197,8 @@ class LampForegroundService : Service(),
                             )
                         }
                         403 -> {
-                            val logEventRequest = LogEventRequest(
-                                "Network error - 403 Forbidden",
-                                UserAgent(),
-                                AppState.session.userId
-                            )
+                            val logEventRequest = LogEventRequest()
+                            logEventRequest.message = "Network error - 403 Forbidden"
                             LogUtils.invokeLogData(
                                 Utils.getApplicationName(this@LampForegroundService),
                                 "error",
@@ -225,11 +206,8 @@ class LampForegroundService : Service(),
                             )
                         }
                         404 -> {
-                            val logEventRequest = LogEventRequest(
-                                "Network error - 404 Not Found",
-                                UserAgent(),
-                                AppState.session.userId
-                            )
+                            val logEventRequest = LogEventRequest()
+                            logEventRequest.message = "Network error - 404 Not Found"
                             LogUtils.invokeLogData(
                                 Utils.getApplicationName(this@LampForegroundService),
                                 "error",
@@ -237,11 +215,8 @@ class LampForegroundService : Service(),
                             )
                         }
                         500 -> {
-                            val logEventRequest = LogEventRequest(
-                                "Network error - 500 Internal Server Error",
-                                UserAgent(),
-                                AppState.session.userId
-                            )
+                            val logEventRequest = LogEventRequest()
+                            logEventRequest.message = "Network error - 500 Internal Server Error"
                             LogUtils.invokeLogData(
                                 Utils.getApplicationName(this@LampForegroundService),
                                 "error",
@@ -252,11 +227,8 @@ class LampForegroundService : Service(),
                     }
                 } catch (er: Exception) {
                     er.printStackTrace()
-                    val logEventRequest = LogEventRequest(
-                        "Network error - 500 Internal Server Error",
-                        UserAgent(),
-                        AppState.session.userId
-                    )
+                    val logEventRequest = LogEventRequest()
+                    logEventRequest.message = "Network error - 500 Internal Server Error"
                     LogUtils.invokeLogData(
                         Utils.getApplicationName(this@LampForegroundService),
                         "error",
@@ -280,38 +252,31 @@ class LampForegroundService : Service(),
     }
 
     override fun getAccelerometerData(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
     }
 
     override fun getRotationData(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
 
     }
 
     override fun getMagneticData(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
     }
 
     override fun getGyroscopeData(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
     }
 
     override fun getLocationData(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
     }
 
     override fun getWifiData(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
     }
 
     override fun getScreenState(sensorEventData: SensorEventData) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.add(sensorEventData)
     }
 
@@ -324,7 +289,6 @@ class LampForegroundService : Service(),
     }
 
     override fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>) {
-//        invokeAddSensorData(AppState.session.userId,sensorEventRequest)
         sensorEventDataList.addAll(sensorEventData)
     }
 

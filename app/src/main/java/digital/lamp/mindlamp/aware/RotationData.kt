@@ -60,12 +60,14 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                     Aware.stopRotation(context)
                     awareListener.getRotationData(sensorEventData)
                 }else{
-                    val logEventRequest = LogEventRequest(context.getString(R.string.log_rotation_null), UserAgent(), AppState.session.userId)
+                    val logEventRequest = LogEventRequest()
+                    logEventRequest.message = context.getString(R.string.log_rotation_null)
                     LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                 }
             }
         }catch (ex : Exception){
-            val logEventRequest = LogEventRequest(context.getString(R.string.log_rotation_error), UserAgent(), AppState.session.userId)
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = context.getString(R.string.log_rotation_error)
             LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
         }
     }
