@@ -8,6 +8,7 @@ class SessionState {
         const val PREF_KEY_USER_ID = "user_id"
         const val PREF_KEY_SERVER_ADDRESS= "serverAddress"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
+        const val PREF_ANALYTICS_TIME_STAMP = "lastAnalyticsTimestamp"
     }
 
     var isLoggedIn by Pref(
@@ -30,11 +31,15 @@ class SessionState {
         PREF_KEY_CRASH_VALUE,
         ""
     )
+
+    var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,0L)
+
     fun clearData() {
         isLoggedIn = false
         token = ""
         userId = ""
         serverAddress = ""
         crashValue = ""
+        lastAnalyticsTimestamp = 0L
     }
 }

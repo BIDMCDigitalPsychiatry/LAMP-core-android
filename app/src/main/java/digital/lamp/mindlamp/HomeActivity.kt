@@ -98,6 +98,8 @@ class HomeActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
+        stopLampService()
+
         webView.clearCache(true)
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
@@ -132,6 +134,8 @@ class HomeActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE;
                 view.clearCache(true)
                 view.clearHistory()
+
+                startLampService()
             }
         }
 
@@ -242,7 +246,7 @@ class HomeActivity : AppCompatActivity() {
     private fun startLampService() {
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
             putExtra("inputExtra", "Foreground Service Example in Android")
-            putExtra("set_alarm", true)
+            putExtra("set_alarm", false)
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }

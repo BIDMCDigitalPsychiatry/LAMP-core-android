@@ -20,7 +20,7 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
             if(AppState.session.isLoggedIn) {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
-                    putExtra("set_alarm", true)
+                    putExtra("set_alarm", false)
 
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
@@ -30,7 +30,7 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
             if(AppState.session.isLoggedIn) {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
-                    putExtra("set_alarm", false)
+                    putExtra("set_alarm", true)
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
             }

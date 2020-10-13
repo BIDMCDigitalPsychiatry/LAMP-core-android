@@ -59,9 +59,9 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                                 "lamp.wifi",System.currentTimeMillis()
                             )
                         awareListener.getWifiData(sensorEventData)
-                        Handler().postDelayed({
-                            Aware.stopWiFi(context)
-                        }, 3000)
+//                        Handler().postDelayed({
+//                            Aware.stopWiFi(context)
+//                        }, 3000)
                     }else{
                         val logEventRequest = LogEventRequest()
                         logEventRequest.message = context.getString(R.string.log_wifi_null)

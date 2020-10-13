@@ -9,10 +9,14 @@ import android.content.Intent
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.SystemClock
+import com.google.gson.Gson
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.aware.*
+import digital.lamp.mindlamp.database.Analytics
+import digital.lamp.mindlamp.database.AnalyticsDao
+import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.notification.LampNotificationManager
@@ -20,9 +24,7 @@ import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 /**
@@ -40,21 +42,47 @@ class LampForegroundService : Service(),
     private var isAlarm: Boolean = false
     private lateinit var alarmManager: AlarmManager
     private lateinit var alarmIntent: PendingIntent
-    private var sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
+    private lateinit var oAnalyticsDao: AnalyticsDao
+    private lateinit var oScope: CoroutineScope
+    private lateinit var oGson: Gson
 
     override fun onCreate() {
         super.onCreate()
-
+        oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
+        oScope = CoroutineScope(Dispatchers.IO)
+        oGson = Gson()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         isAlarm = intent?.extras?.getBoolean("set_alarm")!!
-        val notification =
-            LampNotificationManager.showNotification(this, "MindLamp Active Data Collection")
+        if(!isAlarm){
+            val notification =
+                LampNotificationManager.showNotification(this, "MindLamp Active Data Collection")
 
-        startForeground(1, notification)
-        collectSensorData()
+            startForeground(1010, notification)
+            collectSensorData()
+            setAlarmManager()
+        }
+        else {
+            //This will execute every 10min if logged in
+            val sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
+            sensorEventDataList.clear()
+            oScope.async {
+                val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                list.forEach {
+                    sensorEventDataList.add(oGson.fromJson(it.analyticsData,SensorEventData::class.java))
+                }
+                list.let {
+                    AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+                }
+                LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
+//                invokeAddSensorData(sensorEventDataList)
+                //Code for drop DB
+                oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+            }
+        }
+
 
         return START_STICKY
     }
@@ -80,10 +108,10 @@ class LampForegroundService : Service(),
             override fun onTick(millisUntilFinished: Long) {
                 count++
                 when (count) {
-//                    1 -> GoogleFit(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )
+                    1 -> GoogleFit(
+                        this@LampForegroundService,
+                        applicationContext
+                    )
                     2 -> AccelerometerData(
                         this@LampForegroundService,
                         applicationContext
@@ -104,25 +132,21 @@ class LampForegroundService : Service(),
                         this@LampForegroundService,
                         applicationContext
                     )//Invoke Location
-//                    7 -> WifiData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )//Invoke WifiData
-//                    8 -> ScreenStateData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )
-//                    9 -> {
-//                        invokeAddSensorData(AppState.session.userId,sensorEventDataList)
-//                    }
+                    7 -> WifiData(
+                        this@LampForegroundService,
+                        applicationContext
+                    )//Invoke WifiData
+                    8 -> ScreenStateData(
+                        this@LampForegroundService,
+                        applicationContext
+                    )
                 }
-
             }
 
             override fun onFinish() {
-                if (isAlarm) {
-                    setAlarmManager()
-                }
+//                if (!isAlarm) {
+//                    setAlarmManager()
+//                }
 //                stopForeground(true)
 //                stopSelf()
             }
@@ -171,12 +195,12 @@ class LampForegroundService : Service(),
     }
 
 
-    private fun invokeAddSensorData(participantId: String, sensorEventDataList: ArrayList<SensorEventData>) {
+    private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
         if (NetworkUtils.isNetworkAvailable(this)) {
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    val response = homeRepository.addSensorData(participantId, sensorEventDataList)
+                    val response = homeRepository.addSensorData(AppState.session.userId, sensorEventDataList)
                     when (response.code()) {
                         400 -> {
                             val logEventRequest = LogEventRequest()
@@ -252,32 +276,61 @@ class LampForegroundService : Service(),
     }
 
     override fun getAccelerometerData(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getRotationData(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
-
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getMagneticData(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getGyroscopeData(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getLocationData(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getWifiData(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
+        LampLog.e("Wifi Data : ${oGson.toJson(sensorEventData)}")
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getScreenState(sensorEventData: SensorEventData) {
-        sensorEventDataList.add(sensorEventData)
+        LampLog.e("Screen State : ${oGson.toJson(sensorEventData)}")
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getSmsData(sensorEventData: SensorEventData) {
@@ -289,7 +342,17 @@ class LampForegroundService : Service(),
     }
 
     override fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>) {
-        sensorEventDataList.addAll(sensorEventData)
+        LampLog.e("Google Fit : ${oGson.toJson(sensorEventData)}")
+        val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
+        oScope.async{
+            sensorEventData.forEach {
+                val oAnalytics = Analytics()
+                oAnalytics.analyticsData = oGson.toJson(it)
+                oAnalyticsList.add(oAnalytics)
+            }
+            //Insert it into Analytics DB
+            oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
+        }
     }
 
 }

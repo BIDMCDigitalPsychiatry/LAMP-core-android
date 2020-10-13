@@ -24,7 +24,7 @@ class GyroscopeData constructor(awareListener: AwareListener, context: Context) 
                 Aware_Preferences.FREQUENCY_GYROSCOPE,
                 200000
             ) //20Hz
-            Aware.setSetting(context, Aware_Preferences.THRESHOLD_GYROSCOPE, 0.02f)
+            Aware.setSetting(context, Aware_Preferences.THRESHOLD_GYROSCOPE, 1f)
             Aware.startGyroscope(context)//Start Gyroscope Sensor
             //Sensor Observer
             Gyroscope.setSensorObserver {

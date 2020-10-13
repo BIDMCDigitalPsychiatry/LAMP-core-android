@@ -132,7 +132,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                    awareListener.getScreenState(sensorEventRequest)
                }
            })
-           Aware.stopScreen(context)
+//           Aware.stopScreen(context)
        }catch (ex : Exception){
            val logEventRequest = LogEventRequest()
            logEventRequest.message = context.getString(R.string.log_screen_state_error)

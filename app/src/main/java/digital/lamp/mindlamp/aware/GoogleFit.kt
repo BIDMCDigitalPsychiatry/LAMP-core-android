@@ -868,5 +868,4 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
     }
 //25
 
-
 }

@@ -23,7 +23,7 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
                 Aware_Preferences.FREQUENCY_ROTATION,
                 200000
             ) //20Hz
-            Aware.setSetting(context, Aware_Preferences.THRESHOLD_ROTATION, 0.02f)
+            Aware.setSetting(context, Aware_Preferences.THRESHOLD_ROTATION, 1f)
             Aware.startMagnetometer(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {
