@@ -8,6 +8,7 @@ import com.aware.providers.Rotation_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.*
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 
 /**
@@ -56,7 +57,9 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
                             data,
                             "lamp.accelerometer.motion",System.currentTimeMillis()
                         )
-                    Aware.startMagnetometer(context)
+                    LampLog.e("Magnetometer : $x : $y : $z")
+
+//                    Aware.startMagnetometer(context)
                     awareListener.getMagneticData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest()

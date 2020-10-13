@@ -9,6 +9,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.model.RotationData
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 
 /**
@@ -57,7 +58,9 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                             data,
                             "lamp.accelerometer.motion",System.currentTimeMillis()
                         )
-                    Aware.stopRotation(context)
+                    LampLog.e("Rotation : $x : $y : $z")
+
+//                    Aware.stopRotation(context)
                     awareListener.getRotationData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest()

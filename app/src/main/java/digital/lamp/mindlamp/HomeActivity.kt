@@ -4,7 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.*
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -106,16 +108,22 @@ class HomeActivity : AppCompatActivity() {
             webView.addJavascriptInterface(
                 WebAppInterface(
                     this
-                ), JAVASCRIPT_OBJ_LOGOUT)
+                ), JAVASCRIPT_OBJ_LOGOUT
+            )
 
             val url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
-                AppState.session.token+":"+AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
+                    .removePrefix(
+                        "http://"
+                    )
+            )
             webView.loadUrl(url)
         }else{
             webView.addJavascriptInterface(
                 WebAppInterface(
                     this
-                ), JAVASCRIPT_OBJ_LOGIN)
+                ), JAVASCRIPT_OBJ_LOGIN
+            )
             webView.loadUrl(BuildConfig.BASE_URL_WEB)
         }
         webView.webViewClient = object : WebViewClient() {
@@ -163,22 +171,44 @@ class HomeActivity : AppCompatActivity() {
                         fitSignIn()
                         initializeWebview()
                         //else any one or both the permissions are not granted
-                    }
-                    else{
+                    } else {
                         //Now further we check if used denied permanently or not
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CALENDAR)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_SYNC_SETTINGS)
-                            || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_SYNC_STATS)
-                        ){
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.READ_CALENDAR
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.CAMERA
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.READ_CONTACTS
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.READ_SYNC_SETTINGS
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.READ_SYNC_STATS
+                            )
+                        ) {
                             // case 4 User has denied permission but not permanently
                             showDialogOK("Service Permissions are required for this app",
                                 DialogInterface.OnClickListener { _, which ->
                                     when (which) {
-                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(this)
+                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
+                                            this
+                                        )
                                         DialogInterface.BUTTON_NEGATIVE ->
                                             // proceed with logic by disabling the related features or quit the app.
                                             finish()
@@ -212,12 +242,16 @@ class HomeActivity : AppCompatActivity() {
     private fun startLampService() {
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
             putExtra("inputExtra", "Foreground Service Example in Android")
-            putExtra("set_alarm",true)
+            putExtra("set_alarm", true)
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
 
     private fun stopLampService() {
+
+        val stopIntent = Intent(this, LampForegroundService::class.java)
+        stopService(stopIntent)
+
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, 0)
@@ -229,7 +263,7 @@ class HomeActivity : AppCompatActivity() {
         /** Show a toast from the web page  */
         @JavascriptInterface
         fun postMessage(jsonString: String) {
-            Log.e(TAG," : $jsonString")
+            Log.e(TAG, " : $jsonString")
             try {
                 if(!AppState.session.isLoggedIn) {
                     val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
@@ -268,7 +302,9 @@ class HomeActivity : AppCompatActivity() {
         AppState.session.isLoggedIn = true
         AppState.session.token = oLoginResponse.authorizationToken
         AppState.session.userId = oLoginResponse.identityObject.id
-        if(!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains("http://")){
+        if(!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
+                "http://"
+            )){
             AppState.session.serverAddress = "https://"+oLoginResponse.serverAddress
         }
         else AppState.session.serverAddress = oLoginResponse.serverAddress
@@ -283,7 +319,12 @@ class HomeActivity : AppCompatActivity() {
         if (oAuthPermissionsApproved()) {
             accessGoogleFit()
         } else {
-            GoogleSignIn.requestPermissions(this,REQUEST_OAUTH_REQUEST_CODE, getGoogleAccount(), fitnessOptions)
+            GoogleSignIn.requestPermissions(
+                this,
+                REQUEST_OAUTH_REQUEST_CODE,
+                getGoogleAccount(),
+                fitnessOptions
+            )
         }
     }
 
@@ -294,7 +335,7 @@ class HomeActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         when (resultCode) {
             RESULT_OK -> {
-                if(requestCode == REQUEST_OAUTH_REQUEST_CODE){
+                if (requestCode == REQUEST_OAUTH_REQUEST_CODE) {
                     accessGoogleFit()
                 }
             }
@@ -319,13 +360,20 @@ class HomeActivity : AppCompatActivity() {
             tokenData.action = "login"
             tokenData.device_token = token.toString()
             tokenData.device_type = "Android"
-            val sendTokenRequest = SendTokenRequest(tokenData,"lamp.analytics",System.currentTimeMillis())
+            val sendTokenRequest = SendTokenRequest(
+                tokenData,
+                "lamp.analytics",
+                System.currentTimeMillis()
+            )
             GlobalScope.launch(Dispatchers.IO){
                 try {
-                    val response = homeRepository.sendTokenData(AppState.session.userId, sendTokenRequest)
+                    val response = homeRepository.sendTokenData(
+                        AppState.session.userId,
+                        sendTokenRequest
+                    )
 
                     if (response.code() == 200)
-                        Log.e(TAG,"Token Updated to server")
+                        Log.e(TAG, "Token Updated to server")
                 }catch (er: Exception){er.printStackTrace()}
             }
         }
@@ -341,7 +389,10 @@ class HomeActivity : AppCompatActivity() {
         Log.e(TAG, message)
     }
 
-    private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(getGoogleAccount(), fitnessOptions)
+    private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
+        getGoogleAccount(),
+        fitnessOptions
+    )
 
     /**
      * Gets a Google account for use in creating the Fitness client.

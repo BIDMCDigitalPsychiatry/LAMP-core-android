@@ -56,7 +56,7 @@ class LampForegroundService : Service(),
         startForeground(1, notification)
         collectSensorData()
 
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     @SuppressLint("ObsoleteSdkInt")
@@ -80,10 +80,10 @@ class LampForegroundService : Service(),
             override fun onTick(millisUntilFinished: Long) {
                 count++
                 when (count) {
-                    1 -> GoogleFit(
-                        this@LampForegroundService,
-                        applicationContext
-                    )
+//                    1 -> GoogleFit(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )
                     2 -> AccelerometerData(
                         this@LampForegroundService,
                         applicationContext
@@ -97,24 +97,24 @@ class LampForegroundService : Service(),
                         applicationContext
                     ) //Invoke Magnet Call
                     5 -> GyroscopeData(
-                        this@LampForegroundService,
+                    this@LampForegroundService,
                         applicationContext
-                    )//Invoke Gyroscope Call
+                        )//Invoke Gyroscope Call
                     6 -> LocationData(
                         this@LampForegroundService,
                         applicationContext
                     )//Invoke Location
-                    7 -> WifiData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke WifiData
-                    8 -> ScreenStateData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )
-                    9 -> {
-                        invokeAddSensorData(AppState.session.userId,sensorEventDataList)
-                    }
+//                    7 -> WifiData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )//Invoke WifiData
+//                    8 -> ScreenStateData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )
+//                    9 -> {
+//                        invokeAddSensorData(AppState.session.userId,sensorEventDataList)
+//                    }
                 }
 
             }
@@ -123,8 +123,8 @@ class LampForegroundService : Service(),
                 if (isAlarm) {
                     setAlarmManager()
                 }
-                stopForeground(true)
-                stopSelf()
+//                stopForeground(true)
+//                stopSelf()
             }
         }
         timer.start()
@@ -235,8 +235,8 @@ class LampForegroundService : Service(),
                         logEventRequest
                     )
                 }
-                stopForeground(true)
-                stopSelf()
+//                stopForeground(true)
+//                stopSelf()
             }
         }
     }

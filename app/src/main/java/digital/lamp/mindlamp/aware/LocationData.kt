@@ -57,6 +57,7 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
                            dimensionData,
                            "lamp.gps",System.currentTimeMillis()
                        )
+                   LampLog.e("Location : ${sensorEventData.dimensionData?.latitude} : ${sensorEventData.dimensionData?.longitude}")
                    awareListener.getLocationData(sensorEventData)
 
                }else{
@@ -65,9 +66,10 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
                    LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
                }
            }
-           android.os.Handler().postDelayed({
-               Aware.stopLocations(context)
-           }, 3000)
+
+//           android.os.Handler().postDelayed({
+//               Aware.stopLocations(context)
+//           }, 3000)
        }catch (ex : Exception){
            val logEventRequest = LogEventRequest()
            logEventRequest.message = context.getString(R.string.log_location_error)
