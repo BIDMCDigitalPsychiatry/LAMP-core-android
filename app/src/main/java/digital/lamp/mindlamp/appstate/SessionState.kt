@@ -32,7 +32,7 @@ class SessionState {
         ""
     )
 
-    var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,0L)
+    var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,1L)
 
     fun clearData() {
         isLoggedIn = false
@@ -40,6 +40,6 @@ class SessionState {
         userId = ""
         serverAddress = ""
         crashValue = ""
-        lastAnalyticsTimestamp = 0L
+        lastAnalyticsTimestamp = 1L
     }
 }
