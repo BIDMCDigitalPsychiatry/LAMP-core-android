@@ -21,6 +21,7 @@ import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
@@ -197,12 +198,14 @@ class LampForegroundService : Service(),
 
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
         if (NetworkUtils.isNetworkAvailable(this)) {
+            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
                     val response = homeRepository.addSensorData(AppState.session.userId, sensorEventDataList)
                     when (response.code()) {
                         200 -> {
+                            DebugLogs.writeToFile("API Success : ${oGson.toJson(response)}")
                             //Code for drop DB
                             oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                         }

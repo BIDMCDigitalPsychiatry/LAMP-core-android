@@ -1,9 +1,11 @@
 package digital.lamp.mindlamp.app
 
 import android.app.Application
+import android.util.DebugUtils
 import android.util.Log
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.appstate.Pref
+import digital.lamp.mindlamp.utils.DebugLogs
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -40,6 +42,7 @@ class App: Application() {
         e.printStackTrace(pw)
         val sStackTrace = sw.toString() // stack trace as a string
 
+        DebugLogs.writeToFile("Crash : $sStackTrace")
         AppState.session.crashValue = sStackTrace
     }
 }
