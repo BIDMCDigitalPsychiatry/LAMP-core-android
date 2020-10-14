@@ -10,6 +10,7 @@ import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.SystemClock
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
@@ -20,11 +21,8 @@ import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.notification.LampNotificationManager
+import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
-import digital.lamp.mindlamp.utils.DebugLogs
-import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.mindlamp.utils.NetworkUtils
-import digital.lamp.mindlamp.utils.Utils
 import kotlinx.coroutines.*
 
 
@@ -69,10 +67,13 @@ class LampForegroundService : Service(),
             //This will execute every 10 min if logged in
             val sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
             sensorEventDataList.clear()
+
+            val gson = GsonBuilder()
+                .create()
             oScope.async {
                 val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                 list.forEach {
-                    sensorEventDataList.add(oGson.fromJson(it.analyticsData,SensorEventData::class.java))
+                    sensorEventDataList.add(gson.fromJson(it.analyticsData, SensorEventData::class.java))
                 }
                 list.let {
                     AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
@@ -105,7 +106,7 @@ class LampForegroundService : Service(),
 
     private fun collectSensorData() {
         var count = 0
-        val timer = object : CountDownTimer(MILLISEC_FUTURE,TIME_INTERVAL) {
+        val timer = object : CountDownTimer(MILLISEC_FUTURE, TIME_INTERVAL) {
             override fun onTick(millisUntilFinished: Long) {
                 count++
                 when (count) {
@@ -126,9 +127,9 @@ class LampForegroundService : Service(),
                         applicationContext
                     ) //Invoke Magnet Call
                     5 -> GyroscopeData(
-                    this@LampForegroundService,
+                        this@LampForegroundService,
                         applicationContext
-                        )//Invoke Gyroscope Call
+                    )//Invoke Gyroscope Call
                     6 -> LocationData(
                         this@LampForegroundService,
                         applicationContext
@@ -202,10 +203,13 @@ class LampForegroundService : Service(),
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
-                    val response = homeRepository.addSensorData(AppState.session.userId, sensorEventDataList)
+                    val response = homeRepository.addSensorData(
+                        AppState.session.userId,
+                        sensorEventDataList
+                    )
                     when (response.code()) {
                         200 -> {
-                            DebugLogs.writeToFile("API Success : ${oGson.toJson(response)}")
+                            DebugLogs.writeToFile("API Success : ${response.body().toString()}")
                             //Code for drop DB
                             oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                         }
@@ -272,12 +276,12 @@ class LampForegroundService : Service(),
         }
     }
 
-    fun invokeLogData(origin:String, level:String, logEventRequest: LogEventRequest) {
+    fun invokeLogData(origin: String, level: String, logEventRequest: LogEventRequest) {
         val homeRepository = HomeRepository()
         GlobalScope.launch(Dispatchers.IO){
             try {
                 val addLogEventResult = homeRepository.addLogData(origin, level, logEventRequest)
-                LampLog.e(TAG," : $addLogEventResult")
+                LampLog.e(TAG, " : $addLogEventResult")
             }catch (er: Exception){er.printStackTrace()}
         }
     }

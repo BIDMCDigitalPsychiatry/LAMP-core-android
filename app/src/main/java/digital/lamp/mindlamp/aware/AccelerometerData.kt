@@ -26,7 +26,7 @@ class AccelerometerData constructor(awareListener: AwareListener, context:Contex
                  Aware_Preferences.FREQUENCY_ACCELEROMETER,
                  200000
              ) //20Hz
-             Aware.setSetting(context, Aware_Preferences.THRESHOLD_ACCELEROMETER, 1f)
+             Aware.setSetting(context, Aware_Preferences.THRESHOLD_ACCELEROMETER, 5f)
              Aware.startAccelerometer(context)//start sensor
              //Sensor Observer
              Accelerometer.setSensorObserver {

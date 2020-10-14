@@ -24,7 +24,7 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                 Aware_Preferences.FREQUENCY_ROTATION,
                 200000
             ) //20Hz
-            Aware.setSetting(context, Aware_Preferences.THRESHOLD_ROTATION, 1f)
+            Aware.setSetting(context, Aware_Preferences.THRESHOLD_ROTATION, 5f)
             Aware.startRotation(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {

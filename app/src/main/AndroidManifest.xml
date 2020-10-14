@@ -52,6 +52,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
+        android:largeHeap="true"
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity android:name="digital.lamp.mindlamp.SplashActivity"
