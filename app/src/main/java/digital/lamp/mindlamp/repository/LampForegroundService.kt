@@ -65,7 +65,7 @@ class LampForegroundService : Service(),
             setAlarmManager()
         }
         else {
-            //This will execute every 10min if logged in
+            //This will execute every 10 min if logged in
             val sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
             sensorEventDataList.clear()
             oScope.async {
@@ -77,10 +77,10 @@ class LampForegroundService : Service(),
                     AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
                 }
                 LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
-//                invokeAddSensorData(sensorEventDataList)
-                //Code for drop DB
-                oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                invokeAddSensorData(sensorEventDataList)
             }
+            //Fetch google fit data in 10 min interval
+            GoogleFit(this@LampForegroundService, applicationContext)
         }
 
 
@@ -202,6 +202,10 @@ class LampForegroundService : Service(),
                 try {
                     val response = homeRepository.addSensorData(AppState.session.userId, sensorEventDataList)
                     when (response.code()) {
+                        200 -> {
+                            //Code for drop DB
+                            oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                        }
                         400 -> {
                             val logEventRequest = LogEventRequest()
                             logEventRequest.message = "Network error - 400 Bad Request"

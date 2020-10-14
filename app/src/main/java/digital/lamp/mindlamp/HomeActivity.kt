@@ -98,8 +98,6 @@ class HomeActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
-        stopLampService()
-
         webView.clearCache(true)
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
@@ -134,8 +132,6 @@ class HomeActivity : AppCompatActivity() {
                 progressBar.visibility = View.GONE;
                 view.clearCache(true)
                 view.clearHistory()
-
-                startLampService()
             }
         }
 

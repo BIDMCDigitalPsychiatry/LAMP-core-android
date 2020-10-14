@@ -6,6 +6,7 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
+import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.utils.LampLog
@@ -238,8 +239,8 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
         val now = Date()
         calendar.time = now
         val endTime = calendar.timeInMillis
-        calendar.add(Calendar.DAY_OF_WEEK, -1)
-        val startTime : Long = 1
+//        calendar.add(Calendar.DAY_OF_WEEK, -1)
+        val startTime : Long = AppState.session.lastAnalyticsTimestamp
 
         return DataReadRequest.Builder()
             .read(DataType.TYPE_STEP_COUNT_DELTA)
