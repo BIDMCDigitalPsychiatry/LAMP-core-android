@@ -13,7 +13,6 @@ import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 object PermissionCheck {
 
     fun checkAndRequestPermissions(context: Activity) : Boolean  {
-        val calenderPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR)
         val cameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
         val contactPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
         val permissionLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -23,9 +22,6 @@ object PermissionCheck {
 
         val listPermissionsNeeded = ArrayList<String>()
 
-        if (calenderPermission != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.READ_CALENDAR)
-        }
         if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.CAMERA)
         }

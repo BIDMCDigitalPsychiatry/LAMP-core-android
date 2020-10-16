@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.aware.Aware
-import com.aware.plugin.fitbit.Provider
 import com.aware.providers.Aware_Provider.Aware_Plugins
 import com.aware.utils.DatabaseHelper
 import com.aware.utils.PluginsManager
@@ -83,73 +82,73 @@ class  FitbitActivity : AppCompatActivity() {
         //Button for calculating heart rate
         heartBeatBtn.setOnClickListener {
 
-            val latestHr: Cursor? = contentResolver.query(
-                Provider.Fitbit_Data.CONTENT_URI,
-                null,
-                Provider.Fitbit_Data.DATA_TYPE + " LIKE 'heartrate'",
-                null,
-                Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
-            )
-
-            if (latestHr != null && latestHr.moveToFirst()) {
-                try {
-
-                    val hrJSON =
-                        JSONObject(latestHr.getString(latestHr.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
-
-
-                    val restingHR = hrJSON.getJSONArray("activities-heart").getJSONObject(0)
-                        .getJSONObject("value")
-                        .optInt("restingHeartRate", -1) //today's resting heart rate
-
-                    val hearts = hrJSON.getJSONObject("activities-heart-intraday")
-                        .getJSONArray("dataset") //contains all of today's heart rate, every 5 seconds
-
-
-                    heartbeatTxt.text = "$restingHR Resting Heart Rate"
-                    Log.e("Hello : ", " $hrJSON")
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                } catch (e: ParseException) {
-                    e.printStackTrace()
-                }
-            }
+//            val latestHr: Cursor? = contentResolver.query(
+//                Provider.Fitbit_Data.CONTENT_URI,
+//                null,
+//                Provider.Fitbit_Data.DATA_TYPE + " LIKE 'heartrate'",
+//                null,
+//                Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
+//            )
+//
+//            if (latestHr != null && latestHr.moveToFirst()) {
+//                try {
+//
+//                    val hrJSON =
+//                        JSONObject(latestHr.getString(latestHr.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
+//
+//
+//                    val restingHR = hrJSON.getJSONArray("activities-heart").getJSONObject(0)
+//                        .getJSONObject("value")
+//                        .optInt("restingHeartRate", -1) //today's resting heart rate
+//
+//                    val hearts = hrJSON.getJSONObject("activities-heart-intraday")
+//                        .getJSONArray("dataset") //contains all of today's heart rate, every 5 seconds
+//
+//
+//                    heartbeatTxt.text = "$restingHR Resting Heart Rate"
+//                    Log.e("Hello : ", " $hrJSON")
+//                } catch (e: JSONException) {
+//                    e.printStackTrace()
+//                } catch (e: ParseException) {
+//                    e.printStackTrace()
+//                }
+//            }
         }
 
         //Button For calculating daily step count
         dailyStepBtn.setOnClickListener {
 
-            val latestSteps: Cursor? = contentResolver.query(
-                Provider.Fitbit_Data.CONTENT_URI,
-                null,
-                Provider.Fitbit_Data.DATA_TYPE + " LIKE 'steps'",
-                null,
-                Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
-            )
-
-            if (latestSteps != null && latestSteps.moveToFirst()) {
-                try {
-
-                    val stepsJSON =
-                        JSONObject(latestSteps.getString(latestSteps.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
-
-                    val totalSteps: String =
-                        stepsJSON.getJSONArray("activities-steps").getJSONObject(0)
-                            .getString("value") //today's total steps
-
-                    val steps: JSONArray = stepsJSON.getJSONObject("activities-steps-intraday")
-                        .getJSONArray("dataset") //contains all of today's step count, per 15 minutes
-
-                    heartbeatTxt.text = "$totalSteps Total Steps"
-
-                    Log.e("Hello : ", " $stepsJSON")
-
-                } catch (e : JSONException) {
-                    e.printStackTrace()
-                } catch (e : ParseException) {
-                    e.printStackTrace()
-                }
-            }
+//            val latestSteps: Cursor? = contentResolver.query(
+//                Provider.Fitbit_Data.CONTENT_URI,
+//                null,
+//                Provider.Fitbit_Data.DATA_TYPE + " LIKE 'steps'",
+//                null,
+//                Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
+//            )
+//
+//            if (latestSteps != null && latestSteps.moveToFirst()) {
+//                try {
+//
+//                    val stepsJSON =
+//                        JSONObject(latestSteps.getString(latestSteps.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
+//
+//                    val totalSteps: String =
+//                        stepsJSON.getJSONArray("activities-steps").getJSONObject(0)
+//                            .getString("value") //today's total steps
+//
+//                    val steps: JSONArray = stepsJSON.getJSONObject("activities-steps-intraday")
+//                        .getJSONArray("dataset") //contains all of today's step count, per 15 minutes
+//
+//                    heartbeatTxt.text = "$totalSteps Total Steps"
+//
+//                    Log.e("Hello : ", " $stepsJSON")
+//
+//                } catch (e : JSONException) {
+//                    e.printStackTrace()
+//                } catch (e : ParseException) {
+//                    e.printStackTrace()
+//                }
+//            }
         }
 
         settings.setOnClickListener {

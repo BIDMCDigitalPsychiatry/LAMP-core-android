@@ -118,30 +118,30 @@ class LampForegroundService : Service(),
                         this@LampForegroundService,
                         applicationContext
                     )//Invoke Accelerometer Call
-                    3 -> RotationData(
-                        this@LampForegroundService,
-                        applicationContext
-                    ) //Invoke Rotation Call
-                    4 -> MagnetometerData(
-                        this@LampForegroundService,
-                        applicationContext
-                    ) //Invoke Magnet Call
-                    5 -> GyroscopeData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke Gyroscope Call
-                    6 -> LocationData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke Location
-                    7 -> WifiData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke WifiData
-                    8 -> ScreenStateData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )
+//                    3 -> RotationData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    ) //Invoke Rotation Call
+//                    4 -> MagnetometerData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    ) //Invoke Magnet Call
+//                    5 -> GyroscopeData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )//Invoke Gyroscope Call
+//                    6 -> LocationData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )//Invoke Location
+//                    7 -> WifiData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )//Invoke WifiData
+//                    8 -> ScreenStateData(
+//                        this@LampForegroundService,
+//                        applicationContext
+//                    )
                 }
             }
 

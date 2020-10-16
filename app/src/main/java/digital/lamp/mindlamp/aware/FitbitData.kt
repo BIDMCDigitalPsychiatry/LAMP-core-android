@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.Cursor
 import android.util.Log
 import com.aware.Aware
-import com.aware.plugin.fitbit.Provider
 import com.aware.providers.Aware_Provider
 import com.aware.utils.DatabaseHelper
 import digital.lamp.mindlamp.FitbitActivity
@@ -59,125 +58,125 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
     }
 
     private fun readSteps(context: Context) {
-        val latestSteps: Cursor? = context.contentResolver.query(
-            Provider.Fitbit_Data.CONTENT_URI,
-            null,
-            Provider.Fitbit_Data.DATA_TYPE + " LIKE 'steps'",
-            null,
-            Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
-        )
-
-        if (latestSteps != null && latestSteps.moveToFirst()) {
-            try {
-
-                val stepsJSON =
-                    JSONObject(latestSteps.getString(latestSteps.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
-
-                val totalSteps: String =
-                    stepsJSON.getJSONArray("activities-steps").getJSONObject(0)
-                        .getString("value") //today's total steps
-
-                val steps: JSONArray = stepsJSON.getJSONObject("activities-steps-intraday")
-                    .getJSONArray("dataset") //contains all of today's step count, per 15 minutes
-
-                val data = DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    totalSteps.toInt(),
-                    null,
-                    null,null,null
-                )
-
-
-            } catch (e : JSONException) {
-                e.printStackTrace()
-                val logEventRequest = LogEventRequest()
-                logEventRequest.message = "Exception Caught Fitbit Steps"
-                LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
-            } catch (e : android.net.ParseException) {
-                e.printStackTrace()
-                val logEventRequest = LogEventRequest()
-                logEventRequest.message = "Exception Caught Fitbit Steps"
-                LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.error), logEventRequest)
-            }
-        }else{
-            val logEventRequest = LogEventRequest()
-            logEventRequest.message = "Null Caught Last Step Data"
-            LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.warning), logEventRequest)
-        }
+//        val latestSteps: Cursor? = context.contentResolver.query(
+//            Provider.Fitbit_Data.CONTENT_URI,
+//            null,
+//            Provider.Fitbit_Data.DATA_TYPE + " LIKE 'steps'",
+//            null,
+//            Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
+//        )
+//
+//        if (latestSteps != null && latestSteps.moveToFirst()) {
+//            try {
+//
+//                val stepsJSON =
+//                    JSONObject(latestSteps.getString(latestSteps.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
+//
+//                val totalSteps: String =
+//                    stepsJSON.getJSONArray("activities-steps").getJSONObject(0)
+//                        .getString("value") //today's total steps
+//
+//                val steps: JSONArray = stepsJSON.getJSONObject("activities-steps-intraday")
+//                    .getJSONArray("dataset") //contains all of today's step count, per 15 minutes
+//
+//                val data = DimensionData(
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    totalSteps.toInt(),
+//                    null,
+//                    null,null,null
+//                )
+//
+//
+//            } catch (e : JSONException) {
+//                e.printStackTrace()
+//                val logEventRequest = LogEventRequest()
+//                logEventRequest.message = "Exception Caught Fitbit Steps"
+//                LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
+//            } catch (e : android.net.ParseException) {
+//                e.printStackTrace()
+//                val logEventRequest = LogEventRequest()
+//                logEventRequest.message = "Exception Caught Fitbit Steps"
+//                LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.error), logEventRequest)
+//            }
+//        }else{
+//            val logEventRequest = LogEventRequest()
+//            logEventRequest.message = "Null Caught Last Step Data"
+//            LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.warning), logEventRequest)
+//        }
     }
 
     @SuppressLint("Recycle")
     private fun readHeartBeat(context: Context) {
-        val latestHr: Cursor? = context.contentResolver.query(
-            Provider.Fitbit_Data.CONTENT_URI,
-            null,
-            Provider.Fitbit_Data.DATA_TYPE + " LIKE 'heartrate'",
-            null,
-            Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
-        )
-
-        if (latestHr != null && latestHr.moveToFirst()) {
-            try {
-
-                val hrJSON =
-                    JSONObject(latestHr.getString(latestHr.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
-
-
-                val restingHR = hrJSON.getJSONArray("activities-heart").getJSONObject(0)
-                    .getJSONObject("value")
-                    .optInt("restingHeartRate", -1) //today's resting heart rate
-
-                val hearts = hrJSON.getJSONObject("activities-heart-intraday")
-                    .getJSONArray("dataset") //contains all of today's heart rate, every 5 seconds
-
-                val data = DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,null,null
-                )
-
-                Log.e(TAG,"Hello :  $hrJSON")
-            } catch (e: JSONException) {
-                e.printStackTrace()
-                val logEventRequest = LogEventRequest()
-                logEventRequest.message = "Aware error Fitbit Heart Beat"
-                LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
-            } catch (e: ParseException) {
-                e.printStackTrace()
-                val logEventRequest = LogEventRequest()
-                logEventRequest.message = "Aware error Fitbit Heart Beat"
-                LogUtils.invokeLogData(Utils.getApplicationName(context),context.getString(R.string.error) , logEventRequest)
-            }
-        }else{
-            val logEventRequest = LogEventRequest()
-            logEventRequest.message = "Aware error Heart Beat Data"
-            LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.warning), logEventRequest)
-        }
-        latestHr!!.close()
+//        val latestHr: Cursor? = context.contentResolver.query(
+//            Provider.Fitbit_Data.CONTENT_URI,
+//            null,
+//            Provider.Fitbit_Data.DATA_TYPE + " LIKE 'heartrate'",
+//            null,
+//            Provider.Fitbit_Data.TIMESTAMP + " DESC LIMIT 1"
+//        )
+//
+//        if (latestHr != null && latestHr.moveToFirst()) {
+//            try {
+//
+//                val hrJSON =
+//                    JSONObject(latestHr.getString(latestHr.getColumnIndex(Provider.Fitbit_Data.FITBIT_JSON)))
+//
+//
+//                val restingHR = hrJSON.getJSONArray("activities-heart").getJSONObject(0)
+//                    .getJSONObject("value")
+//                    .optInt("restingHeartRate", -1) //today's resting heart rate
+//
+//                val hearts = hrJSON.getJSONObject("activities-heart-intraday")
+//                    .getJSONArray("dataset") //contains all of today's heart rate, every 5 seconds
+//
+//                val data = DimensionData(
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,null,null
+//                )
+//
+//                Log.e(TAG,"Hello :  $hrJSON")
+//            } catch (e: JSONException) {
+//                e.printStackTrace()
+//                val logEventRequest = LogEventRequest()
+//                logEventRequest.message = "Aware error Fitbit Heart Beat"
+//                LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.error), logEventRequest)
+//            } catch (e: ParseException) {
+//                e.printStackTrace()
+//                val logEventRequest = LogEventRequest()
+//                logEventRequest.message = "Aware error Fitbit Heart Beat"
+//                LogUtils.invokeLogData(Utils.getApplicationName(context),context.getString(R.string.error) , logEventRequest)
+//            }
+//        }else{
+//            val logEventRequest = LogEventRequest()
+//            logEventRequest.message = "Aware error Heart Beat Data"
+//            LogUtils.invokeLogData(Utils.getApplicationName(context),  context.getString(R.string.warning), logEventRequest)
+//        }
+//        latestHr!!.close()
     }
 }
