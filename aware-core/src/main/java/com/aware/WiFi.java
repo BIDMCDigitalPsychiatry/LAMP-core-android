@@ -24,6 +24,7 @@ import android.util.Log;
 import com.aware.providers.WiFi_Provider;
 import com.aware.providers.WiFi_Provider.WiFi_Data;
 import com.aware.providers.WiFi_Provider.WiFi_Sensor;
+import com.aware.utils.AwareConstants;
 import com.aware.utils.Aware_Sensor;
 import com.aware.utils.Encrypter;
 
@@ -133,7 +134,7 @@ public class WiFi extends Aware_Sensor {
                 }
 
                 alarmManager.cancel(wifiScan);
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1000, Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_WIFI)) * 1000, wifiScan);
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1000, AwareConstants.FREQUENCY_WIFI * 1000, wifiScan);
 
                 if (Aware.DEBUG) Log.d(TAG, "WiFi service active...");
             }
@@ -210,7 +211,7 @@ public class WiFi extends Aware_Sensor {
             rowData.put(WiFi_Sensor.SSID, Encrypter.hashSsid(mContext, mWifi.getSSID()));
 
             try {
-                mContext.getContentResolver().insert(WiFi_Sensor.CONTENT_URI, rowData);
+//                mContext.getContentResolver().insert(WiFi_Sensor.CONTENT_URI, rowData);
 
                 Intent currentAp = new Intent(ACTION_AWARE_WIFI_CURRENT_AP);
                 currentAp.putExtra(EXTRA_DATA, rowData);
@@ -256,7 +257,7 @@ public class WiFi extends Aware_Sensor {
                 rowData.put(WiFi_Data.RSSI, ap.level);
 
                 try {
-                    mContext.getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
+//                    mContext.getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
 
                     if (awareSensor != null) awareSensor.onWiFiAPDetected(rowData);
 
@@ -319,12 +320,12 @@ public class WiFi extends Aware_Sensor {
                                 Log.d(WiFi.TAG, "WiFi is off");
                             }
 
-                            ContentValues rowData = new ContentValues();
-                            rowData.put(WiFi_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-                            rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
-                            rowData.put(WiFi_Data.LABEL, "disabled");
-
-                            getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
+//                            ContentValues rowData = new ContentValues();
+//                            rowData.put(WiFi_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
+//                            rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
+//                            rowData.put(WiFi_Data.LABEL, "disabled");
+//
+//                            getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
 
                             if (awareSensor != null) awareSensor.onWiFiDisabled();
                         }
@@ -333,12 +334,12 @@ public class WiFi extends Aware_Sensor {
                             Log.d(WiFi.TAG, "WiFi is off");
                         }
 
-                        ContentValues rowData = new ContentValues();
-                        rowData.put(WiFi_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-                        rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
-                        rowData.put(WiFi_Data.LABEL, "disabled");
-
-                        getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
+//                        ContentValues rowData = new ContentValues();
+//                        rowData.put(WiFi_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
+//                        rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
+//                        rowData.put(WiFi_Data.LABEL, "disabled");
+//
+//                        getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
 
                         if (awareSensor != null) awareSensor.onWiFiDisabled();
                     }

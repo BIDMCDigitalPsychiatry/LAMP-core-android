@@ -91,7 +91,8 @@ class HomeActivity : AppCompatActivity() {
         if(checkAndRequestPermissions(this)){
             //Fit SignIn Auth
             fitSignIn()
-            initializeWebview()
+//            initializeWebview()
+            startLampService()
         }
     }
 
@@ -154,6 +155,7 @@ class HomeActivity : AppCompatActivity() {
                 perms[Manifest.permission.READ_EXTERNAL_STORAGE] = PackageManager.PERMISSION_GRANTED
                 perms[Manifest.permission.READ_SYNC_SETTINGS] = PackageManager.PERMISSION_GRANTED
                 perms[Manifest.permission.READ_SYNC_STATS] = PackageManager.PERMISSION_GRANTED
+                perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
 
                 if (grantResults.isNotEmpty()) {
                     for (i in permissions.indices)
@@ -166,6 +168,7 @@ class HomeActivity : AppCompatActivity() {
                         && perms[Manifest.permission.READ_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED
                         && perms[Manifest.permission.READ_SYNC_SETTINGS] == PackageManager.PERMISSION_GRANTED
                         && perms[Manifest.permission.READ_SYNC_STATS] == PackageManager.PERMISSION_GRANTED
+                        && perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
                     ) {
                         //Fit SignIn Auth
                         fitSignIn()
@@ -200,6 +203,10 @@ class HomeActivity : AppCompatActivity() {
                             || ActivityCompat.shouldShowRequestPermissionRationale(
                                 this,
                                 Manifest.permission.READ_SYNC_STATS
+                            )
+                            || ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.ACTIVITY_RECOGNITION
                             )
                         ) {
                             // case 4 User has denied permission but not permanently

@@ -432,7 +432,7 @@ public class Locations extends Aware_Sensor implements LocationListener {
         // We save ALL locations, no matter which provider it comes from, for the most complete
         // history and future analysis.
         if (Aware.getSetting(getApplicationContext(), Aware_Preferences.LOCATION_SAVE_ALL).equals("true")) {
-            saveLocation(newLocation);
+//            saveLocation(newLocation);
             Intent locationEvent = new Intent(ACTION_AWARE_LOCATIONS);
             sendBroadcast(locationEvent);
             return;
@@ -461,7 +461,7 @@ public class Locations extends Aware_Sensor implements LocationListener {
             bestLocation = newLocation;
         }
 
-        saveLocation(bestLocation);
+//        saveLocation(bestLocation);
 
         Intent locationEvent = new Intent(ACTION_AWARE_LOCATIONS);
         sendBroadcast(locationEvent);
@@ -538,12 +538,12 @@ public class Locations extends Aware_Sensor implements LocationListener {
             boolean updated = false;
             Location newLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (newLocation != null) {
-                saveLocation(newLocation);
+//                saveLocation(newLocation);
                 updated = true;
             }
             newLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if (newLocation != null) {
-                saveLocation(newLocation);
+//                saveLocation(newLocation);
                 updated = true;
             }
             if (updated) {
@@ -571,7 +571,7 @@ public class Locations extends Aware_Sensor implements LocationListener {
             bestLocation = lastGPS;
         }
 
-        saveLocation(bestLocation);
+//        saveLocation(bestLocation);
 
         Intent locationEvent = new Intent(ACTION_AWARE_LOCATIONS);
         sendBroadcast(locationEvent);

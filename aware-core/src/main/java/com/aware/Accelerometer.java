@@ -25,6 +25,7 @@ import android.util.Log;
 import com.aware.providers.Accelerometer_Provider;
 import com.aware.providers.Accelerometer_Provider.Accelerometer_Data;
 import com.aware.providers.Accelerometer_Provider.Accelerometer_Sensor;
+import com.aware.utils.AwareConstants;
 import com.aware.utils.Aware_Sensor;
 import com.aware.utils.DatabaseHelper;
 
@@ -166,23 +167,23 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
 
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
-        try {
-            if (!Aware.getSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getContentResolver().bulkInsert(Accelerometer_Data.CONTENT_URI, data_buffer);
-
-                        Intent accelData = new Intent(ACTION_AWARE_ACCELEROMETER);
-                        sendBroadcast(accelData);
-                    }
-                }).run();
-            }
-        } catch (SQLiteException e) {
-            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-        } catch (SQLException e) {
-            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-        }
+//        try {
+//            if (!Aware.getSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        getContentResolver().bulkInsert(Accelerometer_Data.CONTENT_URI, data_buffer);
+//
+//                        Intent accelData = new Intent(ACTION_AWARE_ACCELEROMETER);
+//                        sendBroadcast(accelData);
+//                    }
+//                }).run();
+//            }
+//        } catch (SQLiteException e) {
+//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
+//        } catch (SQLException e) {
+//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
+//        }
         data_values.clear();
         LAST_SAVE = TS;
     }
@@ -298,7 +299,7 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
             } else {
                 DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
                 Aware.setSetting(this, Aware_Preferences.STATUS_ACCELEROMETER, true);
-                saveAccelerometerDevice(mAccelerometer);
+//                saveAccelerometerDevice(mAccelerometer);
 
                 if (Aware.getSetting(this, Aware_Preferences.FREQUENCY_ACCELEROMETER).length() == 0) {
                     Aware.setSetting(this, Aware_Preferences.FREQUENCY_ACCELEROMETER, 200000);
@@ -308,8 +309,10 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
                     Aware.setSetting(this, Aware_Preferences.THRESHOLD_ACCELEROMETER, 0.0);
                 }
 
-                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ACCELEROMETER));
-                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ACCELEROMETER));
+//                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ACCELEROMETER));
+                int new_frequency = AwareConstants.FREQUENCY_ACCELEROMETER;
+//                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ACCELEROMETER));
+                double new_threshold = AwareConstants.THRESHOLD_ACCELEROMETER;
                 boolean new_enforce_frequency = (Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ACCELEROMETER_ENFORCE).equals("true")
                         || Aware.getSetting(getApplicationContext(), Aware_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
 
@@ -325,7 +328,7 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
                     ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mAccelerometer, Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ACCELEROMETER)), sensorHandler);
+                mSensorManager.registerListener(this, mAccelerometer,AwareConstants.FREQUENCY_ACCELEROMETER, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Aware.DEBUG) Log.d(TAG, "Accelerometer service active: " + FREQUENCY + " ms");

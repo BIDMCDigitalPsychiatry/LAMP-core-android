@@ -65,24 +65,24 @@ class LampForegroundService : Service(),
         }
         else {
             //This will execute every 10 min if logged in
-            val sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
-            sensorEventDataList.clear()
-
-            val gson = GsonBuilder()
-                .create()
-            oScope.async {
-                val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                list.forEach {
-                    sensorEventDataList.add(gson.fromJson(it.analyticsData, SensorEventData::class.java))
-                }
-                list.let {
-                    AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
-                }
-                LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
-                invokeAddSensorData(sensorEventDataList)
-            }
-            //Fetch google fit data in 10 min interval
-            GoogleFit(this@LampForegroundService, applicationContext)
+//            val sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
+//            sensorEventDataList.clear()
+//
+//            val gson = GsonBuilder()
+//                .create()
+//            oScope.async {
+//                val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+//                list.forEach {
+//                    sensorEventDataList.add(gson.fromJson(it.analyticsData, SensorEventData::class.java))
+//                }
+//                list.let {
+//                    AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+//                }
+//                LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
+//                invokeAddSensorData(sensorEventDataList)
+//            }
+//            //Fetch google fit data in 10 min interval
+//            GoogleFit(this@LampForegroundService, applicationContext)
         }
 
 
@@ -118,30 +118,30 @@ class LampForegroundService : Service(),
                         this@LampForegroundService,
                         applicationContext
                     )//Invoke Accelerometer Call
-//                    3 -> RotationData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    ) //Invoke Rotation Call
-//                    4 -> MagnetometerData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    ) //Invoke Magnet Call
-//                    5 -> GyroscopeData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )//Invoke Gyroscope Call
-//                    6 -> LocationData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )//Invoke Location
-//                    7 -> WifiData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )//Invoke WifiData
-//                    8 -> ScreenStateData(
-//                        this@LampForegroundService,
-//                        applicationContext
-//                    )
+                    3 -> RotationData(
+                        this@LampForegroundService,
+                        applicationContext
+                    ) //Invoke Rotation Call
+                    4 -> MagnetometerData(
+                        this@LampForegroundService,
+                        applicationContext
+                    ) //Invoke Magnet Call
+                    5 -> GyroscopeData(
+                        this@LampForegroundService,
+                        applicationContext
+                    )//Invoke Gyroscope Call
+                    6 -> LocationData(
+                        this@LampForegroundService,
+                        applicationContext
+                    )//Invoke Location
+                    7 -> WifiData(
+                        this@LampForegroundService,
+                        applicationContext
+                    )//Invoke WifiData
+                    8 -> ScreenStateData(
+                        this@LampForegroundService,
+                        applicationContext
+                    )
                 }
             }
 

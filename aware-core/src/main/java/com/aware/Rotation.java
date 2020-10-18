@@ -25,6 +25,7 @@ import android.util.Log;
 import com.aware.providers.Rotation_Provider;
 import com.aware.providers.Rotation_Provider.Rotation_Data;
 import com.aware.providers.Rotation_Provider.Rotation_Sensor;
+import com.aware.utils.AwareConstants;
 import com.aware.utils.Aware_Sensor;
 
 import java.util.ArrayList;
@@ -155,23 +156,23 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
 
-        try {
-            if (!Aware.getSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
-
-                        Intent newData = new Intent(ACTION_AWARE_ROTATION);
-                        sendBroadcast(newData);
-                    }
-                }).run();
-            }
-        } catch (SQLiteException e) {
-            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-        } catch (SQLException e) {
-            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-        }
+//        try {
+//            if (!Aware.getSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
+//
+//                        Intent newData = new Intent(ACTION_AWARE_ROTATION);
+//                        sendBroadcast(newData);
+//                    }
+//                }).run();
+//            }
+//        } catch (SQLiteException e) {
+//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
+//        } catch (SQLException e) {
+//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
+//        }
 
         data_values.clear();
         LAST_SAVE = TS;
@@ -291,7 +292,7 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
             } else {
                 DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
                 Aware.setSetting(this, Aware_Preferences.STATUS_ROTATION, true);
-                saveSensorDevice(mRotation);
+//                saveSensorDevice(mRotation);
 
                 if (Aware.getSetting(this, Aware_Preferences.FREQUENCY_ROTATION).length() == 0) {
                     Aware.setSetting(this, Aware_Preferences.FREQUENCY_ROTATION, 200000);
@@ -300,8 +301,10 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
                 if (Aware.getSetting(this, Aware_Preferences.THRESHOLD_ROTATION).length() == 0) {
                     Aware.setSetting(this, Aware_Preferences.THRESHOLD_ROTATION, 0.0);
                 }
-                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ROTATION));
-                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ROTATION));
+//                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ROTATION));
+                int new_frequency = AwareConstants.FREQUENCY_ROTATION;
+//                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ROTATION));
+                double new_threshold = AwareConstants.THRESHOLD_ROTATION;
                 boolean new_enforce_frequency = (Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ROTATION_ENFORCE).equals("true")
                         || Aware.getSetting(getApplicationContext(), Aware_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
 
@@ -317,7 +320,7 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
                     ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mRotation, Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ROTATION)), sensorHandler);
+                mSensorManager.registerListener(this, mRotation, AwareConstants.FREQUENCY_ROTATION, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Aware.DEBUG) Log.d(TAG, "Rotation service active...");

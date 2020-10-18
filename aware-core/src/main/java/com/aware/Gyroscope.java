@@ -25,6 +25,7 @@ import android.util.Log;
 import com.aware.providers.Gyroscope_Provider;
 import com.aware.providers.Gyroscope_Provider.Gyroscope_Data;
 import com.aware.providers.Gyroscope_Provider.Gyroscope_Sensor;
+import com.aware.utils.AwareConstants;
 import com.aware.utils.Aware_Sensor;
 
 import java.util.ArrayList;
@@ -295,7 +296,7 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
                 DEBUG = Aware.getSetting(this, Aware_Preferences.DEBUG_FLAG).equals("true");
 
                 Aware.setSetting(this, Aware_Preferences.STATUS_GYROSCOPE, true);
-                saveGyroscopeDevice(mGyroscope);
+//                saveGyroscopeDevice(mGyroscope);
 
                 if (Aware.getSetting(this, Aware_Preferences.FREQUENCY_GYROSCOPE).length() == 0) {
                     Aware.setSetting(this, Aware_Preferences.FREQUENCY_GYROSCOPE, 200000);
@@ -305,8 +306,10 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
                     Aware.setSetting(this, Aware_Preferences.THRESHOLD_GYROSCOPE, 0.0);
                 }
 
-                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_GYROSCOPE));
-                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_GYROSCOPE));
+//                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_GYROSCOPE));
+                int new_frequency = AwareConstants.FREQUENCY_GYROSCOPE;
+//                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_GYROSCOPE));
+                double new_threshold = AwareConstants.THRESHOLD_GYROSCOPE;
                 boolean new_enforce_frequency = (Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_GYROSCOPE_ENFORCE).equals("true")
                         || Aware.getSetting(getApplicationContext(), Aware_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
 
@@ -322,7 +325,7 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
                     ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mGyroscope, Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_GYROSCOPE)), sensorHandler);
+                mSensorManager.registerListener(this, mGyroscope, AwareConstants.FREQUENCY_GYROSCOPE, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
             }
 
