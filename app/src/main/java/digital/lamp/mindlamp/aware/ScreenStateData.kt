@@ -46,7 +46,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                    val sensorEventData =
                        SensorEventData(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
                    awareListener.getScreenState(sensorEventData)
                }
@@ -73,7 +73,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                    val sensorEventRequest =
                        SensorEventData(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
                    awareListener.getScreenState(sensorEventRequest)
                }
@@ -100,7 +100,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                    val sensorEventRequest =
                        SensorEventData(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
                    awareListener.getScreenState(sensorEventRequest)
                }
@@ -127,7 +127,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                    val sensorEventRequest =
                        SensorEventData(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis()
+                           "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
                    awareListener.getScreenState(sensorEventRequest)
                }

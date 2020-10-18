@@ -91,8 +91,7 @@ class HomeActivity : AppCompatActivity() {
         if(checkAndRequestPermissions(this)){
             //Fit SignIn Auth
             fitSignIn()
-//            initializeWebview()
-            startLampService()
+            initializeWebview()
         }
     }
 

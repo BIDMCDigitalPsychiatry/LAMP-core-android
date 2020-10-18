@@ -4,9 +4,7 @@ import android.content.Context
 import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.Locations
-import com.aware.providers.Locations_Provider
 import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
@@ -30,41 +28,41 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
 
            //Location Observer
            Locations.setSensorObserver { data ->
-               LampLog.e(data.toString())
-               if (data != null) {
-                   val dimensionData =
-                       DimensionData(
-                           null,
-                           null,
-                           null,
-                           null
-                           ,
-                           null,
-                           null,
-                           null,
-                           data.getAsDouble(Locations_Provider.Locations_Data.LONGITUDE),
-                           data.getAsDouble(Locations_Provider.Locations_Data.LATITUDE),
-                           data.getAsDouble(Locations_Provider.Locations_Data.ALTITUDE),
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,null,null
-                       )
-                   val sensorEventData =
-                       SensorEventData(
-                           dimensionData,
-                           "lamp.gps",System.currentTimeMillis()
-                       )
-                   LampLog.e("Location : ${sensorEventData.dimensionData?.latitude} : ${sensorEventData.dimensionData?.longitude}")
-                   awareListener.getLocationData(sensorEventData)
+                LampLog.e(data.toString())
+                if (data != null) {
+                    val dimensionData =
+                        DimensionData(
+                            null,
+                            null,
+                            null,
+                            null
+                            ,
+                            null,
+                            null,
+                            null,
+                            data.longitude,
+                            data.latitude,
+                            data.altitude,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,null,null
+                        )
+                    val sensorEventData =
+                        SensorEventData(
+                            dimensionData,
+                            "lamp.gps",System.currentTimeMillis().toDouble()
+                        )
+                    LampLog.e("Location : ${sensorEventData.dimensionData?.latitude} : ${sensorEventData.dimensionData?.longitude}")
+                    awareListener.getLocationData(sensorEventData)
 
-               }else{
-                   val logEventRequest = LogEventRequest()
-                   logEventRequest.message = context.getString(R.string.log_location_null)
-                   LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
-               }
+                }else{
+                    val logEventRequest = LogEventRequest()
+                    logEventRequest.message = context.getString(R.string.log_location_null)
+                    LogUtils.invokeLogData(Utils.getApplicationName(context), context.getString(R.string.warning), logEventRequest)
+                }
            }
 
 //           android.os.Handler().postDelayed({
@@ -77,3 +75,4 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
        }
    }
 }
+

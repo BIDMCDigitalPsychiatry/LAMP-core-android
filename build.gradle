@@ -18,6 +18,7 @@ buildscript {
         mqtt_libs = '1.2.2'
         ion_libs = "2.+"
         anko_version = "0.10.8"
+        play_services_location = '17.0.0'
     }
 
 

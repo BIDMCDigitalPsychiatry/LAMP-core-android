@@ -56,7 +56,7 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                         val sensorEventData =
                             SensorEventData(
                                 data,
-                                "lamp.wifi",System.currentTimeMillis()
+                                "lamp.wifi",System.currentTimeMillis().toDouble()
                             )
                         awareListener.getWifiData(sensorEventData)
 //                        Handler().postDelayed({

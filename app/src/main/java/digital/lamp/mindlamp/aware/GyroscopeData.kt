@@ -55,7 +55,7 @@ class GyroscopeData constructor(awareListener: AwareListener, context: Context) 
                     val sensorEventData =
                         SensorEventData(
                             dimensionData,
-                            "lamp.gyroscope",System.currentTimeMillis()
+                            "lamp.gyroscope",System.currentTimeMillis().toDouble()
                         )
                     LampLog.e("Gyroscope : $x : $y : $z")
 

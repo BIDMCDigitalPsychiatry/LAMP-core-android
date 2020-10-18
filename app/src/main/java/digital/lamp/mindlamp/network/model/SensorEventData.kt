@@ -11,5 +11,5 @@ data class SensorEventData(
     @Expose
     val dimensionData: DimensionData?,
     val sensor: String,
-    val timestamp: Long
+    val timestamp: Double
 )

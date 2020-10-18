@@ -55,7 +55,7 @@ class AccelerometerData constructor(awareListener: AwareListener, context:Contex
                      val sensorEventData =
                          SensorEventData(
                              dimensionData,
-                             "lamp.accelerometer",System.currentTimeMillis()
+                             "lamp.accelerometer",System.currentTimeMillis().toDouble()
                          )
 
                      LampLog.e("Accelerometer : $x : $y : $z")

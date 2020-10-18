@@ -56,7 +56,7 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                     val sensorEventData =
                         SensorEventData(
                             data,
-                            "lamp.accelerometer.motion",System.currentTimeMillis()
+                            "lamp.accelerometer.motion",System.currentTimeMillis().toDouble()
                         )
                     LampLog.e("Rotation : $x : $y : $z")
 

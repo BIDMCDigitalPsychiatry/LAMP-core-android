@@ -55,7 +55,7 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
                     val sensorEventData =
                         SensorEventData(
                             data,
-                            "lamp.accelerometer.motion",System.currentTimeMillis()
+                            "lamp.accelerometer.motion",System.currentTimeMillis().toDouble()
                         )
                     LampLog.e("Magnetometer : $x : $y : $z")
 
