@@ -22,7 +22,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.aware.providers.Gyroscope_Provider;
 import com.aware.providers.Gyroscope_Provider.Gyroscope_Data;
 import com.aware.providers.Gyroscope_Provider.Gyroscope_Sensor;
 import com.aware.utils.AwareConstants;
@@ -105,7 +104,7 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                getContentResolver().bulkInsert(Gyroscope_Provider.Gyroscope_Data.CONTENT_URI, data_buffer);
+//                                getContentResolver().bulkInsert(Gyroscope_Provider.Gyroscope_Data.CONTENT_URI, data_buffer);
 
                                 Intent newData = new Intent(ACTION_AWARE_GYROSCOPE);
                                 sendBroadcast(newData);
@@ -160,7 +159,7 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        getContentResolver().bulkInsert(Gyroscope_Provider.Gyroscope_Data.CONTENT_URI, data_buffer);
+//                        getContentResolver().bulkInsert(Gyroscope_Provider.Gyroscope_Data.CONTENT_URI, data_buffer);
 
                         Intent newData = new Intent(ACTION_AWARE_GYROSCOPE);
                         sendBroadcast(newData);
@@ -237,7 +236,7 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Gyroscope_Provider.getAuthority(this);
+//        AUTHORITY = Gyroscope_Provider.getAuthority(this);
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -272,12 +271,12 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Aware.getAWAREAccount(this),
-                Gyroscope_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
+//        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this), false);
+//        ContentResolver.removePeriodicSync(
+//                Aware.getAWAREAccount(this),
+//                Gyroscope_Provider.getAuthority(this),
+//                Bundle.EMPTY
+//        );
 
         if (Aware.DEBUG) Log.d(TAG, "Gyroscope service terminated...");
     }
@@ -331,16 +330,16 @@ public class Gyroscope extends Aware_Sensor implements SensorEventListener {
 
             if (Aware.DEBUG) Log.d(TAG, "Gyroscope service active: " + FREQUENCY + "ms");
 
-            if (Aware.isStudy(this)) {
-                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
+//            if (Aware.isStudy(this)) {
+//                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this), 1);
+//                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this), true);
+//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
+//                SyncRequest request = new SyncRequest.Builder()
+//                        .syncPeriodic(frequency, frequency / 3)
+//                        .setSyncAdapter(Aware.getAWAREAccount(this), Gyroscope_Provider.getAuthority(this))
+//                        .setExtras(new Bundle()).build();
+//                ContentResolver.requestSync(request);
+//            }
         }
 
         return START_STICKY;

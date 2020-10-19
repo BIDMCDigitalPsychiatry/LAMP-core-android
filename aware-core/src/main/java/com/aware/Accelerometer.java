@@ -21,8 +21,6 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
-
-import com.aware.providers.Accelerometer_Provider;
 import com.aware.providers.Accelerometer_Provider.Accelerometer_Data;
 import com.aware.providers.Accelerometer_Provider.Accelerometer_Sensor;
 import com.aware.utils.AwareConstants;
@@ -245,7 +243,7 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Accelerometer_Provider.getAuthority(this);
+//        AUTHORITY = Accelerometer_Provider.getAuthority(this);
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -277,12 +275,12 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Aware.getAWAREAccount(this),
-                Accelerometer_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
+//        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this), false);
+//        ContentResolver.removePeriodicSync(
+//                Aware.getAWAREAccount(this),
+//                Accelerometer_Provider.getAuthority(this),
+//                Bundle.EMPTY
+//        );
 
         if (Aware.DEBUG) Log.d(TAG, "Accelerometer service terminated...");
     }
@@ -333,16 +331,16 @@ public class Accelerometer extends Aware_Sensor implements SensorEventListener {
 
                 if (Aware.DEBUG) Log.d(TAG, "Accelerometer service active: " + FREQUENCY + " ms");
 
-                if (Aware.isStudy(this)) {
-                    ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this), 1);
-                    ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this), true);
-                    long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                    SyncRequest request = new SyncRequest.Builder()
-                            .syncPeriodic(frequency, frequency/3)
-                            .setSyncAdapter(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this))
-                            .setExtras(new Bundle()).build();
-                    ContentResolver.requestSync(request);
-                }
+//                if (Aware.isStudy(this)) {
+//                    ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this), 1);
+//                    ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this), true);
+//                    long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
+//                    SyncRequest request = new SyncRequest.Builder()
+//                            .syncPeriodic(frequency, frequency/3)
+//                            .setSyncAdapter(Aware.getAWAREAccount(this), Accelerometer_Provider.getAuthority(this))
+//                            .setExtras(new Bundle()).build();
+//                    ContentResolver.requestSync(request);
+//                }
             }
         }
 

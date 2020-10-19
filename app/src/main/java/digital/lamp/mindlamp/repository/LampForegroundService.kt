@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.SystemClock
+import com.aware.Aware
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
@@ -70,21 +71,24 @@ class LampForegroundService : Service(),
 
             val gson = GsonBuilder()
                 .create()
-            oScope.async {
+            GlobalScope.launch(Dispatchers.IO) {
                 val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                 list.forEach {
                     sensorEventDataList.add(gson.fromJson(it.analyticsData, SensorEventData::class.java))
                 }
                 list.let {
-                    AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+                    if(it.isNotEmpty()) {
+                        AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+                    }
                 }
                 LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
                 invokeAddSensorData(sensorEventDataList)
             }
-            //Fetch google fit data in 10 min interval
-            GoogleFit(this@LampForegroundService, applicationContext)
-        }
 
+            //Fetch google fit data in 10 min interval
+            Aware.stopAWARE(this)
+            collectSensorData()
+        }
 
         return START_STICKY
     }

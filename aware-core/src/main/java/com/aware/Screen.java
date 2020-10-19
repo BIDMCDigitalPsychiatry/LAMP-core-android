@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.aware.providers.Screen_Provider;
 import com.aware.providers.Screen_Provider.Screen_Data;
 import com.aware.utils.Aware_Sensor;
 
@@ -112,7 +111,7 @@ public class Screen extends Aware_Sensor {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Screen_Provider.getAuthority(this);
+//        AUTHORITY = Screen_Provider.getAuthority(this);
 
         if (Aware.DEBUG) Log.d(TAG, "Screen service created!");
     }
@@ -123,12 +122,12 @@ public class Screen extends Aware_Sensor {
 
         if (screenMonitor != null) unregisterReceiver(screenMonitor);
 
-        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Aware.getAWAREAccount(this),
-                Screen_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
+//        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this), false);
+//        ContentResolver.removePeriodicSync(
+//                Aware.getAWAREAccount(this),
+//                Screen_Provider.getAuthority(this),
+//                Bundle.EMPTY
+//        );
 
         if (Aware.DEBUG) Log.d(TAG, "Screen service terminated...");
     }
@@ -355,16 +354,16 @@ public class Screen extends Aware_Sensor {
                 Applications.isAccessibilityServiceActive(this);
             }
 
-            if (Aware.isStudy(this)) {
-                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
+//            if (Aware.isStudy(this)) {
+//                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this), 1);
+//                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this), true);
+//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
+//                SyncRequest request = new SyncRequest.Builder()
+//                        .syncPeriodic(frequency, frequency / 3)
+//                        .setSyncAdapter(Aware.getAWAREAccount(this), Screen_Provider.getAuthority(this))
+//                        .setExtras(new Bundle()).build();
+//                ContentResolver.requestSync(request);
+//            }
         }
         return START_STICKY;
     }

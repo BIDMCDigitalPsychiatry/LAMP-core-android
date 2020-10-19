@@ -4,7 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
@@ -72,8 +72,13 @@ public class Locations extends Aware_Sensor {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        fusedLocationClient.removeLocationUpdates(locationCallback);
-        if (Aware.DEBUG) Log.d(TAG, "Locations service terminated...");
+
+        try {
+            LocationServices.getFusedLocationProviderClient(this).removeLocationUpdates(locationCallback);
+            if (Aware.DEBUG) Log.d(TAG, "Locations service terminated...");
+        }
+        catch(Exception er){er.printStackTrace();}
+
     }
 
     @Override

@@ -22,7 +22,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.aware.providers.Rotation_Provider;
 import com.aware.providers.Rotation_Provider.Rotation_Data;
 import com.aware.providers.Rotation_Provider.Rotation_Sensor;
 import com.aware.utils.AwareConstants;
@@ -104,7 +103,7 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
+//                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
 
                                 Intent newData = new Intent(ACTION_AWARE_ROTATION);
                                 sendBroadcast(newData);
@@ -235,7 +234,7 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Rotation_Provider.getAuthority(this);
+//        AUTHORITY = Rotation_Provider.getAuthority(this);
 
         TAG = "Aware::Rotation";
 
@@ -270,12 +269,12 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Aware.getAWAREAccount(this),
-                Rotation_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
+//        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this), false);
+//        ContentResolver.removePeriodicSync(
+//                Aware.getAWAREAccount(this),
+//                Rotation_Provider.getAuthority(this),
+//                Bundle.EMPTY
+//        );
 
         if (Aware.DEBUG) Log.d(TAG, "Rotation service terminated...");
     }
@@ -320,22 +319,22 @@ public class Rotation extends Aware_Sensor implements SensorEventListener {
                     ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mRotation, AwareConstants.FREQUENCY_ROTATION, sensorHandler);
+                mSensorManager.registerListener(this, mRotation, AwareConstants.FREQUENCY_ROTATION,sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Aware.DEBUG) Log.d(TAG, "Rotation service active...");
             }
 
-            if (Aware.isStudy(this)) {
-                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
+//            if (Aware.isStudy(this)) {
+//                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this), 1);
+//                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this), true);
+//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
+//                SyncRequest request = new SyncRequest.Builder()
+//                        .syncPeriodic(frequency, frequency / 3)
+//                        .setSyncAdapter(Aware.getAWAREAccount(this), Rotation_Provider.getAuthority(this))
+//                        .setExtras(new Bundle()).build();
+//                ContentResolver.requestSync(request);
+//            }
         }
 
         return START_STICKY;

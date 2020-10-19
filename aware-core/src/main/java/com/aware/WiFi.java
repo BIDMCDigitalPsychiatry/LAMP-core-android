@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.aware.providers.WiFi_Provider;
 import com.aware.providers.WiFi_Provider.WiFi_Data;
 import com.aware.providers.WiFi_Provider.WiFi_Sensor;
 import com.aware.utils.AwareConstants;
@@ -77,7 +76,7 @@ public class WiFi extends Aware_Sensor {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = WiFi_Provider.getAuthority(this);
+//        AUTHORITY = WiFi_Provider.getAuthority(this);
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         wifiManager = (WifiManager) this.getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -139,16 +138,16 @@ public class WiFi extends Aware_Sensor {
                 if (Aware.DEBUG) Log.d(TAG, "WiFi service active...");
             }
 
-            if (Aware.isStudy(this)) {
-                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
+//            if (Aware.isStudy(this)) {
+//                ContentResolver.setIsSyncable(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this), 1);
+//                ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this), true);
+//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
+//                SyncRequest request = new SyncRequest.Builder()
+//                        .syncPeriodic(frequency, frequency / 3)
+//                        .setSyncAdapter(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this))
+//                        .setExtras(new Bundle()).build();
+//                ContentResolver.requestSync(request);
+//            }
         }
 
         return START_STICKY;
@@ -161,12 +160,12 @@ public class WiFi extends Aware_Sensor {
         unregisterReceiver(wifiMonitor);
         if (wifiScan != null) alarmManager.cancel(wifiScan);
 
-        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Aware.getAWAREAccount(this),
-                WiFi_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
+//        ContentResolver.setSyncAutomatically(Aware.getAWAREAccount(this), WiFi_Provider.getAuthority(this), false);
+//        ContentResolver.removePeriodicSync(
+//                Aware.getAWAREAccount(this),
+//                WiFi_Provider.getAuthority(this),
+//                Bundle.EMPTY
+//        );
 
         if (Aware.DEBUG) Log.d(TAG, "WiFi service terminated...");
     }
