@@ -12,7 +12,6 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 import java.lang.Exception
 
-
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */

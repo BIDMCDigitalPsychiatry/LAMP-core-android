@@ -4,9 +4,9 @@ import android.content.Context
 import com.aware.Aware
 import com.aware.Aware_Preferences
 import com.aware.Rotation
+import com.aware.providers.Magnetometer_Provider
 import com.aware.providers.Rotation_Provider
 import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
@@ -20,16 +20,16 @@ class MagnetometerData constructor(awareListener: AwareListener, context: Contex
             //Rotation Sensor Settings
             Aware.setSetting(
                 context,
-                Aware_Preferences.FREQUENCY_ROTATION,
+                Aware_Preferences.FREQUENCY_MAGNETOMETER,
                 200000
             ) //20Hz
-            Aware.setSetting(context, Aware_Preferences.THRESHOLD_ROTATION, 5f)
+            Aware.setSetting(context, Aware_Preferences.THRESHOLD_BAROMETER, 5f)
             Aware.startMagnetometer(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {
-                val x = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_0)
-                val y = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_1)
-                val z = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_2)
+                val x = it.getAsDouble(Magnetometer_Provider.Magnetometer_Data.VALUES_0)
+                val y = it.getAsDouble(Magnetometer_Provider.Magnetometer_Data.VALUES_1)
+                val z = it.getAsDouble(Magnetometer_Provider.Magnetometer_Data.VALUES_2)
                 //val value=it.
                 if (it != null) {
                     val magnetData =

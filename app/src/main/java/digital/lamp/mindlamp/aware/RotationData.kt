@@ -6,7 +6,6 @@ import com.aware.Aware_Preferences
 import com.aware.Rotation
 import com.aware.providers.Rotation_Provider
 import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.model.RotationData
 import digital.lamp.mindlamp.utils.LampLog

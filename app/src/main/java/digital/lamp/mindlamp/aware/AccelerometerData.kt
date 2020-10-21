@@ -12,7 +12,6 @@ import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 
-
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
