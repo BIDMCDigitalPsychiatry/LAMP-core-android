@@ -2,27 +2,19 @@ package digital.lamp.mindlamp.aware
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.database.Cursor
-import android.util.Log
-import com.aware.Aware
-import com.aware.providers.Aware_Provider
-import com.aware.utils.DatabaseHelper
+import com.mindlamp.Lamp
+import com.mindlamp.providers.Lamp_Provider
+import com.mindlamp.utils.DatabaseHelper
 import digital.lamp.mindlamp.FitbitActivity
-import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.network.model.DimensionData
-import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.utils.Utils
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
-import java.text.ParseException
 
 /**
  * Created by ZCO Engineering Dept. on 14,February,2020
  */
-class FitbitData constructor(awareListener: AwareListener, context: Context) {
+class FitbitData constructor(sensorListener: SensorListener, context: Context) {
 
-    val listener: AwareListener = awareListener
+    val listener: SensorListener = sensorListener
     companion object{
         const val package_name = "com.aware.plugin.fitbit"
         private val TAG = FitbitData::class.java.simpleName
@@ -30,16 +22,16 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
     init {
         try {
             val installedPlugins = context.contentResolver.query(
-                Aware_Provider.Aware_Plugins.CONTENT_URI,
+                Lamp_Provider.Aware_Plugins.CONTENT_URI,
                 null,
                 null,
                 null,
-                Aware_Provider.Aware_Plugins.PLUGIN_NAME + " ASC"
+                Lamp_Provider.Aware_Plugins.PLUGIN_NAME + " ASC"
             )
             val plugins = JSONArray(DatabaseHelper.cursorToString(installedPlugins))
             val plugin = plugins[0] as JSONObject
-            val packageName = plugin.getString(Aware_Provider.Aware_Plugins.PLUGIN_PACKAGE_NAME)
-            val status = plugin.getInt(Aware_Provider.Aware_Plugins.PLUGIN_STATUS)
+            val packageName = plugin.getString(Lamp_Provider.Aware_Plugins.PLUGIN_PACKAGE_NAME)
+            val status = plugin.getInt(Lamp_Provider.Aware_Plugins.PLUGIN_STATUS)
 
             if ((packageName == FitbitActivity.package_name) && (status == 1)) {
                readHeartBeat(context)
@@ -47,7 +39,7 @@ class FitbitData constructor(awareListener: AwareListener, context: Context) {
                     readSteps(context)
                 }, 3000)
             } else {
-                Aware.startPlugin(context,
+                Lamp.startPlugin(context,
                     package_name
                 )
             }

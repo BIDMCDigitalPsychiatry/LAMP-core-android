@@ -41,6 +41,6 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
-        maven { url "https://jitpack.io" } //MPAndroidChart, AWARE
+        maven { url "https://jitpack.io" } //MPAndroidChart, LAMP
     }
 }

@@ -1,10 +1,10 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Gyroscope
-import com.aware.providers.Gyroscope_Provider
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.Gyroscope
+import com.mindlamp.providers.Gyroscope_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -15,17 +15,17 @@ import digital.lamp.mindlamp.utils.Utils
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class GyroscopeData constructor(awareListener: AwareListener, context: Context) {
+class GyroscopeData constructor(sensorListener: SensorListener, context: Context) {
     init {
         try {
             //Gyroscope Settings
-            Aware.setSetting(
+            Lamp.setSetting(
                 context,
-                Aware_Preferences.FREQUENCY_GYROSCOPE,
+                Lamp_Preferences.FREQUENCY_GYROSCOPE,
                 200000
             ) //20Hz
-            Aware.setSetting(context, Aware_Preferences.THRESHOLD_GYROSCOPE, 5f)
-            Aware.startGyroscope(context)//Start Gyroscope Sensor
+            Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_GYROSCOPE, 5f)
+            Lamp.startGyroscope(context)//Start Gyroscope Sensor
             //Sensor Observer
             Gyroscope.setSensorObserver {
                 val x = it.getAsDouble(Gyroscope_Provider.Gyroscope_Data.VALUES_0)
@@ -60,7 +60,7 @@ class GyroscopeData constructor(awareListener: AwareListener, context: Context) 
                     LampLog.e("Gyroscope : $x : $y : $z")
 
 //                    Aware.stopGyroscope(context)
-                    awareListener.getGyroscopeData(sensorEventData)
+                    sensorListener.getGyroscopeData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest()
                     logEventRequest.message = context.getString(R.string.log_gyroscope_null)

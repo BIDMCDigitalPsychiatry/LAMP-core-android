@@ -2,9 +2,9 @@ package digital.lamp.mindlamp.aware
 
 import android.content.ContentValues
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.WiFi
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.WiFi
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -15,19 +15,19 @@ import digital.lamp.mindlamp.utils.Utils
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class WifiData constructor(awareListener: AwareListener, context: Context) {
+class WifiData constructor(sensorListener: SensorListener, context: Context) {
     init{
         try {
             //Wifi sensor settings
-            Aware.setSetting(
+            Lamp.setSetting(
                 context,
-                Aware_Preferences.FREQUENCY_WIFI,
+                Lamp_Preferences.FREQUENCY_WIFI,
                 5
             )
-            Aware.setSetting(context, Aware_Preferences.STATUS_WIFI, true)
-            Aware.startWiFi(context)//start sensor
+            Lamp.setSetting(context, Lamp_Preferences.STATUS_WIFI, true)
+            Lamp.startWiFi(context)//start sensor
             //Sensor Observer
-            WiFi.setSensorObserver(object : WiFi.AWARESensorObserver {
+            WiFi.setSensorObserver(object : WiFi.LAMPSensorObserver {
                 override fun onWiFiScanEnded() {
                 }
 
@@ -56,7 +56,7 @@ class WifiData constructor(awareListener: AwareListener, context: Context) {
                                 data,
                                 "lamp.wifi",System.currentTimeMillis().toDouble()
                             )
-                        awareListener.getWifiData(sensorEventData)
+                        sensorListener.getWifiData(sensorEventData)
 //                        Handler().postDelayed({
 //                            Aware.stopWiFi(context)
 //                        }, 3000)

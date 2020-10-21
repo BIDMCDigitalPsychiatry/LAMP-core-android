@@ -10,7 +10,7 @@
             android:persistent="true"
             android:selectable="false"
             android:summary="%s"
-            android:title="AWARE Device ID" />
+            android:title="LAMP Device ID" />
         <EditTextPreference
             android:key="device_label"
             android:persistent="true"
@@ -21,17 +21,17 @@
             android:persistent="true"
             android:selectable="false"
             android:summary="%s"
-            android:title="AWARE version" />
+            android:title="LAMP version" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="aware_donate_usage"
             android:persistent="true"
             android:summary="Used for diagnostics and analytics (e.g., server demand)"
-            android:title="Ping AWARE server" />
+            android:title="Ping LAMP server" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="sensors"
-        android:summary="AWARE default sensors"
+        android:summary="LAMP default sensors"
         android:title="Sensors">
 
         <PreferenceScreen
@@ -766,14 +766,14 @@
         <PreferenceScreen
             android:icon="@drawable/ic_action_websocket"
             android:key="websocket"
-            android:summary="Real-time websocket stream (AWARE Micro)"
+            android:summary="Real-time websocket stream (LAMP Micro)"
             android:title="Real-time streaming">
 
             <CheckBoxPreference
                 android:defaultValue="false"
                 android:key="status_websocket"
                 android:persistent="true"
-                android:title="Enable real-time streaming to AWARE Micro"/>
+                android:title="Enable real-time streaming to LAMP Micro"/>
 
             <EditTextPreference
                 android:key="websocket_server"
@@ -843,7 +843,7 @@
             android:icon="@drawable/ic_action_webservice"
             android:key="webservice"
             android:summary="Study and sync settings"
-            android:title="AWARE Study">
+            android:title="LAMP Study">
 
             <CheckBoxPreference
                 android:defaultValue="false"
@@ -915,7 +915,7 @@
                 android:defaultValue="true"
                 android:key="foreground_priority"
                 android:persistent="true"
-                android:summary="RECOMMENDED to keep AWARE running non-stop."
+                android:summary="RECOMMENDED to keep LAMP running non-stop."
                 android:title="Foreground priority" />
 
         </PreferenceScreen>
@@ -938,11 +938,11 @@
                 android:title="Debugging" />
 
             <EditTextPreference
-                android:defaultValue="AWARE"
+                android:defaultValue="LAMP"
                 android:dependency="debug_flag"
                 android:key="debug_tag"
                 android:persistent="true"
-                android:summary="Change logcat tag for debug filters (default = AWARE)"
+                android:summary="Change logcat tag for debug filters (default = LAMP)"
                 android:title="Logcat TAG" />
 
             <CheckBoxPreference

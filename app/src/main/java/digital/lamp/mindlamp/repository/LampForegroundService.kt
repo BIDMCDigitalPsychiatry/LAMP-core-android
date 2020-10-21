@@ -9,7 +9,7 @@ import android.content.Intent
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.SystemClock
-import com.aware.Aware
+import com.mindlamp.Lamp
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
@@ -31,7 +31,7 @@ import kotlinx.coroutines.*
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 class LampForegroundService : Service(),
-    AwareListener {
+    SensorListener {
 
     companion object {
         private val TAG = LampForegroundService::class.java.simpleName
@@ -86,7 +86,7 @@ class LampForegroundService : Service(),
             }
 
             //Fetch google fit data in 10 min interval
-            Aware.stopAWARE(this)
+            Lamp.stopLAMP(this)
             collectSensorData()
         }
 

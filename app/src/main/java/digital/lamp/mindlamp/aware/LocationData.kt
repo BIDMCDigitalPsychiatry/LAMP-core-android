@@ -1,9 +1,9 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Locations
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.Locations
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -15,15 +15,15 @@ import java.lang.Exception
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class LocationData constructor(awareListener: AwareListener, context: Context){
+class LocationData constructor(sensorListener: SensorListener, context: Context){
    init {
        try {
            //Location Settings
-           Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_GPS, true)
-           Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_GPS, 0)
-           Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_NETWORK, true)
-           Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_PASSIVE, true)
-           Aware.startLocations(context)
+           Lamp.setSetting(context, Lamp_Preferences.STATUS_LOCATION_GPS, true)
+           Lamp.setSetting(context, Lamp_Preferences.FREQUENCY_LOCATION_GPS, 0)
+           Lamp.setSetting(context, Lamp_Preferences.STATUS_LOCATION_NETWORK, true)
+           Lamp.setSetting(context, Lamp_Preferences.STATUS_LOCATION_PASSIVE, true)
+           Lamp.startLocations(context)
 
            //Location Observer
            Locations.setSensorObserver { data ->
@@ -55,7 +55,7 @@ class LocationData constructor(awareListener: AwareListener, context: Context){
                             "lamp.gps",System.currentTimeMillis().toDouble()
                         )
                     LampLog.e("Location : ${sensorEventData.dimensionData?.latitude} : ${sensorEventData.dimensionData?.longitude}")
-                    awareListener.getLocationData(sensorEventData)
+                    sensorListener.getLocationData(sensorEventData)
 
                 }else{
                     val logEventRequest = LogEventRequest()

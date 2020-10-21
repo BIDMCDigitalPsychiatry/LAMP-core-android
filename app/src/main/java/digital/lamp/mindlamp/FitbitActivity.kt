@@ -3,15 +3,13 @@ package digital.lamp.mindlamp
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
-import android.database.Cursor
-import android.net.ParseException
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.aware.Aware
-import com.aware.providers.Aware_Provider.Aware_Plugins
-import com.aware.utils.DatabaseHelper
-import com.aware.utils.PluginsManager
+import com.mindlamp.Lamp
+import com.mindlamp.providers.Lamp_Provider.Aware_Plugins
+import com.mindlamp.utils.DatabaseHelper
+import com.mindlamp.utils.PluginsManager
 import kotlinx.android.synthetic.main.activity_fitbit.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -62,7 +60,7 @@ class  FitbitActivity : AppCompatActivity() {
         }
 
         fitBtn.setOnClickListener {
-            Aware.startPlugin(applicationContext,
+            Lamp.startPlugin(applicationContext,
                 package_name
             )
             fitBtn.isEnabled = false
@@ -71,7 +69,7 @@ class  FitbitActivity : AppCompatActivity() {
         }
 
         dectPlugin.setOnClickListener {
-            Aware.stopPlugin(applicationContext,
+            Lamp.stopPlugin(applicationContext,
                 package_name
             )
             fitBtn.isEnabled = true

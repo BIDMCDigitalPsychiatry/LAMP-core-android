@@ -1,10 +1,10 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.providers.Accelerometer_Provider
+import com.mindlamp.Accelerometer
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.providers.Accelerometer_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -15,17 +15,17 @@ import digital.lamp.mindlamp.utils.Utils
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
-class AccelerometerData constructor(awareListener: AwareListener, context:Context) {
+class AccelerometerData constructor(sensorListener: SensorListener, context:Context) {
      init {
          try {
              //Accelerometer settings
-             Aware.setSetting(
+             Lamp.setSetting(
                  context,
-                 Aware_Preferences.FREQUENCY_ACCELEROMETER,
+                 Lamp_Preferences.FREQUENCY_ACCELEROMETER,
                  200000
              ) //20Hz
-             Aware.setSetting(context, Aware_Preferences.THRESHOLD_ACCELEROMETER, 5f)
-             Aware.startAccelerometer(context)//start sensor
+             Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_ACCELEROMETER, 5f)
+             Lamp.startAccelerometer(context)//start sensor
              //Sensor Observer
              Accelerometer.setSensorObserver {
                  val x = it.getAsDouble(Accelerometer_Provider.Accelerometer_Data.VALUES_0)
@@ -59,7 +59,7 @@ class AccelerometerData constructor(awareListener: AwareListener, context:Contex
 
                      LampLog.e("Accelerometer : $x : $y : $z")
 //                     Aware.stopAccelerometer(context)
-                     awareListener.getAccelerometerData(sensorEventData)
+                     sensorListener.getAccelerometerData(sensorEventData)
                  }else{
                      val logEventRequest = LogEventRequest()
                      logEventRequest.message = context.getString(R.string.log_accelerometer_null)

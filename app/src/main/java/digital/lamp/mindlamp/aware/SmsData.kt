@@ -3,22 +3,22 @@ package digital.lamp.mindlamp.aware
 import android.content.ContentValues
 import android.content.Context
 import android.os.Handler
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Communication
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.Communication
 
 /**
  * Created by ZCO Engineering Dept. on 07,February,2020
  */
 class SmsData {
-    fun addListener(awareListener: AwareListener, context: Context) {
+    fun addListener(sensorListener: SensorListener, context: Context) {
         //Wifi sensor settings
-        Aware.setSetting(context, Aware_Preferences.STATUS_COMMUNICATION_EVENTS, true)
-        Aware.setSetting(context, Aware_Preferences.STATUS_MESSAGES, true)
-        Aware.startCommunication(context)
+        Lamp.setSetting(context, Lamp_Preferences.STATUS_COMMUNICATION_EVENTS, true)
+        Lamp.setSetting(context, Lamp_Preferences.STATUS_MESSAGES, true)
+        Lamp.startCommunication(context)
 
         //Communication Observer
-        Communication.setSensorObserver(object : Communication.AWARESensorObserver {
+        Communication.setSensorObserver(object : Communication.LAMPSensorObserver {
             override fun onCall(data: ContentValues?) {
             }
 
@@ -36,6 +36,6 @@ class SmsData {
          }
         )
         Handler().postDelayed({
-            Aware.stopCommunication(context)
+            Lamp.stopCommunication(context)
         }, 3000)
     }}

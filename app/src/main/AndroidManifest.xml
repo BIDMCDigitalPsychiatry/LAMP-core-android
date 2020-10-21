@@ -7,16 +7,16 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <permission
-        android:name="com.aware.READ_CONTEXT_DATA"
+        android:name="com.mindlamp.READ_CONTEXT_DATA"
         android:description="@string/read_permission"
         android:icon="@drawable/ic_launcher_settings"
-        android:label="Read AWARE&apos;s Context data"
+        android:label="Read LAMP&apos;s Context data"
         android:protectionLevel="signature" />
     <permission
-        android:name="com.aware.WRITE_CONTEXT_DATA"
+        android:name="com.mindlamp.WRITE_CONTEXT_DATA"
         android:description="@string/write_permission"
         android:icon="@drawable/ic_launcher_settings"
-        android:label="Write to AWARE&apos;s Context data"
+        android:label="Write to LAMP&apos;s Context data"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -100,7 +100,7 @@
         </receiver>
 
         <receiver
-            android:name="com.aware.Aware$AndroidPackageMonitor" android:exported="true">
+            android:name="com.mindlamp.Lamp$AndroidPackageMonitor" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />

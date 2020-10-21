@@ -14,7 +14,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-class GoogleFit constructor(awareListener: AwareListener,context: Context) {
+class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
 
     companion object {
         private val TAG = GoogleFit::class.java.simpleName
@@ -70,7 +70,7 @@ class GoogleFit constructor(awareListener: AwareListener,context: Context) {
                         dumpDataSet(it)
                     }
                 }
-                awareListener.getGoogleFitData(sensorEventDataList)
+                sensorListener.getGoogleFitData(sensorEventDataList)
             }
             .addOnFailureListener { exception ->
                 LampLog.e(TAG, "Problem in reading data : $exception")

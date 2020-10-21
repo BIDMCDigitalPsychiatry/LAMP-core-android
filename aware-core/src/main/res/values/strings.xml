@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AWARE</string>
-    <string name="aware_description">AWARE is an Android\'s framework dedicated to infer, log and share mobile context information between mobile applications. Visit http://awareframework.com for details.</string>
+    <string name="app_name">LAMP</string>
+    <string name="aware_description">LAMP is an Android\'s framework dedicated to infer, log and share mobile context information between mobile applications. Visit http://awareframework.com for details.</string>
 
-    <string name="channel_general_description">General AWARE notifications</string>
-    <string name="channel_silent_description">Non-interruptive AWARE notifications</string>
-    <string name="channel_datasync_description">AWARE datasync notifications</string>
+    <string name="channel_general_description">General LAMP notifications</string>
+    <string name="channel_silent_description">Non-interruptive LAMP notifications</string>
+    <string name="channel_datasync_description">LAMP datasync notifications</string>
 
     <string name="read_permission">Allow read-only access to the local data.</string>
     <string name="write_permission">Allow read and write access to the local data.</string>
-    <string name="aware_studies">AWARE Studies</string>
-    <string name="aware_sensors">AWARE</string>
-    <string name="aware_stream">AWARE Stream</string>
-    <string name="aware_plugins">AWARE Plugins</string>
+    <string name="aware_studies">LAMP Studies</string>
+    <string name="aware_sensors">LAMP</string>
+    <string name="aware_stream">LAMP Stream</string>
+    <string name="aware_plugins">LAMP Plugins</string>
     <string name="aware_esm_questions_title">Questionnaire waiting</string>
     <string name="aware_esm_questions">Tap to answer</string>
-    <string name="aware_activate_accessibility_title">Please enable AWARE</string>
+    <string name="aware_activate_accessibility_title">Please enable LAMP</string>
     <string name="aware_activate_accessibility">Tap here to activate accessibility service.</string>
     <string name="aware_activate_battery_optimize_ignore_title">Doze</string>
     <string name="aware_activate_battery_optimize_ignore">Tap and add to the ignore battery optimizations\' list.</string>
@@ -29,7 +29,7 @@
     <string name="plugins_required">Plugins needed (install to join)</string>
     <string name="sign_up">Sign Up!</string>
     <string name="install">Install</string>
-    <string name="foreground_notification_title">AWARE</string>
+    <string name="foreground_notification_title">LAMP</string>
     <string name="foreground_notification_text">Data collection active</string>
     <string name="foreground_notification_sync_text">Sync</string>
 
@@ -47,7 +47,7 @@
     <string name="sensor_proximity">Proximity</string>
     <string name="sensor_light">Light</string>
     <string name="sensor_telephony">Telephony</string>
-    <string name="sensor_aware">AWARE device</string>
+    <string name="sensor_aware">LAMP device</string>
     <string name="sensor_rotation">Rotation</string>
     <string name="sensor_wifi">Wi-Fi</string>
     <string name="sensor_gyroscope">Gyroscope</string>

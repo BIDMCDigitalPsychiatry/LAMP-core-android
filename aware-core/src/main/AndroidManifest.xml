@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.aware">
+    package="com.mindlamp">
 
-    <uses-permission android:name="com.aware.READ_CONTEXT_DATA" />
-    <uses-permission android:name="com.aware.WRITE_CONTEXT_DATA" />
+    <uses-permission android:name="com.mindlamp.READ_CONTEXT_DATA" />
+    <uses-permission android:name="com.mindlamp.WRITE_CONTEXT_DATA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -26,7 +26,7 @@
 
         <!-- Activities -->
         <activity
-            android:name="com.aware.ui.ESM_Queue"
+            android:name="com.mindlamp.ui.ESM_Queue"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:excludeFromRecents="true"
             android:exported="true"
@@ -34,14 +34,14 @@
             android:noHistory="true" />
 
         <activity
-            android:name="com.aware.ui.PermissionsHandler"
+            android:name="com.mindlamp.ui.PermissionsHandler"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Translucent" />
 
-        <!-- AWARE account service -->
-        <service android:name="com.aware.utils.Aware_Accounts">
+        <!-- LAMP account service -->
+        <service android:name="com.mindlamp.utils.Aware_Accounts">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -52,21 +52,21 @@
 
         <!-- Sensor services -->
         <service
-            android:name="com.aware.Keyboard"
+            android:name="com.mindlamp.Keyboard"
             android:exported="true" />
         <service
-            android:name="com.aware.utils.Scheduler"
+            android:name="com.mindlamp.utils.Scheduler"
             android:exported="true" />
         <service
-            android:name="com.aware.Aware"
-            android:exported="true" />
-
-        <service
-            android:name="com.aware.Aware$JoinStudy"
+            android:name="com.mindlamp.Lamp"
             android:exported="true" />
 
         <service
-            android:name="com.aware.Applications"
+            android:name="com.mindlamp.Lamp$JoinStudy"
+            android:exported="true" />
+
+        <service
+            android:name="com.mindlamp.Applications"
             android:enabled="@bool/accessibility_access"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -80,98 +80,98 @@
         </service>
 
         <service
-            android:name="com.aware.Applications$BackgroundService"
+            android:name="com.mindlamp.Applications$BackgroundService"
             android:exported="true" />
         <service
-            android:name="com.aware.Locations"
+            android:name="com.mindlamp.Locations"
             android:exported="true" />
         <service
-            android:name="com.aware.Bluetooth"
+            android:name="com.mindlamp.Bluetooth"
             android:exported="true" />
         <service
-            android:name="com.aware.Screen"
+            android:name="com.mindlamp.Screen"
             android:exported="true" />
         <service
-            android:name="com.aware.Battery"
+            android:name="com.mindlamp.Battery"
             android:exported="true" />
         <service
-            android:name="com.aware.Network"
+            android:name="com.mindlamp.Network"
             android:exported="true" />
         <service
-            android:name="com.aware.Communication"
+            android:name="com.mindlamp.Communication"
             android:exported="true" />
         <service
-            android:name="com.aware.Processor"
+            android:name="com.mindlamp.Processor"
             android:exported="true" />
         <service
-            android:name="com.aware.Timezone"
+            android:name="com.mindlamp.Timezone"
             android:exported="true" />
         <service
-            android:name="com.aware.Mqtt"
+            android:name="com.mindlamp.Mqtt"
             android:exported="true" />
         <service
-            android:name="com.aware.Traffic"
+            android:name="com.mindlamp.Traffic"
             android:exported="true" />
         <service
-            android:name="com.aware.Accelerometer"
+            android:name="com.mindlamp.Accelerometer"
             android:exported="true" />
         <service
-            android:name="com.aware.Gyroscope"
+            android:name="com.mindlamp.Gyroscope"
             android:exported="true" />
         <service
-            android:name="com.aware.WiFi"
+            android:name="com.mindlamp.WiFi"
             android:exported="true" />
         <service
-            android:name="com.aware.WiFi$BackgroundService"
+            android:name="com.mindlamp.WiFi$BackgroundService"
             android:exported="true" />
         <service
-            android:name="com.aware.Telephony"
+            android:name="com.mindlamp.Telephony"
             android:exported="true" />
         <service
-            android:name="com.aware.Rotation"
+            android:name="com.mindlamp.Rotation"
             android:exported="true" />
         <service
-            android:name="com.aware.Light"
+            android:name="com.mindlamp.Light"
             android:exported="true" />
         <service
-            android:name="com.aware.Proximity"
+            android:name="com.mindlamp.Proximity"
             android:exported="true" />
         <service
-            android:name="com.aware.Magnetometer"
+            android:name="com.mindlamp.Magnetometer"
             android:exported="true" />
         <service
-            android:name="com.aware.Barometer"
+            android:name="com.mindlamp.Barometer"
             android:exported="true" />
         <service
-            android:name="com.aware.Gravity"
+            android:name="com.mindlamp.Gravity"
             android:exported="true" />
         <service
-            android:name="com.aware.LinearAccelerometer"
+            android:name="com.mindlamp.LinearAccelerometer"
             android:exported="true" />
         <service
-            android:name="com.aware.Temperature"
+            android:name="com.mindlamp.Temperature"
             android:exported="true" />
         <service
-            android:name="com.aware.ESM"
+            android:name="com.mindlamp.ESM"
             android:exported="true" />
         <service
-            android:name="com.aware.Installations"
+            android:name="com.mindlamp.Installations"
             android:exported="true" />
         <service
-            android:name="com.aware.utils.DownloadPluginService"
+            android:name="com.mindlamp.utils.DownloadPluginService"
             android:exported="true" />
         <service
-            android:name="com.aware.utils.StudyUtils"
+            android:name="com.mindlamp.utils.StudyUtils"
             android:exported="true" />
         <service
-            android:name="com.aware.utils.Aware_TTS"
+            android:name="com.mindlamp.utils.Aware_TTS"
             android:exported="true" />
         <service
-            android:name="com.aware.SignificantMotion"
+            android:name="com.mindlamp.SignificantMotion"
             android:exported="true" />
 
         <receiver
-            android:name="com.aware.Aware$Storage_Broadcaster"
+            android:name="com.mindlamp.Lamp$Storage_Broadcaster"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_MOUNTED" />
@@ -181,7 +181,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name="com.aware.Aware$AwareBoot"
+            android:name="com.mindlamp.Lamp$AwareBoot"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -190,13 +190,13 @@
 
         <!-- Core providers -->
         <provider
-            android:name="com.aware.providers.Scheduler_Provider"
+            android:name="com.mindlamp.providers.Scheduler_Provider"
             android:authorities="${applicationId}.provider.scheduler"
             android:exported="true"
             android:readPermission="com.aware.READ_CONTEXT_DATA"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Bluetooth_Provider"
+            android:name="com.mindlamp.providers.Bluetooth_Provider"
             android:authorities="${applicationId}.provider.bluetooth"
             android:exported="true"
             android:label="@string/sensor_bluetooth"
@@ -204,7 +204,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Applications_Provider"
+            android:name="com.mindlamp.providers.Applications_Provider"
             android:authorities="${applicationId}.provider.applications"
             android:exported="true"
             android:label="@string/sensor_applications"
@@ -212,7 +212,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Locations_Provider"
+            android:name="com.mindlamp.providers.Locations_Provider"
             android:authorities="${applicationId}.provider.locations"
             android:exported="true"
             android:label="@string/sensor_locations"
@@ -220,7 +220,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Installations_Provider"
+            android:name="com.mindlamp.providers.Installations_Provider"
             android:authorities="${applicationId}.provider.installations"
             android:exported="true"
             android:label="@string/sensor_installations"
@@ -228,7 +228,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.ESM_Provider"
+            android:name="com.mindlamp.providers.ESM_Provider"
             android:authorities="${applicationId}.provider.esm"
             android:exported="true"
             android:label="@string/sensor_esms"
@@ -236,7 +236,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Temperature_Provider"
+            android:name="com.mindlamp.providers.Temperature_Provider"
             android:authorities="${applicationId}.provider.temperature"
             android:exported="true"
             android:label="@string/sensor_temperature"
@@ -244,7 +244,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Linear_Accelerometer_Provider"
+            android:name="com.mindlamp.providers.Linear_Accelerometer_Provider"
             android:authorities="${applicationId}.provider.accelerometer.linear"
             android:exported="true"
             android:label="@string/sensor_linear_accelerometer"
@@ -252,7 +252,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Gravity_Provider"
+            android:name="com.mindlamp.providers.Gravity_Provider"
             android:authorities="${applicationId}.provider.gravity"
             android:exported="true"
             android:label="@string/sensor_gravity"
@@ -260,7 +260,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Barometer_Provider"
+            android:name="com.mindlamp.providers.Barometer_Provider"
             android:authorities="${applicationId}.provider.barometer"
             android:exported="true"
             android:label="Barometer"
@@ -268,7 +268,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Magnetometer_Provider"
+            android:name="com.mindlamp.providers.Magnetometer_Provider"
             android:authorities="${applicationId}.provider.magnetometer"
             android:exported="true"
             android:label="@string/sensor_magnetometer"
@@ -276,7 +276,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Proximity_Provider"
+            android:name="com.mindlamp.providers.Proximity_Provider"
             android:authorities="${applicationId}.provider.proximity"
             android:exported="true"
             android:label="@string/sensor_proximity"
@@ -284,7 +284,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Light_Provider"
+            android:name="com.mindlamp.providers.Light_Provider"
             android:authorities="${applicationId}.provider.light"
             android:exported="true"
             android:label="@string/sensor_light"
@@ -292,7 +292,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Telephony_Provider"
+            android:name="com.mindlamp.providers.Telephony_Provider"
             android:authorities="${applicationId}.provider.telephony"
             android:exported="true"
             android:label="@string/sensor_telephony"
@@ -300,7 +300,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Aware_Provider"
+            android:name="com.mindlamp.providers.Lamp_Provider"
             android:authorities="${applicationId}.provider.aware"
             android:exported="true"
             android:label="@string/sensor_aware"
@@ -308,7 +308,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Rotation_Provider"
+            android:name="com.mindlamp.providers.Rotation_Provider"
             android:authorities="${applicationId}.provider.rotation"
             android:exported="true"
             android:label="@string/sensor_rotation"
@@ -316,7 +316,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.WiFi_Provider"
+            android:name="com.mindlamp.providers.WiFi_Provider"
             android:authorities="${applicationId}.provider.wifi"
             android:exported="true"
             android:label="@string/sensor_wifi"
@@ -324,7 +324,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Accelerometer_Provider"
+            android:name="com.mindlamp.providers.Accelerometer_Provider"
             android:authorities="${applicationId}.provider.accelerometer"
             android:exported="true"
             android:label="@string/sensor_accelerometer"
@@ -332,7 +332,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Gyroscope_Provider"
+            android:name="com.mindlamp.providers.Gyroscope_Provider"
             android:authorities="${applicationId}.provider.gyroscope"
             android:exported="true"
             android:label="@string/sensor_gyroscope"
@@ -340,7 +340,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Traffic_Provider"
+            android:name="com.mindlamp.providers.Traffic_Provider"
             android:authorities="${applicationId}.provider.traffic"
             android:exported="true"
             android:label="@string/sensor_traffic"
@@ -348,13 +348,13 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Mqtt_Provider"
+            android:name="com.mindlamp.providers.Mqtt_Provider"
             android:authorities="${applicationId}.provider.mqtt"
             android:exported="true"
             android:readPermission="com.aware.READ_CONTEXT_DATA"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Processor_Provider"
+            android:name="com.mindlamp.providers.Processor_Provider"
             android:authorities="${applicationId}.provider.processor"
             android:exported="true"
             android:label="@string/sensor_processor"
@@ -362,7 +362,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.TimeZone_Provider"
+            android:name="com.mindlamp.providers.TimeZone_Provider"
             android:authorities="${applicationId}.provider.timezone"
             android:exported="true"
             android:label="@string/sensor_timezone"
@@ -370,7 +370,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Battery_Provider"
+            android:name="com.mindlamp.providers.Battery_Provider"
             android:authorities="${applicationId}.provider.battery"
             android:exported="true"
             android:label="@string/sensor_battery"
@@ -378,7 +378,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Screen_Provider"
+            android:name="com.mindlamp.providers.Screen_Provider"
             android:authorities="${applicationId}.provider.screen"
             android:exported="true"
             android:label="@string/sensor_screen"
@@ -386,7 +386,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Network_Provider"
+            android:name="com.mindlamp.providers.Network_Provider"
             android:authorities="${applicationId}.provider.network"
             android:exported="true"
             android:label="@string/sensor_network_usage"
@@ -394,7 +394,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Communication_Provider"
+            android:name="com.mindlamp.providers.Communication_Provider"
             android:authorities="${applicationId}.provider.communication"
             android:exported="true"
             android:label="@string/sensor_communications"
@@ -402,7 +402,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Keyboard_Provider"
+            android:name="com.mindlamp.providers.Keyboard_Provider"
             android:authorities="${applicationId}.provider.keyboard"
             android:exported="true"
             android:label="@string/sensor_keyboard"
@@ -410,7 +410,7 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.aware.providers.Significant_Provider"
+            android:name="com.mindlamp.providers.Significant_Provider"
             android:authorities="${applicationId}.provider.significant"
             android:exported="true"
             android:label="@string/sensor_significant"
@@ -431,7 +431,7 @@
         <!-- Core Sync-Adapters -->
 
         <service
-            android:name="com.aware.syncadapters.Accelerometer_Sync"
+            android:name="com.mindlamp.syncadapters.Accelerometer_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -441,7 +441,7 @@
                 android:resource="@xml/sync_accelerometer" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Applications_Sync"
+            android:name="com.mindlamp.syncadapters.Applications_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -451,7 +451,7 @@
                 android:resource="@xml/sync_applications" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Aware_Sync"
+            android:name="com.mindlamp.syncadapters.Aware_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -461,7 +461,7 @@
                 android:resource="@xml/sync_aware_device" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Barometer_Sync"
+            android:name="com.mindlamp.syncadapters.Barometer_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -471,7 +471,7 @@
                 android:resource="@xml/sync_barometer" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Battery_Sync"
+            android:name="com.mindlamp.syncadapters.Battery_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -481,7 +481,7 @@
                 android:resource="@xml/sync_battery" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Bluetooth_Sync"
+            android:name="com.mindlamp.syncadapters.Bluetooth_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -491,7 +491,7 @@
                 android:resource="@xml/sync_bluetooth" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Communications_Sync"
+            android:name="com.mindlamp.syncadapters.Communications_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -501,7 +501,7 @@
                 android:resource="@xml/sync_communications" />
         </service>
         <service
-            android:name="com.aware.syncadapters.ESM_Sync"
+            android:name="com.mindlamp.syncadapters.ESM_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -511,7 +511,7 @@
                 android:resource="@xml/sync_esms" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Gravity_Sync"
+            android:name="com.mindlamp.syncadapters.Gravity_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -521,7 +521,7 @@
                 android:resource="@xml/sync_gravity" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Gyroscope_Sync"
+            android:name="com.mindlamp.syncadapters.Gyroscope_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -531,7 +531,7 @@
                 android:resource="@xml/sync_gyroscope" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Installations_Sync"
+            android:name="com.mindlamp.syncadapters.Installations_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -541,7 +541,7 @@
                 android:resource="@xml/sync_installations" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Keyboard_Sync"
+            android:name="com.mindlamp.syncadapters.Keyboard_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -551,7 +551,7 @@
                 android:resource="@xml/sync_keyboard" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Light_Sync"
+            android:name="com.mindlamp.syncadapters.Light_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -561,7 +561,7 @@
                 android:resource="@xml/sync_light" />
         </service>
         <service
-            android:name="com.aware.syncadapters.LinearAccelerometer_Sync"
+            android:name="com.mindlamp.syncadapters.LinearAccelerometer_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -571,7 +571,7 @@
                 android:resource="@xml/sync_linear_accelerometer" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Locations_Sync"
+            android:name="com.mindlamp.syncadapters.Locations_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -581,7 +581,7 @@
                 android:resource="@xml/sync_locations" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Magnetometer_Sync"
+            android:name="com.mindlamp.syncadapters.Magnetometer_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -591,7 +591,7 @@
                 android:resource="@xml/sync_magnetometer" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Network_Sync"
+            android:name="com.mindlamp.syncadapters.Network_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -601,7 +601,7 @@
                 android:resource="@xml/sync_network" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Processor_Sync"
+            android:name="com.mindlamp.syncadapters.Processor_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -611,7 +611,7 @@
                 android:resource="@xml/sync_processor" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Proximity_Sync"
+            android:name="com.mindlamp.syncadapters.Proximity_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -621,7 +621,7 @@
                 android:resource="@xml/sync_proximity" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Rotation_Sync"
+            android:name="com.mindlamp.syncadapters.Rotation_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -631,7 +631,7 @@
                 android:resource="@xml/sync_rotation" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Screen_Sync"
+            android:name="com.mindlamp.syncadapters.Screen_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -641,7 +641,7 @@
                 android:resource="@xml/sync_screen" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Significant_Sync"
+            android:name="com.mindlamp.syncadapters.Significant_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -651,7 +651,7 @@
                 android:resource="@xml/sync_significant" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Telephony_Sync"
+            android:name="com.mindlamp.syncadapters.Telephony_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -661,7 +661,7 @@
                 android:resource="@xml/sync_telephony" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Temperature_Sync"
+            android:name="com.mindlamp.syncadapters.Temperature_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -671,7 +671,7 @@
                 android:resource="@xml/sync_temperature" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Timezone_Sync"
+            android:name="com.mindlamp.syncadapters.Timezone_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -681,7 +681,7 @@
                 android:resource="@xml/sync_timezones" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Traffic_Sync"
+            android:name="com.mindlamp.syncadapters.Traffic_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -691,7 +691,7 @@
                 android:resource="@xml/sync_traffic" />
         </service>
         <service
-            android:name="com.aware.syncadapters.Wifi_Sync"
+            android:name="com.mindlamp.syncadapters.Wifi_Sync"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
@@ -701,7 +701,7 @@
                 android:resource="@xml/sync_wifi" />
         </service>
         <service
-            android:name="com.aware.Websocket"
+            android:name="com.mindlamp.Websocket"
             android:exported="true" />
 
     </application>

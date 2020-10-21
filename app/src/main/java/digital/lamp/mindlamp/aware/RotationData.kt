@@ -1,10 +1,10 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Rotation
-import com.aware.providers.Rotation_Provider
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.Rotation
+import com.mindlamp.providers.Rotation_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.model.RotationData
@@ -14,17 +14,17 @@ import digital.lamp.mindlamp.utils.Utils
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class RotationData constructor(awareListener: AwareListener, context: Context){
+class RotationData constructor(sensorListener: SensorListener, context: Context){
     init {
         try {
             //Rotation Sensor Settings
-            Aware.setSetting(
+            Lamp.setSetting(
                 context,
-                Aware_Preferences.FREQUENCY_ROTATION,
+                Lamp_Preferences.FREQUENCY_ROTATION,
                 200000
             ) //20Hz
-            Aware.setSetting(context, Aware_Preferences.THRESHOLD_ROTATION, 5f)
-            Aware.startRotation(context)//start Sensor
+            Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_ROTATION, 5f)
+            Lamp.startRotation(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {
                 val x = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_0)
@@ -60,7 +60,7 @@ class RotationData constructor(awareListener: AwareListener, context: Context){
                     LampLog.e("Rotation : $x : $y : $z")
 
 //                    Aware.stopRotation(context)
-                    awareListener.getRotationData(sensorEventData)
+                    sensorListener.getRotationData(sensorEventData)
                 }else{
                     val logEventRequest = LogEventRequest()
                     logEventRequest.message = context.getString(R.string.log_rotation_null)

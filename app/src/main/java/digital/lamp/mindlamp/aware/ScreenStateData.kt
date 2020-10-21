@@ -1,9 +1,9 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Screen
+import com.mindlamp.Lamp
+import com.mindlamp.Lamp_Preferences
+import com.mindlamp.Screen
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -15,14 +15,14 @@ import java.lang.Exception
 /**
  * Created by ZCO Engineering Dept. on 07,February,2020
  */
-class ScreenStateData constructor(awareListener: AwareListener, context: Context){
+class ScreenStateData constructor(sensorListener: SensorListener, context: Context){
    init {
        try {
            //Screen State Settings
-           Aware.setSetting(context, Aware_Preferences.STATUS_SCREEN, true)
-           Aware.startScreen(context)//Start Screen Sensor
+           Lamp.setSetting(context, Lamp_Preferences.STATUS_SCREEN, true)
+           Lamp.startScreen(context)//Start Screen Sensor
            //Sensor Observer
-           Screen.setSensorObserver(object : Screen.AWARESensorObserver {
+           Screen.setSensorObserver(object : Screen.LAMPSensorObserver {
                override fun onScreenLocked() {
                    val data = DimensionData(
                        null,
@@ -47,7 +47,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
-                   awareListener.getScreenState(sensorEventData)
+                   sensorListener.getScreenState(sensorEventData)
                }
 
                override fun onScreenOff() {
@@ -74,7 +74,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
-                   awareListener.getScreenState(sensorEventRequest)
+                   sensorListener.getScreenState(sensorEventRequest)
                }
 
                override fun onScreenOn() {
@@ -101,7 +101,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
-                   awareListener.getScreenState(sensorEventRequest)
+                   sensorListener.getScreenState(sensorEventRequest)
                }
 
                override fun onScreenUnlocked() {
@@ -128,7 +128,7 @@ class ScreenStateData constructor(awareListener: AwareListener, context: Context
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
-                   awareListener.getScreenState(sensorEventRequest)
+                   sensorListener.getScreenState(sensorEventRequest)
                }
            })
 //           Aware.stopScreen(context)
