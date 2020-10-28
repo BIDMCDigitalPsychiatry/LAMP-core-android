@@ -15,7 +15,7 @@ import com.google.gson.GsonBuilder
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
-import digital.lamp.mindlamp.aware.*
+import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.database.Analytics
 import digital.lamp.mindlamp.database.AnalyticsDao
 import digital.lamp.mindlamp.database.AppDatabase

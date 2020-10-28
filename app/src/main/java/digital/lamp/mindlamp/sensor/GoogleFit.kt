@@ -1,4 +1,4 @@
-package digital.lamp.mindlamp.aware
+package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -192,7 +192,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                     val sensorEvenData: SensorEventData = getOxygenSaturation(dp.getValue(field))
                     sensorEventDataList.add(sensorEvenData)
                 }
-                "lamp.body_temperature" -> {
+                "com.google.body.temperature" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Body Temperature: " + dp.getValue(field))
                     val sensorEvenData: SensorEventData = getBodyTemperature(dp.getValue(field))
@@ -317,7 +317,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,null,
-                "Cm",
+                "meter",
                 height.asFloat()
             )
         return SensorEventData(dimensionData, "lamp.height",System.currentTimeMillis().toDouble())
@@ -560,7 +560,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 "count",
                 pedalingCumulative.asInt()
             )
-        return SensorEventData(dimensionData, "lamp.wheel_revolution_cumalative",System.currentTimeMillis().toDouble())
+        return SensorEventData(dimensionData, "lamp.wheel_revolution_cumulative",System.currentTimeMillis().toDouble())
     }
 
     //13
@@ -840,7 +840,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
             null,
             null,
             null, null,null,
-            "watt",
+            "watts",
             powerData.asFloat()
         )
     return SensorEventData(dimensionData, "lamp.power",System.currentTimeMillis().toDouble())    }

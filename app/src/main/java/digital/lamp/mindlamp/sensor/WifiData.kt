@@ -1,4 +1,4 @@
-package digital.lamp.mindlamp.aware
+package digital.lamp.mindlamp.sensor
 
 import android.content.ContentValues
 import android.content.Context

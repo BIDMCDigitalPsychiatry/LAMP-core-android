@@ -1,4 +1,4 @@
-package digital.lamp.mindlamp.aware
+package digital.lamp.mindlamp.sensor
 
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.repository.HomeRepository

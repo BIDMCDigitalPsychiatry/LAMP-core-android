@@ -1,4 +1,4 @@
-package digital.lamp.mindlamp.aware
+package digital.lamp.mindlamp.sensor
 
 import android.annotation.SuppressLint
 import android.content.Context
