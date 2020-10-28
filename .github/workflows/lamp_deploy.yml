@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: app
-          path: prod/release/app-prod-release.aab
+          path: app/build/outputs/bundle/prodRelease/app-prod-release.aab
     
 
  
