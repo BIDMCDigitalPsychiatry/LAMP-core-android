@@ -29,6 +29,13 @@ jobs:
       - name: Build Release AAB
         id: buildRelease
         run: ./gradlew bundleRelease
+        
+      - name: Upload AAB
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: app
+          path: prod/release/app-prod-release.aab
     
 
  
