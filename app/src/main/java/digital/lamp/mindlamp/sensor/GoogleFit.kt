@@ -867,6 +867,4 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
         )
     return SensorEventData(dimensionData, "lamp.step_count_cadence",System.currentTimeMillis().toDouble())
     }
-//25
-
 }
