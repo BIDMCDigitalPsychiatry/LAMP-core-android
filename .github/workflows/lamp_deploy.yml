@@ -24,15 +24,6 @@ jobs:
         with:
           gradlePath: app/build.gradle
           versionCode: ${{github.run_number}}
-          
-      - name: Generate build number
-        uses: einaregilsson/build-number@v1 
-        with: 
-          token: ${{secrets.github_token}}        
-     
-      - name: Print generated build number for test
-        run: echo Build number is $BUILD_NUMBER
-
 
     
 
