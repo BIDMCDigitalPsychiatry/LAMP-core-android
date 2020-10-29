@@ -30,7 +30,7 @@ jobs:
         with: 
           token: ${{secrets.github_token}}        
      
-      - name: Print generated build number
+      - name: Print generated build number for test
         run: echo Build number is $BUILD_NUMBER
 
 
