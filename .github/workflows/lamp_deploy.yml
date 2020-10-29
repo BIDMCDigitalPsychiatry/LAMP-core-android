@@ -19,12 +19,53 @@ jobs:
         with:
           java-version: 1.8   
         
-      - name: Bump version
+      - name: Bump version code
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: app/build.gradle
           versionCode: ${{github.run_number}}
-
+ 
+      - name: Grant rights
+        run: chmod +x build.gradle
+          
+      - name: Build with Gradle
+        id: build
+        run: ./gradlew build
+        
+      - name: Build Release AAB
+        id: buildRelease
+        run: ./gradlew bundleRelease
+        
+      - name: Sign Release AAB
+        id: sign
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/bundle/prodRelease
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        
+      - name: Upload AAB
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: mindLAMP
+          path: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          
+      - name: Create service_account.json
+        id: createServiceAccount
+        run: echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
+        
+      - name: Publish to Play Store BETA
+        id: publish
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service_account.json
+          packageName: digital.lamp.mindlamp
+          releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          track: beta
+          userFraction: 0.1
     
 
  
