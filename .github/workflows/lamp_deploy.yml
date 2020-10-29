@@ -65,7 +65,6 @@ jobs:
           packageName: digital.lamp.mindlamp
           releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
-          userFraction: 0.1
     
 
  
