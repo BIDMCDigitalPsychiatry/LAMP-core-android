@@ -111,7 +111,6 @@ class HomeActivity : AppCompatActivity() {
                     this
                 ), JAVASCRIPT_OBJ_LOGOUT
             )
-
             val url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
                 AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
                     .removePrefix(
