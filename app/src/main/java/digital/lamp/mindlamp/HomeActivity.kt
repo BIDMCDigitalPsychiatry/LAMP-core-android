@@ -102,6 +102,7 @@ class HomeActivity : AppCompatActivity() {
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
         webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
         progressBar.visibility = View.VISIBLE;
 
         if(AppState.session.isLoggedIn){
