@@ -35,6 +35,7 @@ import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
 import kotlinx.android.synthetic.main.activity_home.*
@@ -350,6 +351,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun accessGoogleFit() {
+        DebugLogs.writeToFile("Google Fit Connected")
 //        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
 
@@ -392,7 +394,7 @@ class HomeActivity : AppCompatActivity() {
             Request code was: $requestCode
             Result code was: $resultCode
         """.trimIndent()
-        Log.e(TAG, message)
+        DebugLogs.writeToFile(message)
     }
 
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(

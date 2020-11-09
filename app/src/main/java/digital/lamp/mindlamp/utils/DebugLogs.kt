@@ -17,7 +17,7 @@ object DebugLogs {
      * @param txt
      */
     fun writeToFile(txt: String?) {
-        if (BuildConfig.DO_LOG) {
+//        if (BuildConfig.DO_LOG) {
             try {
                 val  sd = App.app.getExternalFilesDir(null)!!
                 val logfile = File(sd, "LampLog.txt")
@@ -40,7 +40,7 @@ object DebugLogs {
                 LampLog.e(e.toString())
             }
 
-        }
+//        }
     }
 
 

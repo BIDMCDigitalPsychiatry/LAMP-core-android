@@ -6,6 +6,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import digital.lamp.mindlamp.model.ActionData
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 
 
@@ -18,6 +19,7 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
 
         Log.e(TAG, "Remote Message: ${remoteMessage.data}")
 
+        DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
         val actionList: List<ActionData> = gson.fromJson(remoteMessage.data["actions"], object : TypeToken<List<ActionData?>?>() {}.type) as List<ActionData>
 
