@@ -7,7 +7,9 @@ package digital.lamp.mindlamp.utils
 internal object AppConstants {
     const val BASE_URL : String = "https://api.lamp.digital/"
     const val NOTIFICATION_CHANNEL = "lamp_channel"
-    const val NOTIFICATION_SURVEY_CHANNEL = "lamp_survey_channel"
+    const val NOTIFICATION_SURVEY_WITHOUT_ACTION = "lamp_survey_without_action"
+    const val NOTIFICATION_SURVEY_WITH_ACTION = "lamp_survey_with_action"
+    const val NOTIFICATION_SURVEY_OPEN = "lamp_survey_open"
     const val NOTIFICATION_ID = 101
     const val INITIAL_TRIGGER = 120000L //30 seconds
     const val ALARM_INTERVAL = 300000L //10 Minutes

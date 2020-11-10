@@ -16,6 +16,9 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.NotificationActionActivity
 import digital.lamp.mindlamp.model.ActionData
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_CHANNEL
+import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_OPEN
+import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITHOUT_ACTION
+import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITH_ACTION
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -91,7 +94,7 @@ object LampNotificationManager {
                 context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = NotificationChannel(
-                    NOTIFICATION_CHANNEL,
+                    NOTIFICATION_SURVEY_WITH_ACTION,
                     context.getString(R.string.channel_description),
                     NotificationManager.IMPORTANCE_DEFAULT
                 )
@@ -130,7 +133,7 @@ object LampNotificationManager {
             context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                NOTIFICATION_CHANNEL,
+                NOTIFICATION_SURVEY_WITHOUT_ACTION,
                 context.getString(R.string.channel_description),
                 NotificationManager.IMPORTANCE_DEFAULT
             )
@@ -168,7 +171,7 @@ object LampNotificationManager {
             context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                NOTIFICATION_CHANNEL,
+                NOTIFICATION_SURVEY_OPEN,
                 context.getString(R.string.channel_description),
                 NotificationManager.IMPORTANCE_DEFAULT
             )

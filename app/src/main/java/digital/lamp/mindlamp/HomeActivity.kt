@@ -363,6 +363,7 @@ class HomeActivity : AppCompatActivity() {
             // Get new Instance ID token
             val token = it.result?.token
             Log.e(TAG, "FCM Token : $token")
+            DebugLogs.writeToFile("Token : $token")
             val homeRepository = HomeRepository()
             val tokenData = TokenData()
             tokenData.action = "login"
