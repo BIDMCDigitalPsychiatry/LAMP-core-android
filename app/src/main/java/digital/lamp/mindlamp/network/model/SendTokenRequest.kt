@@ -18,9 +18,9 @@ data class SendTokenRequest(
 
 data class TokenData(
     var action: String,
-    var device_token: String,
+    var device_token: String?,
     var device_type: String,
     val user_agent: String
     ){
-    constructor() : this("","","",BuildConfig.VERSION_NAME+","+Build.VERSION.INCREMENTAL+","+Build.MANUFACTURER+","+Build.MODEL)
+    constructor() : this("",null,"",BuildConfig.VERSION_NAME+","+Build.VERSION.INCREMENTAL+","+Build.MANUFACTURER+","+Build.MODEL)
 }

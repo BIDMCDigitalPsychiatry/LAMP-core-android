@@ -300,6 +300,28 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showSignedOut() {
+
+        val homeRepository = HomeRepository()
+        val tokenData = TokenData()
+        tokenData.action = "logout"
+        tokenData.device_type = "Android"
+        val sendTokenRequest = SendTokenRequest(
+            tokenData,
+            "lamp.analytics",
+            System.currentTimeMillis()
+        )
+        GlobalScope.launch(Dispatchers.IO){
+            try {
+                val response = homeRepository.sendTokenData(
+                    AppState.session.userId,
+                    sendTokenRequest
+                )
+
+                if (response.code() == 200)
+                    Log.e(TAG, "Token Updated to server")
+            }catch (er: Exception){er.printStackTrace()}
+        }
+
         AppState.session.clearData()
         stopLampService()
     }

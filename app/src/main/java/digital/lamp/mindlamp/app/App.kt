@@ -23,8 +23,6 @@ class App: Application() {
         Pref.init(this,
             AppKeys.APP_PREF_NAME
         )
-
-        // Setup handler for uncaught exceptions.
         // Setup handler for uncaught exceptions.
         Thread.setDefaultUncaughtExceptionHandler { thread, e ->
             handleUncaughtException(
