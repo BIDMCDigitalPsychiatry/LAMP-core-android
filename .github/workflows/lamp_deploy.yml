@@ -34,7 +34,7 @@ jobs:
         
       - name: Build Release AAB
         id: buildRelease
-        run: ./gradlew bundleRelease
+        run: bash ./gradlew bundleRelease --stacktrace
         
       - name: Sign Release AAB
         id: sign_app
