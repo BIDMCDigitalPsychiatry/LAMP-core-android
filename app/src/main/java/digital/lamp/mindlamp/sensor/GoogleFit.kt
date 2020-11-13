@@ -57,7 +57,6 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
 
         //Read History Data
         val readRequest = queryFitnessData()
-
         Fitness.getHistoryClient(
             context,
             GoogleSignIn.getAccountForExtension(context, fitnessOptions)
