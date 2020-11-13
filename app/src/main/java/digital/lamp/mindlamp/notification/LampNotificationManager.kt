@@ -108,6 +108,7 @@ object LampNotificationManager {
         val notificationIntent = Intent(context, NotificationActivity::class.java)
         notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
         notificationIntent.putExtra("notification_id",remoteMessage.data["notificationId"]!!.toInt())
+        notificationIntent.putExtra("remote_message",remoteMessage.data.toString())
 
         val pendingIntent = PendingIntent.getActivity(
             context,

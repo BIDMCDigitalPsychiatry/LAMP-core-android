@@ -696,40 +696,40 @@ public class Lamp extends Service {
             }
 
             //only the client and self-contained apps need to run the keep alive. Plugins are handled by them.
-            if (getApplicationContext().getPackageName().equals("com.aware.phone") || getApplicationContext().getResources().getBoolean(R.bool.standalone)) {
-                try {
-                    Scheduler.Schedule watchdog = Scheduler.getSchedule(this, SCHEDULE_KEEP_ALIVE);
-                    if (watchdog == null) {
-                        watchdog = new Scheduler.Schedule(SCHEDULE_KEEP_ALIVE);
-                        watchdog.setInterval(getApplicationContext().getResources().getInteger(R.integer.keep_alive_interval_min))
-                                .setActionType(Scheduler.ACTION_TYPE_SERVICE)
-                                .setActionIntentAction(ACTION_LAMP_KEEP_ALIVE)
-                                .setActionClass(getPackageName() + "/" + getClass().getName());
-
-                        Scheduler.saveSchedule(this, watchdog);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if (getApplicationContext().getPackageName().equals("com.aware.phone") || getApplicationContext().getResources().getBoolean(R.bool.standalone)) {
+//                try {
+//                    Scheduler.Schedule watchdog = Scheduler.getSchedule(this, SCHEDULE_KEEP_ALIVE);
+//                    if (watchdog == null) {
+//                        watchdog = new Scheduler.Schedule(SCHEDULE_KEEP_ALIVE);
+//                        watchdog.setInterval(getApplicationContext().getResources().getInteger(R.integer.keep_alive_interval_min))
+//                                .setActionType(Scheduler.ACTION_TYPE_SERVICE)
+//                                .setActionIntentAction(ACTION_LAMP_KEEP_ALIVE)
+//                                .setActionClass(getPackageName() + "/" + getClass().getName());
+//
+//                        Scheduler.saveSchedule(this, watchdog);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
             //Set compliance checks if on a study
-            if ((getPackageName().equals("com.aware.phone") || getApplicationContext().getResources().getBoolean(R.bool.standalone)) && isStudy(getApplicationContext())) {
-                try {
-                    Scheduler.Schedule compliance = Scheduler.getSchedule(this, Lamp.SCHEDULE_STUDY_COMPLIANCE);
-                    if (compliance == null) {
-                        compliance = new Scheduler.Schedule(Lamp.SCHEDULE_STUDY_COMPLIANCE);
-                        compliance.setInterval(getResources().getInteger(R.integer.study_check_interval_min))
-                                .setActionType(Scheduler.ACTION_TYPE_SERVICE)
-                                .setActionIntentAction(Lamp.ACTION_LAMP_STUDY_COMPLIANCE)
-                                .setActionClass(getPackageName() + "/" + getClass().getName());
-
-                        Scheduler.saveSchedule(this, compliance);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if ((getPackageName().equals("com.aware.phone") || getApplicationContext().getResources().getBoolean(R.bool.standalone)) && isStudy(getApplicationContext())) {
+//                try {
+//                    Scheduler.Schedule compliance = Scheduler.getSchedule(this, Lamp.SCHEDULE_STUDY_COMPLIANCE);
+//                    if (compliance == null) {
+//                        compliance = new Scheduler.Schedule(Lamp.SCHEDULE_STUDY_COMPLIANCE);
+//                        compliance.setInterval(getResources().getInteger(R.integer.study_check_interval_min))
+//                                .setActionType(Scheduler.ACTION_TYPE_SERVICE)
+//                                .setActionIntentAction(Lamp.ACTION_LAMP_STUDY_COMPLIANCE)
+//                                .setActionClass(getPackageName() + "/" + getClass().getName());
+//
+//                        Scheduler.saveSchedule(this, compliance);
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
             if (intent != null && intent.getAction() != null) {
                 if (intent.getAction().equalsIgnoreCase(ACTION_LAMP_STUDY_COMPLIANCE)) {

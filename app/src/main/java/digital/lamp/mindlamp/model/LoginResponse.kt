@@ -6,7 +6,8 @@ package digital.lamp.mindlamp.model
 data class LoginResponse(
     val authorizationToken: String,
     val identityObject: IdentityObject,
-    val serverAddress: String
+    val serverAddress: String,
+    val deleteCache: Boolean = false
 )
 
 data class IdentityObject(

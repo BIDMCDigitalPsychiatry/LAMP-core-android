@@ -61,7 +61,8 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity android:name="digital.lamp.mindlamp.SplashActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+            android:screenOrientation="portrait">
         <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -72,13 +73,16 @@
         <activity android:name="digital.lamp.mindlamp.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             />
         <activity android:name=".NotificationActivity"
-            android:theme="@style/Theme.AppCompat.Light.Dialog">
+            android:theme="@style/Theme.AppCompat.Light.Dialog"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity android:name=".NotificationActionActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+            android:screenOrientation="portrait">
         </activity>
 
         <service

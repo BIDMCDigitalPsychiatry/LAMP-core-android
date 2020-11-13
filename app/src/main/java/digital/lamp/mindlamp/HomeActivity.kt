@@ -14,6 +14,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AlertDialog
@@ -24,7 +25,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
@@ -36,8 +40,10 @@ import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
+import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -49,6 +55,8 @@ import kotlinx.coroutines.launch
  */
 
 class HomeActivity : AppCompatActivity() {
+
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object{
         private val TAG = HomeActivity::class.java.simpleName
@@ -89,11 +97,13 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+        firebaseAnalytics = Firebase.analytics
         if(checkAndRequestPermissions(this)){
             //Fit SignIn Auth
             fitSignIn()
             initializeWebview()
         }
+//        throw RuntimeException("Test Crash") // Force a crash
     }
 
 
@@ -106,33 +116,33 @@ class HomeActivity : AppCompatActivity() {
         webView.settings.domStorageEnabled = true
         progressBar.visibility = View.VISIBLE;
 
+        webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
+        webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
+
+        var url = ""
         if(AppState.session.isLoggedIn){
-            webView.addJavascriptInterface(
-                WebAppInterface(
-                    this
-                ), JAVASCRIPT_OBJ_LOGOUT
-            )
-            val url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
+             url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
                 AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
                     .removePrefix(
                         "http://"
                     )
             )
             webView.loadUrl(url)
+
+            //Start Foreground service for retrieving data
+            if(!this.isServiceRunning(LampForegroundService::class.java)){
+                startLampService()
+            }
         }else{
-            webView.addJavascriptInterface(
-                WebAppInterface(
-                    this
-                ), JAVASCRIPT_OBJ_LOGIN
-            )
-            webView.loadUrl(BuildConfig.BASE_URL_WEB)
+
+            url = BuildConfig.BASE_URL_WEB
+            webView.loadUrl(url)
         }
+
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 Log.e(TAG, " : $url")
                 progressBar.visibility = View.GONE;
-                view.clearCache(true)
-                view.clearHistory()
             }
         }
 
@@ -272,14 +282,14 @@ class HomeActivity : AppCompatActivity() {
         fun postMessage(jsonString: String) {
             Log.e(TAG, " : $jsonString")
             try {
-                if(!AppState.session.isLoggedIn) {
-                    val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
+                val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
+                if(!AppState.session.isLoggedIn && !loginResponse.deleteCache) {
                     homeActivity.onAuthenticationStateChanged(
                         AuthenticationState.StoredCredentials(
                             loginResponse
                         )
                     )
-                }else{
+                }else if(loginResponse.deleteCache){
                     homeActivity.onAuthenticationStateChanged(AuthenticationState.SignedOut)
                 }
             } catch (ex: Exception) {
@@ -316,13 +326,11 @@ class HomeActivity : AppCompatActivity() {
                     AppState.session.userId,
                     sendTokenRequest
                 )
-
+                AppState.session.clearData()
                 if (response.code() == 200)
                     Log.e(TAG, "Token Updated to server")
             }catch (er: Exception){er.printStackTrace()}
         }
-
-        AppState.session.clearData()
         stopLampService()
     }
 
@@ -339,9 +347,15 @@ class HomeActivity : AppCompatActivity() {
         else AppState.session.serverAddress = oLoginResponse.serverAddress
 
         //Start Foreground service for retrieving data
-        startLampService()
+        if(!this.isServiceRunning(LampForegroundService::class.java)){
+            startLampService()
+        }
+
         //Updating current user token
         retrieveCurrentToken()
+
+        //Setting User Attributes for Firebase
+        firebaseAnalytics.setUserProperty("user_token",oLoginResponse.authorizationToken)
     }
 
     private fun fitSignIn() {
@@ -373,6 +387,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun accessGoogleFit() {
+        trackSingleEvent("Google Fit Connected")
         DebugLogs.writeToFile("Google Fit Connected")
 //        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
@@ -407,6 +422,8 @@ class HomeActivity : AppCompatActivity() {
                         Log.e(TAG, "Token Updated to server")
                 }catch (er: Exception){er.printStackTrace()}
             }
+            //Setting User Attributes for Firebase
+            firebaseAnalytics.setUserProperty("user_fcm_token",token)
         }
     }
 
@@ -418,6 +435,7 @@ class HomeActivity : AppCompatActivity() {
             Result code was: $resultCode
         """.trimIndent()
         DebugLogs.writeToFile(message)
+        trackSingleEvent(message)
     }
 
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
@@ -430,4 +448,9 @@ class HomeActivity : AppCompatActivity() {
      */
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
 
+    private fun trackSingleEvent(eventName: String) {
+        //Firebase Event Tracking
+        val params = Bundle()
+        firebaseAnalytics.logEvent(eventName, params)
+    }
 }

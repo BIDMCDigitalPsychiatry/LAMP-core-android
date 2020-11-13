@@ -7,6 +7,8 @@ import androidx.core.content.ContextCompat
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.Utils
+import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
@@ -27,10 +29,16 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
             }
         }else{
             LampLog.e("Receiver Triggered ")
-            if(AppState.session.isLoggedIn) {
+            if(AppState.session.isLoggedIn && context.isServiceRunning(LampForegroundService::class.java)) {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
                     putExtra("set_alarm", true)
+                }
+                ContextCompat.startForegroundService(context, serviceIntent)
+            } else if(AppState.session.isLoggedIn && !context.isServiceRunning(LampForegroundService::class.java)){
+                val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
+                    putExtra("inputExtra", "Foreground Service Example in Android")
+                    putExtra("set_alarm", false)
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
             }

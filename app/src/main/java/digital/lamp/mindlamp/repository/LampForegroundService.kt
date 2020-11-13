@@ -6,24 +6,31 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.SystemClock
-import com.mindlamp.Lamp
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.mindlamp.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
-import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.database.Analytics
 import digital.lamp.mindlamp.database.AnalyticsDao
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
 import digital.lamp.mindlamp.notification.LampNotificationManager
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.Utils
 import kotlinx.coroutines.*
 
 
@@ -32,6 +39,8 @@ import kotlinx.coroutines.*
  */
 class LampForegroundService : Service(),
     SensorListener {
+
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object {
         private val TAG = LampForegroundService::class.java.simpleName
@@ -48,6 +57,9 @@ class LampForegroundService : Service(),
 
     override fun onCreate() {
         super.onCreate()
+
+        firebaseAnalytics = Firebase.analytics
+
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
         oScope = CoroutineScope(Dispatchers.IO)
         oGson = Gson()
@@ -74,7 +86,12 @@ class LampForegroundService : Service(),
             GlobalScope.launch(Dispatchers.IO) {
                 val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                 list.forEach {
-                    sensorEventDataList.add(gson.fromJson(it.analyticsData, SensorEventData::class.java))
+                    sensorEventDataList.add(
+                        gson.fromJson(
+                            it.analyticsData,
+                            SensorEventData::class.java
+                        )
+                    )
                 }
                 list.let {
                     if(it.isNotEmpty()) {
@@ -190,10 +207,13 @@ class LampForegroundService : Service(),
             )
             AppState.session.crashValue = ""
         }
+
+        trackSingleEvent("Service_Started")
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        trackSingleEvent("Service_Stopped")
     }
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -204,6 +224,7 @@ class LampForegroundService : Service(),
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
         if (NetworkUtils.isNetworkAvailable(this)) {
             DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
+            trackSingleEvent("API Send : ${sensorEventDataList.size}")
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
                 try {
@@ -368,6 +389,12 @@ class LampForegroundService : Service(),
             //Insert it into Analytics DB
             oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
         }
+    }
+
+    private fun trackSingleEvent(eventName: String) {
+        //Firebase Event Tracking
+        val params = Bundle()
+        firebaseAnalytics.logEvent(eventName, params)
     }
 
 }

@@ -632,122 +632,122 @@ public class Scheduler extends Lamp_Sensor {
                 standalone = " OR " + Scheduler_Provider.Scheduler_Data.PACKAGE_NAME + " LIKE 'com.aware.phone'";
             }
 
-            Cursor scheduled_tasks = getContentResolver().query(Scheduler_Provider.Scheduler_Data.CONTENT_URI, null, Scheduler_Provider.Scheduler_Data.PACKAGE_NAME + " LIKE '" + getPackageName() + "'" + standalone, null, Scheduler_Provider.Scheduler_Data.TIMESTAMP + " ASC");
-            if (scheduled_tasks != null && scheduled_tasks.moveToFirst()) {
-
-                if (DEBUG)
-                    Log.d(TAG, "Scheduled tasks for " + getPackageName() + ": " + scheduled_tasks.getCount());
-
-                do {
-                    try {
-                        final Schedule schedule = getSchedule(this, scheduled_tasks.getString(scheduled_tasks.getColumnIndex(Scheduler_Provider.Scheduler_Data.SCHEDULE_ID)));
-
-                        //unable to load schedule. This should never happen.
-                        if (schedule == null) {
-                            if (DEBUG)
-                                Log.e(TAG, "Failed to load schedule... something is wrong with the database.");
-
-                            continue;
-                        }
-
-                        //Schedulers triggered by broadcasts
-                        if (schedule.getContexts().length() > 0) {
-
-                            //Check if we already registered the broadcastreceiver for this schedule
-                            if (!schedulerListeners.containsKey(schedule.getScheduleID())) {
-
-                                final JSONArray contexts = schedule.getContexts();
-                                IntentFilter filter = new IntentFilter();
-                                for (int i = 0; i < contexts.length(); i++) {
-                                    String context = contexts.getString(i);
-                                    filter.addAction(context);
-                                }
-
-                                BroadcastReceiver listener = new BroadcastReceiver() {
-                                    @Override
-                                    public void onReceive(Context context, Intent intent) {
-                                        if (is_trigger(schedule)) {
-                                            if (DEBUG)
-                                                Log.d(TAG, "Triggered contextual trigger: " + contexts.toString());
-
-                                            performAction(schedule);
-                                        }
-                                    }
-                                };
-
-                                Hashtable<IntentFilter, BroadcastReceiver> scheduler_listener = new Hashtable<>();
-                                scheduler_listener.put(filter, listener);
-
-                                schedulerListeners.put(schedule.getScheduleID(), scheduler_listener);
-
-                                registerReceiver(listener, filter);
-
-                                if (DEBUG)
-                                    Log.d(TAG, "Registered a contextual trigger for " + contexts.toString());
-
-                            } else {
-
-                                if (DEBUG)
-                                    Log.d(TAG, "Contextual triggers are active: " + schedule.getContexts().toString());
-
-                            }
-
-                            continue;
-                        }
-
-                        //Schedulers triggered by database changes
-                        if (schedule.getConditions().length() > 0) {
-
-                            //Check if we already registered the ContentObservers for this schedule
-                            if (!schedulerDataObservers.containsKey(schedule.getScheduleID())) {
-
-                                Hashtable<Uri, ContentObserver> dataObs = new Hashtable<>();
-
-                                final JSONArray conditions = schedule.getConditions();
-                                for (int i = 0; i < conditions.length(); i++) {
-
-                                    JSONObject condition = conditions.getJSONObject(i);
-
-                                    Uri content_uri = Uri.parse(condition.getString(CONDITION_URI));
-                                    String content_where = condition.getString(CONDITION_WHERE);
-
-                                    DBObserver dbObs = new DBObserver(new Handler())
-                                            .setCondition(content_where)
-                                            .setData(content_uri)
-                                            .setSchedule(schedule);
-
-                                    dataObs.put(content_uri, dbObs);
-
-                                    getContentResolver().registerContentObserver(content_uri, true, dbObs);
-                                }
-
-                                schedulerDataObservers.put(schedule.getScheduleID(), dataObs);
-
-                                if (DEBUG)
-                                    Log.d(TAG, "Registered conditional triggers: " + conditions.toString());
-
-                            } else {
-                                if (DEBUG)
-                                    Log.d(TAG, "Conditional triggers are active: " + schedule.getConditions().toString());
-                            }
-
-                            continue;
-                        }
-
-                        //Not contextual or conditional scheduler, it is time-based
-                        if (is_trigger(schedule)) {
-                            if (DEBUG)
-                                Log.d(TAG, "Triggering scheduled task: " + schedule.getScheduleID() + " in package: " + getPackageName());
-                            performAction(schedule);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } while (scheduled_tasks.moveToNext());
-            } else {
-                if (DEBUG) Log.d(TAG, "No scheduled tasks for " + getPackageName());
-            }
-            if (scheduled_tasks != null && !scheduled_tasks.isClosed()) scheduled_tasks.close();
+//            Cursor scheduled_tasks = getContentResolver().query(Scheduler_Provider.Scheduler_Data.CONTENT_URI, null, Scheduler_Provider.Scheduler_Data.PACKAGE_NAME + " LIKE '" + getPackageName() + "'" + standalone, null, Scheduler_Provider.Scheduler_Data.TIMESTAMP + " ASC");
+//            if (scheduled_tasks != null && scheduled_tasks.moveToFirst()) {
+//
+//                if (DEBUG)
+//                    Log.d(TAG, "Scheduled tasks for " + getPackageName() + ": " + scheduled_tasks.getCount());
+//
+//                do {
+//                    try {
+//                        final Schedule schedule = getSchedule(this, scheduled_tasks.getString(scheduled_tasks.getColumnIndex(Scheduler_Provider.Scheduler_Data.SCHEDULE_ID)));
+//
+//                        //unable to load schedule. This should never happen.
+//                        if (schedule == null) {
+//                            if (DEBUG)
+//                                Log.e(TAG, "Failed to load schedule... something is wrong with the database.");
+//
+//                            continue;
+//                        }
+//
+//                        //Schedulers triggered by broadcasts
+//                        if (schedule.getContexts().length() > 0) {
+//
+//                            //Check if we already registered the broadcastreceiver for this schedule
+//                            if (!schedulerListeners.containsKey(schedule.getScheduleID())) {
+//
+//                                final JSONArray contexts = schedule.getContexts();
+//                                IntentFilter filter = new IntentFilter();
+//                                for (int i = 0; i < contexts.length(); i++) {
+//                                    String context = contexts.getString(i);
+//                                    filter.addAction(context);
+//                                }
+//
+//                                BroadcastReceiver listener = new BroadcastReceiver() {
+//                                    @Override
+//                                    public void onReceive(Context context, Intent intent) {
+//                                        if (is_trigger(schedule)) {
+//                                            if (DEBUG)
+//                                                Log.d(TAG, "Triggered contextual trigger: " + contexts.toString());
+//
+//                                            performAction(schedule);
+//                                        }
+//                                    }
+//                                };
+//
+//                                Hashtable<IntentFilter, BroadcastReceiver> scheduler_listener = new Hashtable<>();
+//                                scheduler_listener.put(filter, listener);
+//
+//                                schedulerListeners.put(schedule.getScheduleID(), scheduler_listener);
+//
+//                                registerReceiver(listener, filter);
+//
+//                                if (DEBUG)
+//                                    Log.d(TAG, "Registered a contextual trigger for " + contexts.toString());
+//
+//                            } else {
+//
+//                                if (DEBUG)
+//                                    Log.d(TAG, "Contextual triggers are active: " + schedule.getContexts().toString());
+//
+//                            }
+//
+//                            continue;
+//                        }
+//
+//                        //Schedulers triggered by database changes
+//                        if (schedule.getConditions().length() > 0) {
+//
+//                            //Check if we already registered the ContentObservers for this schedule
+//                            if (!schedulerDataObservers.containsKey(schedule.getScheduleID())) {
+//
+//                                Hashtable<Uri, ContentObserver> dataObs = new Hashtable<>();
+//
+//                                final JSONArray conditions = schedule.getConditions();
+//                                for (int i = 0; i < conditions.length(); i++) {
+//
+//                                    JSONObject condition = conditions.getJSONObject(i);
+//
+//                                    Uri content_uri = Uri.parse(condition.getString(CONDITION_URI));
+//                                    String content_where = condition.getString(CONDITION_WHERE);
+//
+//                                    DBObserver dbObs = new DBObserver(new Handler())
+//                                            .setCondition(content_where)
+//                                            .setData(content_uri)
+//                                            .setSchedule(schedule);
+//
+//                                    dataObs.put(content_uri, dbObs);
+//
+//                                    getContentResolver().registerContentObserver(content_uri, true, dbObs);
+//                                }
+//
+//                                schedulerDataObservers.put(schedule.getScheduleID(), dataObs);
+//
+//                                if (DEBUG)
+//                                    Log.d(TAG, "Registered conditional triggers: " + conditions.toString());
+//
+//                            } else {
+//                                if (DEBUG)
+//                                    Log.d(TAG, "Conditional triggers are active: " + schedule.getConditions().toString());
+//                            }
+//
+//                            continue;
+//                        }
+//
+//                        //Not contextual or conditional scheduler, it is time-based
+//                        if (is_trigger(schedule)) {
+//                            if (DEBUG)
+//                                Log.d(TAG, "Triggering scheduled task: " + schedule.getScheduleID() + " in package: " + getPackageName());
+//                            performAction(schedule);
+//                        }
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//                } while (scheduled_tasks.moveToNext());
+//            } else {
+//                if (DEBUG) Log.d(TAG, "No scheduled tasks for " + getPackageName());
+//            }
+//            if (scheduled_tasks != null && !scheduled_tasks.isClosed()) scheduled_tasks.close();
         }
 
         return START_STICKY;
