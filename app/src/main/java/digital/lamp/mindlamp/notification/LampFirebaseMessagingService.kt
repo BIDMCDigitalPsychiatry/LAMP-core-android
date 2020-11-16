@@ -5,9 +5,16 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.ActionData
+import digital.lamp.mindlamp.network.model.NotificationData
+import digital.lamp.mindlamp.network.model.NotificationEventRequest
+import digital.lamp.mindlamp.repository.HomeRepository
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 /**
@@ -36,6 +43,18 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
             LampNotificationManager.notificationOpenApp(this,remoteMessage)
         }
 
+
+        //Call Analytics API
+        if (AppState.session.isLoggedIn) {
+            val notificationData =
+                NotificationData("notification", "Open App", remoteMessage.data.toString())
+            val notificationEvent = NotificationEventRequest(
+                notificationData,
+                "lamp.analytics",
+                System.currentTimeMillis()
+            )
+            invokeNotificationData(notificationEvent)
+        }
     }
 
     override fun onNewToken(token: String) {
@@ -47,4 +66,19 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
         private val TAG = LampFirebaseMessagingService::class.java.simpleName
     }
 
+    private fun invokeNotificationData(notificationEventRequest: NotificationEventRequest) {
+        val homeRepository = HomeRepository()
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = homeRepository.addNotificationData(
+                    AppState.session.userId,
+                    notificationEventRequest
+                )
+                LampLog.e(TAG, " : $response")
+
+            } catch (er: Exception) {
+                er.printStackTrace()
+            }
+        }
+    }
 }

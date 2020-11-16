@@ -387,7 +387,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun accessGoogleFit() {
-        trackSingleEvent("Google Fit Connected")
+        LampLog.e(TAG,"Google Fit Connected")
+        trackSingleEvent("Fit_Success")
         DebugLogs.writeToFile("Google Fit Connected")
 //        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
@@ -434,8 +435,9 @@ class HomeActivity : AppCompatActivity() {
             Request code was: $requestCode
             Result code was: $resultCode
         """.trimIndent()
+        LampLog.e(TAG,message)
         DebugLogs.writeToFile(message)
-        trackSingleEvent(message)
+        trackSingleEvent("Fit_ERROR")
     }
 
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(

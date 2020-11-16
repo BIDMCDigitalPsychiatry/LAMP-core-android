@@ -335,10 +335,10 @@ public class Lamp extends Service {
 
             if (intent.getAction().equalsIgnoreCase(Lamp.ACTION_LAMP_PRIORITY_FOREGROUND)) {
                 if (DEBUG) Log.d(TAG, "Setting LAMP with foreground priority");
-                foreground(true);
+//                foreground(true);
             } else if (intent.getAction().equalsIgnoreCase(Lamp.ACTION_LAMP_PRIORITY_BACKGROUND)) {
                 if (DEBUG) Log.d(TAG, "Setting LAMP with background priority");
-                foreground(false);
+//                foreground(false);
             }
         }
     }

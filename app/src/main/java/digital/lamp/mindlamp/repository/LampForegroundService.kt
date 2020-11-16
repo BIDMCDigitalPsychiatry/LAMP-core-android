@@ -224,7 +224,7 @@ class LampForegroundService : Service(),
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
         if (NetworkUtils.isNetworkAvailable(this)) {
             DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
-            trackSingleEvent("API Send : ${sensorEventDataList.size}")
+            trackSingleEvent("API_Send_${sensorEventDataList.size}")
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
                 try {

@@ -39,16 +39,16 @@ class NotificationActionActivity : AppCompatActivity() {
         NotificationManagerCompat.from(this).cancel(notificationId)
 
         //Call Analytics API
-        if (AppState.session.isLoggedIn) {
-            val notificationData =
-                NotificationData("notification", "Open App", remoteMessage)
-            val notificationEvent = NotificationEventRequest(
-                notificationData,
-                "lamp.analytics",
-                System.currentTimeMillis()
-            )
-            invokeNotificationData(notificationEvent)
-        }
+//        if (AppState.session.isLoggedIn) {
+//            val notificationData =
+//                NotificationData("notification", "Open App", remoteMessage)
+//            val notificationEvent = NotificationEventRequest(
+//                notificationData,
+//                "lamp.analytics",
+//                System.currentTimeMillis()
+//            )
+//            invokeNotificationData(notificationEvent)
+//        }
     }
 
     private fun invokeNotificationData(notificationEventRequest: NotificationEventRequest) {
