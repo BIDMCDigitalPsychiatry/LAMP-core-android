@@ -8,7 +8,6 @@ jobs:
   build:
     
     runs-on: ubuntu-latest
-    
     steps:
       
       - name: Checkout
@@ -37,8 +36,8 @@ jobs:
         run: ./gradlew bundleRelease
         
       - name: Sign Release AAB
-        id: sign
-        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        uses: r0adkll/sign-android-release@v1.0.2
         with:
           releaseDirectory: app/build/outputs/bundle/prodRelease
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
