@@ -50,7 +50,7 @@ class GyroscopeData constructor(sensorListener: SensorListener, context: Context
                             null,
                             null,
                             null,
-                            null,null,null
+                            null,null,null,null
                         )
                     val sensorEventData =
                         SensorEventData(

@@ -17,6 +17,8 @@
         <string name="log_screen_state_error">Aware error CRASH : ScreenState data could not be retrieved.</string>
         <string name="log_wifi_null">Aware error NULL : Wifi data does not exist.</string>
         <string name="log_wifi_error">Aware error CRASH : Wifi data could not be retrieved.</string>
+        <string name="log_activity_null">Aware error NULL : Activity Transition data does not exist.</string>
+        <string name="log_activity_error">Aware error CRASH : Activity Transition data could not be retrieved.</string>
         <string name="info">info</string>
         <string name="battery_low">Battery is low.</string>
         <string name="app_crash">The app has crashed.</string>

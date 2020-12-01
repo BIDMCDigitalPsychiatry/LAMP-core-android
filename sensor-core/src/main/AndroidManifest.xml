@@ -20,6 +20,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Required to access activity recognition. -->
+    <!-- Required for 28 and below. -->
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <!-- Required for 29+. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
     <application
         android:networkSecurityConfig="@xml/aware_ssl_config"
         android:usesCleartextTraffic="true">
@@ -114,6 +120,9 @@
             android:exported="true" />
         <service
             android:name="com.mindlamp.Accelerometer"
+            android:exported="true" />
+        <service
+            android:name="com.mindlamp.ActivityTransitions"
             android:exported="true" />
         <service
             android:name="com.mindlamp.Gyroscope"

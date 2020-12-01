@@ -49,7 +49,7 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
                         null,
                         null,
                         null,
-                        null,null,null
+                        null,null,null,null
                     )
                     val sensorEventData =
                         SensorEventData(

@@ -162,6 +162,10 @@ class LampForegroundService : Service(),
                     8 -> ScreenStateData(
                         this@LampForegroundService,
                         applicationContext
+                    )//Invoke Activity Data
+                    9 -> ActivityTransitionData(
+                        this@LampForegroundService,
+                        applicationContext
                     )
                 }
             }
@@ -222,8 +226,13 @@ class LampForegroundService : Service(),
 
 
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
-        if (NetworkUtils.isNetworkAvailable(this)) {
-            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
+        val gson = Gson()
+        val jsonString = gson.toJson(sensorEventDataList)
+
+        DebugLogs.writeToFile("API Send : $jsonString")
+        
+        if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
+//            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             trackSingleEvent("API_Send_${sensorEventDataList.size}")
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
@@ -352,7 +361,6 @@ class LampForegroundService : Service(),
     }
 
     override fun getWifiData(sensorEventData: SensorEventData) {
-        LampLog.e("Wifi Data : ${oGson.toJson(sensorEventData)}")
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -361,7 +369,6 @@ class LampForegroundService : Service(),
     }
 
     override fun getScreenState(sensorEventData: SensorEventData) {
-        LampLog.e("Screen State : ${oGson.toJson(sensorEventData)}")
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -375,6 +382,14 @@ class LampForegroundService : Service(),
 
     override fun getBluetoothData(sensorEventData: SensorEventData) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getActivityData(sensorEventData: SensorEventData) {
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        oScope.async{
+            oAnalyticsDao.insertAnalytics(oAnalytics)
+        }
     }
 
     override fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>) {
