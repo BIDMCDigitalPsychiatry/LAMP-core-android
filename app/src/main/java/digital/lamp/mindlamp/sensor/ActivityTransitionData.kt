@@ -32,7 +32,7 @@ class ActivityTransitionData constructor(sensorListener: SensorListener, context
                     when(activityType) {
                         "running" -> { activityData.running = transitionType}
                         "cycling" -> { activityData.cycling = transitionType}
-                        "automotive" -> { activityData.automotive = transitionType}
+                        "in_car" -> { activityData.automotive = transitionType}
                         "stationary" -> { activityData.stationary = transitionType}
                         "unknown" -> { activityData.unknown = transitionType}
                         "walking" -> { activityData.walking = transitionType}
@@ -60,7 +60,7 @@ class ActivityTransitionData constructor(sensorListener: SensorListener, context
                     val sensorEventData =
                         SensorEventData(
                             dimensionData,
-                            "lamp.activity",System.currentTimeMillis().toDouble()
+                            "lamp.activity_recognition",System.currentTimeMillis().toDouble()
                         )
 
                     LampLog.e("Activity Transition : $activityData")
