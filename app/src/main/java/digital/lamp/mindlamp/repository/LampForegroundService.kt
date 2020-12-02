@@ -226,13 +226,13 @@ class LampForegroundService : Service(),
 
 
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
-        val gson = Gson()
-        val jsonString = gson.toJson(sensorEventDataList)
-
-        DebugLogs.writeToFile("API Send : $jsonString")
+//        val gson = Gson()
+//        val jsonString = gson.toJson(sensorEventDataList)
+//
+//        DebugLogs.writeToFile("API Send : $jsonString")
         
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
-//            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
+            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             trackSingleEvent("API_Send_${sensorEventDataList.size}")
             val homeRepository = HomeRepository()
             GlobalScope.launch(Dispatchers.IO) {
