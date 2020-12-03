@@ -237,7 +237,7 @@ public class ActivityTransitions extends Lamp_Sensor implements SensorEventListe
                 str = "stationary";
                 break;
             case DetectedActivity.IN_VEHICLE:
-                str = "automotive";
+                str = "in_car";
                 break;
             case DetectedActivity.ON_BICYCLE:
                 str = "cycling";
