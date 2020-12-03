@@ -1,5 +1,7 @@
 package digital.lamp.mindlamp.network.model
 
+import androidx.room.Ignore
+
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
@@ -21,7 +23,8 @@ data class DimensionData(
     val bp_systolic: Float?,
     val bp_diastolic: Float?,
     val unit: String?,
-    val value: Any?
+    val value: Any?,
+    val activity: ActivityData?
 )
 
 data class RotationData(
@@ -47,3 +50,16 @@ data class MagnetData(
     val y: Double?,
     val z: Double?
 )
+
+data class ActivityData(
+    var running: Boolean?,
+    var cycling: Boolean?,
+    var automotive: Boolean?,
+    var stationary: Boolean?,
+    var unknown: Boolean?,
+    var walking: Boolean?,
+    var on_foot: Boolean?,
+) {
+    @Ignore
+    constructor() : this(null,null,null,null,null,null,null)
+}

@@ -176,6 +176,7 @@ public class Lamp extends Service {
     public static final int LAMP_NOTIFICATION_IMPORTANCE_DATASYNC = NotificationManager.IMPORTANCE_LOW;
 
     private static Intent accelerometerSrv = null;
+    private static Intent activityTransitionSrv = null;
     private static Intent locationsSrv = null;
     private static Intent bluetoothSrv = null;
     private static Intent screenSrv = null;
@@ -2597,6 +2598,8 @@ public class Lamp extends Service {
         stopKeyboard(context);
         stopScheduler(context);
         stopWebsocket(context);
+
+        stopActivityTransition(context);
     }
 
     /**
@@ -2894,6 +2897,22 @@ public class Lamp extends Service {
         if (accelerometerSrv != null) context.stopService(accelerometerSrv);
     }
 
+    /**
+     * Start the accelerometer module
+     */
+    public static void startActivityTransition(Context context) {
+        if (context == null) return;
+        if (activityTransitionSrv == null) activityTransitionSrv = new Intent(context, ActivityTransitions.class);
+        context.startService(activityTransitionSrv);
+    }
+
+    /**
+     * Stop the accelerometer module
+     */
+    public static void stopActivityTransition(Context context) {
+        if (context == null) return;
+        if (activityTransitionSrv != null) context.stopService(activityTransitionSrv);
+    }
     /**
      * Start the Processor module
      */
