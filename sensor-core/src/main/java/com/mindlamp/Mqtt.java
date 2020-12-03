@@ -223,11 +223,6 @@ public class Mqtt extends Lamp_Sensor implements MqttCallback {
             sendBroadcast(broadcast);
         }
 
-        if (topic.equalsIgnoreCase(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID) + "/esm") || topic.equalsIgnoreCase(study_id + "/" + Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID) + "/esm")) {
-            Intent queueESM = new Intent(ESM.ACTION_LAMP_QUEUE_ESM);
-            queueESM.putExtra(ESM.EXTRA_ESM, message.toString());
-            sendBroadcast(queueESM);
-        }
 
         if (topic.equalsIgnoreCase(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID) + "/configuration") || topic.equalsIgnoreCase(study_id + "/" + Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID) + "/configuration")) {
             JSONArray configs = new JSONArray(message.toString());

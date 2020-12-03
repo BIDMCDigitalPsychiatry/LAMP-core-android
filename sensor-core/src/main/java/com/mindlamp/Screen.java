@@ -344,10 +344,10 @@ public class Screen extends Lamp_Sensor {
             Lamp.setSetting(this, Lamp_Preferences.STATUS_SCREEN, true);
             if (Lamp.DEBUG) Log.d(TAG, "Screen service active...");
 
-            //We can only get the touch events if accessibility service is enabled.
-            if (Lamp.getSetting(this, Lamp_Preferences.STATUS_TOUCH).equals("true")) {
-                Applications.isAccessibilityServiceActive(this);
-            }
+//            //We can only get the touch events if accessibility service is enabled.
+//            if (Lamp.getSetting(this, Lamp_Preferences.STATUS_TOUCH).equals("true")) {
+//                Applications.isAccessibilityServiceActive(this);
+//            }
 
 //            if (Aware.isStudy(this)) {
 //                ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), Screen_Provider.getAuthority(this), 1);

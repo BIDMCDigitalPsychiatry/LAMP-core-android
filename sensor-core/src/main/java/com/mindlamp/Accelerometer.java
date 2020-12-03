@@ -6,9 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,13 +16,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 import com.mindlamp.providers.Accelerometer_Provider.Accelerometer_Data;
-import com.mindlamp.providers.Accelerometer_Provider.Accelerometer_Sensor;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,31 +72,31 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (SignificantMotion.isSignificantMotionActive && !SignificantMotion.CURRENT_SIGMOTION_STATE) {
-            if (data_values.size() > 0) {
-                final ContentValues[] data_buffer = new ContentValues[data_values.size()];
-                data_values.toArray(data_buffer);
-                try {
-                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                getContentResolver().bulkInsert(Accelerometer_Data.CONTENT_URI, data_buffer);
-
-                                Intent accelData = new Intent(ACTION_LAMP_ACCELEROMETER);
-                                sendBroadcast(accelData);
-                            }
-                        }).run();
-                    }
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
-                data_values.clear();
-            }
-            return;
-        }
+//        if (SignificantMotion.isSignificantMotionActive && !SignificantMotion.CURRENT_SIGMOTION_STATE) {
+//            if (data_values.size() > 0) {
+//                final ContentValues[] data_buffer = new ContentValues[data_values.size()];
+//                data_values.toArray(data_buffer);
+//                try {
+//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                getContentResolver().bulkInsert(Accelerometer_Data.CONTENT_URI, data_buffer);
+//
+//                                Intent accelData = new Intent(ACTION_LAMP_ACCELEROMETER);
+//                                sendBroadcast(accelData);
+//                            }
+//                        }).run();
+//                    }
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
+//                data_values.clear();
+//            }
+//            return;
+//        }
 
         long TS = System.currentTimeMillis();
         if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
@@ -128,30 +120,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
         if (awareSensor != null) awareSensor.onAccelerometerChanged(rowData);
 
-        if (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.STATUS_WEBSOCKET).equals("true")) {
-            try {
-                JSONObject data = new JSONObject();
-                data.put(Accelerometer_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-                data.put(Accelerometer_Data.TIMESTAMP, TS);
-                data.put(Accelerometer_Data.VALUES_0, event.values[0]);
-                data.put(Accelerometer_Data.VALUES_1, event.values[1]);
-                data.put(Accelerometer_Data.VALUES_2, event.values[2]);
-                data.put(Accelerometer_Data.ACCURACY, event.accuracy);
-                data.put(Accelerometer_Data.LABEL, LABEL);
-
-                JSONObject message = new JSONObject();
-                message.put("device_id", Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-                message.put("table", "accelerometer");
-                message.put("data", data.toString());
-
-                Log.d(TAG, "Stream: " + message.toString());
-                Websocket.awareSensor.sendMessage(message.toString());
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
         data_values.add(rowData);
         LAST_TS = TS;
 
@@ -161,23 +129,7 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
-//        try {
-//            if (!Aware.getSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        getContentResolver().bulkInsert(Accelerometer_Data.CONTENT_URI, data_buffer);
-//
-//                        Intent accelData = new Intent(ACTION_LAMP_ACCELEROMETER);
-//                        sendBroadcast(accelData);
-//                    }
-//                }).run();
-//            }
-//        } catch (SQLiteException e) {
-//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-//        } catch (SQLException e) {
-//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-//        }
+
         data_values.clear();
         LAST_SAVE = TS;
     }
@@ -192,47 +144,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
     public interface LAMPSensorObserver {
         void onAccelerometerChanged(ContentValues data);
-    }
-
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Accelerometer_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Accelerometer_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveAccelerometerDevice(Sensor acc) {
-        if (acc == null) return;
-
-        Cursor accelInfo = getContentResolver().query(Accelerometer_Sensor.CONTENT_URI, null, null, null, null);
-        if (accelInfo == null || !accelInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Accelerometer_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Accelerometer_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Accelerometer_Sensor.MAXIMUM_RANGE, acc.getMaximumRange());
-            rowData.put(Accelerometer_Sensor.MINIMUM_DELAY, acc.getMinDelay());
-            rowData.put(Accelerometer_Sensor.NAME, acc.getName());
-            rowData.put(Accelerometer_Sensor.POWER_MA, acc.getPower());
-            rowData.put(Accelerometer_Sensor.RESOLUTION, acc.getResolution());
-            rowData.put(Accelerometer_Sensor.TYPE, acc.getType());
-            rowData.put(Accelerometer_Sensor.VENDOR, acc.getVendor());
-            rowData.put(Accelerometer_Sensor.VERSION, acc.getVersion());
-
-            getContentResolver().insert(Accelerometer_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Accelerometer device:" + rowData.toString());
-        }
-        if (accelInfo != null && !accelInfo.isClosed()) accelInfo.close();
     }
 
     @Override
@@ -270,13 +181,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
         wakeLock.release();
 
         unregisterReceiver(dataLabeler);
-
-//        ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Accelerometer_Provider.getAuthority(this), false);
-//        ContentResolver.removePeriodicSync(
-//                Aware.getLAMPAccount(this),
-//                Accelerometer_Provider.getAuthority(this),
-//                Bundle.EMPTY
-//        );
 
         if (Lamp.DEBUG) Log.d(TAG, "Accelerometer service terminated...");
     }
@@ -327,16 +231,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
                 if (Lamp.DEBUG) Log.d(TAG, "Accelerometer service active: " + FREQUENCY + " ms");
 
-//                if (Aware.isStudy(this)) {
-//                    ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), Accelerometer_Provider.getAuthority(this), 1);
-//                    ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Accelerometer_Provider.getAuthority(this), true);
-//                    long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-//                    SyncRequest request = new SyncRequest.Builder()
-//                            .syncPeriodic(frequency, frequency/3)
-//                            .setSyncAdapter(Aware.getLAMPAccount(this), Accelerometer_Provider.getAuthority(this))
-//                            .setExtras(new Bundle()).build();
-//                    ContentResolver.requestSync(request);
-//                }
             }
         }
 

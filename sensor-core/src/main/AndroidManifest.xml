@@ -31,13 +31,6 @@
         android:usesCleartextTraffic="true">
 
         <!-- Activities -->
-        <activity
-            android:name="com.mindlamp.ui.ESM_Queue"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:noHistory="true" />
 
         <activity
             android:name="com.mindlamp.ui.PermissionsHandler"
@@ -58,9 +51,6 @@
 
         <!-- Sensor services -->
         <service
-            android:name="com.mindlamp.Keyboard"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.utils.Scheduler"
             android:exported="true" />
         <service
@@ -72,23 +62,6 @@
             android:exported="true" />
 
         <service
-            android:name="com.mindlamp.Applications"
-            android:enabled="@bool/accessibility_access"
-            android:exported="true"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-                <category android:name="android.accessibilityservice.category.FEEDBACK_GENERIC" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/aware_accessibility_config" />
-        </service>
-
-        <service
-            android:name="com.mindlamp.Applications$BackgroundService"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.Locations"
             android:exported="true" />
         <service
@@ -98,13 +71,7 @@
             android:name="com.mindlamp.Screen"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Battery"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.Network"
-            android:exported="true" />
-        <service
-            android:name="com.mindlamp.Communication"
             android:exported="true" />
         <service
             android:name="com.mindlamp.Processor"
@@ -161,12 +128,6 @@
             android:name="com.mindlamp.Temperature"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.ESM"
-            android:exported="true" />
-        <service
-            android:name="com.mindlamp.Installations"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.utils.DownloadPluginService"
             android:exported="true" />
         <service
@@ -213,34 +174,10 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.mindlamp.providers.Applications_Provider"
-            android:authorities="${applicationId}.provider.applications"
-            android:exported="true"
-            android:label="@string/sensor_applications"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
             android:name="com.mindlamp.providers.Locations_Provider"
             android:authorities="${applicationId}.provider.locations"
             android:exported="true"
             android:label="@string/sensor_locations"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
-            android:name="com.mindlamp.providers.Installations_Provider"
-            android:authorities="${applicationId}.provider.installations"
-            android:exported="true"
-            android:label="@string/sensor_installations"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
-            android:name="com.mindlamp.providers.ESM_Provider"
-            android:authorities="${applicationId}.provider.esm"
-            android:exported="true"
-            android:label="@string/sensor_esms"
             android:readPermission="com.aware.READ_CONTEXT_DATA"
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
@@ -379,14 +316,6 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.mindlamp.providers.Battery_Provider"
-            android:authorities="${applicationId}.provider.battery"
-            android:exported="true"
-            android:label="@string/sensor_battery"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
             android:name="com.mindlamp.providers.Screen_Provider"
             android:authorities="${applicationId}.provider.screen"
             android:exported="true"
@@ -399,22 +328,6 @@
             android:authorities="${applicationId}.provider.network"
             android:exported="true"
             android:label="@string/sensor_network_usage"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
-            android:name="com.mindlamp.providers.Communication_Provider"
-            android:authorities="${applicationId}.provider.communication"
-            android:exported="true"
-            android:label="@string/sensor_communications"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
-            android:name="com.mindlamp.providers.Keyboard_Provider"
-            android:authorities="${applicationId}.provider.keyboard"
-            android:exported="true"
-            android:label="@string/sensor_keyboard"
             android:readPermission="com.aware.READ_CONTEXT_DATA"
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
@@ -450,16 +363,6 @@
                 android:resource="@xml/sync_accelerometer" />
         </service>
         <service
-            android:name="com.mindlamp.syncadapters.Applications_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_applications" />
-        </service>
-        <service
             android:name="com.mindlamp.syncadapters.Lamp_Sync"
             android:exported="true">
             <intent-filter>
@@ -480,16 +383,6 @@
                 android:resource="@xml/sync_barometer" />
         </service>
         <service
-            android:name="com.mindlamp.syncadapters.Battery_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_battery" />
-        </service>
-        <service
             android:name="com.mindlamp.syncadapters.Bluetooth_Sync"
             android:exported="true">
             <intent-filter>
@@ -498,26 +391,6 @@
             <meta-data
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_bluetooth" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Communications_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_communications" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.ESM_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_esms" />
         </service>
         <service
             android:name="com.mindlamp.syncadapters.Gravity_Sync"
@@ -538,26 +411,6 @@
             <meta-data
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_gyroscope" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Installations_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_installations" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Keyboard_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_keyboard" />
         </service>
         <service
             android:name="com.mindlamp.syncadapters.Light_Sync"

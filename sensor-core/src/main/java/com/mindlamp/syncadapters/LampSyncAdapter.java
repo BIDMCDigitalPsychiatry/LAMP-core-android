@@ -23,7 +23,6 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.mindlamp.Applications;
 import com.mindlamp.Lamp;
 import com.mindlamp.Lamp_Preferences;
 import com.mindlamp.R;
@@ -247,30 +246,6 @@ public class LampSyncAdapter extends AbstractThreadedSyncAdapter {
         ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
         ActivityManager actManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         actManager.getMemoryInfo(memInfo);
-
-        if (memInfo.lowMemory) {
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getContext(), Lamp.LAMP_NOTIFICATION_CHANNEL_GENERAL);
-            mBuilder.setSmallIcon(R.drawable.ic_stat_aware_plugin_dependency);
-            mBuilder.setContentTitle("Low memory detected...");
-            mBuilder.setContentText("Tap and swipe to clear recently used applications.");
-            mBuilder.setAutoCancel(true);
-            mBuilder.setOnlyAlertOnce(true);
-            mBuilder.setDefaults(NotificationCompat.DEFAULT_ALL);
-            mBuilder = Lamp.setNotificationProperties(mBuilder, Lamp.LAMP_NOTIFICATION_IMPORTANCE_GENERAL);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                mBuilder.setChannelId(Lamp.LAMP_NOTIFICATION_CHANNEL_GENERAL);
-
-            Intent intent = new Intent("com.android.systemui.recent.action.TOGGLE_RECENTS");
-            intent.setComponent(new ComponentName("com.android.systemui", "com.android.systemui.recent.RecentsActivity"));
-
-            PendingIntent clickIntent = PendingIntent.getActivity(getContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            mBuilder.setContentIntent(clickIntent);
-
-            NotificationManager notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.notify(Applications.ACCESSIBILITY_NOTIFICATION_ID, mBuilder.build());
-
-            return 0;
-        }
 
         double availableRam = memInfo.totalMem / 1048576000.0;
         if (availableRam <= 1.0) return 500;

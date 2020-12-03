@@ -42,7 +42,6 @@ import com.mindlamp.providers.Lamp_Provider;
 import com.mindlamp.providers.Lamp_Provider.Aware_Device;
 import com.mindlamp.providers.Lamp_Provider.Aware_Plugins;
 import com.mindlamp.providers.Lamp_Provider.Aware_Settings;
-import com.mindlamp.providers.Battery_Provider;
 import com.mindlamp.providers.Scheduler_Provider;
 import com.mindlamp.utils.*;
 
@@ -235,13 +234,6 @@ public class Lamp extends Service {
         storage.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
         storage.addDataScheme("file");
         registerReceiver(storage_BR, storage);
-
-        IntentFilter boot = new IntentFilter();
-        boot.addAction(Intent.ACTION_BOOT_COMPLETED);
-        boot.addAction(Intent.ACTION_SHUTDOWN);
-        boot.addAction(Intent.ACTION_REBOOT);
-        boot.addAction(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(awareBoot, boot);
 
         IntentFilter awareActions = new IntentFilter();
         awareActions.addAction(Lamp.ACTION_LAMP_SYNC_DATA);
@@ -1056,7 +1048,6 @@ public class Lamp extends Service {
         global_settings.add(Lamp_Preferences.WEBSERVICE_REMOVE_DATA);
         global_settings.add(Lamp_Preferences.WEBSERVICE_SILENT);
         global_settings.add(Lamp_Preferences.STATUS_APPLICATIONS);
-        global_settings.add(Applications.STATUS_LAMP_ACCESSIBILITY);
 
         if (context.getResources().getBoolean(R.bool.standalone)) {
             global_settings.add(Lamp_Preferences.STATUS_MQTT);
@@ -1129,7 +1120,6 @@ public class Lamp extends Service {
         global_settings.add(Lamp_Preferences.WEBSERVICE_REMOVE_DATA);
         global_settings.add(Lamp_Preferences.WEBSERVICE_SILENT);
         global_settings.add(Lamp_Preferences.STATUS_APPLICATIONS);
-        global_settings.add(Applications.STATUS_LAMP_ACCESSIBILITY);
 
         //allow standalone apps to react to MQTT
         if (context.getResources().getBoolean(R.bool.standalone)) {
@@ -1861,7 +1851,6 @@ public class Lamp extends Service {
         try {
             unregisterReceiver(aware_BR);
             unregisterReceiver(storage_BR);
-            unregisterReceiver(awareBoot);
             unregisterReceiver(foregroundMgr);
             unregisterReceiver(schedulerTicker);
         } catch (IllegalArgumentException e) {
@@ -2217,85 +2206,6 @@ public class Lamp extends Service {
         }
     }
 
-    /**
-     * Checks if we still have the accessibility services active or not
-     */
-    private static final AwareBoot awareBoot = new AwareBoot();
-
-    public static class AwareBoot extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            boolean logging = false;
-            if ((context.getPackageName().equalsIgnoreCase("com.aware.phone") || context.getApplicationContext().getResources().getBoolean(R.bool.standalone))) {
-                logging = true;
-            }
-
-            if (logging) {
-                try {
-                    //Retrieve phone battery info
-                    ContentValues rowData = new ContentValues();
-                    Intent batt = context.getApplicationContext().registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-                    Bundle extras = batt.getExtras();
-                    if (extras != null) {
-                        rowData.put(Battery_Provider.Battery_Data.TIMESTAMP, System.currentTimeMillis());
-                        rowData.put(Battery_Provider.Battery_Data.DEVICE_ID, Lamp.getSetting(context, Lamp_Preferences.DEVICE_ID));
-                        rowData.put(Battery_Provider.Battery_Data.LEVEL, extras.getInt(BatteryManager.EXTRA_LEVEL));
-                        rowData.put(Battery_Provider.Battery_Data.SCALE, extras.getInt(BatteryManager.EXTRA_SCALE));
-                        rowData.put(Battery_Provider.Battery_Data.VOLTAGE, extras.getInt(BatteryManager.EXTRA_VOLTAGE));
-                        rowData.put(Battery_Provider.Battery_Data.TEMPERATURE, extras.getInt(BatteryManager.EXTRA_TEMPERATURE) / 10);
-                        rowData.put(Battery_Provider.Battery_Data.PLUG_ADAPTOR, extras.getInt(BatteryManager.EXTRA_PLUGGED));
-                        rowData.put(Battery_Provider.Battery_Data.HEALTH, extras.getInt(BatteryManager.EXTRA_HEALTH));
-                        rowData.put(Battery_Provider.Battery_Data.TECHNOLOGY, extras.getString(BatteryManager.EXTRA_TECHNOLOGY));
-                    }
-
-                    //Remove charging reminder if previously visible
-                    if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BATTERY_CHANGED) && Lamp.getSetting(context, Lamp_Preferences.REMIND_TO_CHARGE).equalsIgnoreCase("true")) {
-                        if (extras.getInt(BatteryManager.EXTRA_STATUS) == BatteryManager.BATTERY_STATUS_CHARGING) {
-                            checkBatteryLeft(context, true);
-                        }
-                    }
-                    if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
-                        Lamp.debug(context, "phone: on");
-                        rowData.put(Battery_Provider.Battery_Data.STATUS, Battery.STATUS_PHONE_BOOTED);
-
-                        Intent aware = new Intent(context, Lamp.class);
-                        context.startService(aware);
-                        // Start the foreground service only if it's the client or a standalone application
-                        if ((context.getPackageName().equals("com.aware.phone") || context.getApplicationContext().getResources().getBoolean(R.bool.standalone)))
-                            context.sendBroadcast(new Intent(Lamp.ACTION_LAMP_PRIORITY_FOREGROUND));
-                    }
-                    if (intent.getAction().equalsIgnoreCase(Intent.ACTION_SHUTDOWN)) {
-                        Lamp.debug(context, "phone: off");
-                        rowData.put(Battery_Provider.Battery_Data.STATUS, Battery.STATUS_PHONE_SHUTDOWN);
-                    }
-                    if (intent.getAction().equalsIgnoreCase(Intent.ACTION_REBOOT)) {
-                        Lamp.debug(context, "phone: reboot");
-                        rowData.put(Battery_Provider.Battery_Data.STATUS, Battery.STATUS_PHONE_REBOOT);
-                    }
-                    if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)
-                            || intent.getAction().equalsIgnoreCase(Intent.ACTION_SHUTDOWN)
-                            || intent.getAction().equalsIgnoreCase(Intent.ACTION_REBOOT)) {
-                        try {
-                            if (Lamp.DEBUG) Log.d(TAG, "Battery: " + rowData.toString());
-                            context.getContentResolver().insert(Battery_Provider.Battery_Data.CONTENT_URI, rowData);
-                        } catch (SQLiteException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        } catch (SQLException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        }
-                    }
-                } catch (RuntimeException e) {
-                    //Gingerbread does not allow these intents. Disregard for 2.3.3
-                }
-            }
-
-            //Guarantees that all plugins also come back up again on reboot
-            if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
-                Intent aware = new Intent(context, Lamp.class);
-                context.startService(aware);
-            }
-        }
-    }
 
 //    public static boolean isServiceRunning(Context context, Class<?> serviceClass) {
 //        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -2368,17 +2278,9 @@ public class Lamp extends Service {
             startSignificant(context);
         } else stopSignificant(context);
 
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_ESM).equals("true")) {
-            startESM(context);
-        } else stopESM(context);
-
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_ACCELEROMETER).equals("true")) {
             startAccelerometer(context);
         } else stopAccelerometer(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_INSTALLATIONS).equals("true")) {
-            startInstallations(context);
-        } else stopInstallations(context);
 
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_LOCATION_GPS).equals("true")
                 || Lamp.getSetting(context, Lamp_Preferences.STATUS_LOCATION_NETWORK).equals("true")
@@ -2394,10 +2296,6 @@ public class Lamp extends Service {
             startScreen(context);
         } else stopScreen(context);
 
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_BATTERY).equals("true")) {
-            startBattery(context);
-        } else stopBattery(context);
-
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_NETWORK_EVENTS).equals("true")) {
             startNetwork(context);
         } else stopNetwork(context);
@@ -2405,10 +2303,6 @@ public class Lamp extends Service {
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_NETWORK_TRAFFIC).equals("true")) {
             startTraffic(context);
         } else stopTraffic(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_COMMUNICATION_EVENTS).equals("true") || Lamp.getSetting(context, Lamp_Preferences.STATUS_CALLS).equals("true") || Lamp.getSetting(context, Lamp_Preferences.STATUS_MESSAGES).equals("true")) {
-            startCommunication(context);
-        } else stopCommunication(context);
 
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_PROCESSOR).equals("true")) {
             startProcessor(context);
@@ -2465,10 +2359,6 @@ public class Lamp extends Service {
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_TEMPERATURE).equals("true")) {
             startTemperature(context);
         } else stopTemperature(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_KEYBOARD).equals("true")) {
-            startKeyboard(context);
-        } else stopKeyboard(context);
 
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_WEBSOCKET).equals("true")) {
             startWebsocket(context);
@@ -2539,27 +2429,6 @@ public class Lamp extends Service {
     }
 
     /**
-     * Checks if a specific sync adapter is enabled or not
-     *
-     * @param authority
-     * @returns
-     */
-    public static boolean isSyncEnabled(Context context, String authority) {
-        Account aware = Lamp.getLAMPAccount(context);
-        boolean isAutoSynchable = ContentResolver.getSyncAutomatically(aware, authority);
-        boolean isSynchable = (ContentResolver.getIsSyncable(aware, authority) > 0);
-        boolean isMasterSyncEnabled = ContentResolver.getMasterSyncAutomatically();
-        List<PeriodicSync> periodicSyncs = ContentResolver.getPeriodicSyncs(aware, authority);
-
-        if (Lamp.DEBUG)
-            Log.d(Lamp.TAG, "Sync-Adapter Authority: " + authority + " syncable: " + isSynchable + " auto: " + isAutoSynchable + " Periodic: " + !periodicSyncs.isEmpty() + " global: " + isMasterSyncEnabled);
-        for (PeriodicSync p : periodicSyncs) {
-            if (Lamp.DEBUG) Log.d(Lamp.TAG, "Every: " + p.period / 60 + " minutes");
-        }
-        return isSynchable && isAutoSynchable && isMasterSyncEnabled;
-    }
-
-    /**
      * Stop all services
      *
      * @param context
@@ -2572,9 +2441,7 @@ public class Lamp extends Service {
 
         stopSignificant(context);
         stopAccelerometer(context);
-        stopBattery(context);
         stopBluetooth(context);
-        stopCommunication(context);
         stopLocations(context);
         stopNetwork(context);
         stopTraffic(context);
@@ -2593,9 +2460,6 @@ public class Lamp extends Service {
         stopGravity(context);
         stopLinearAccelerometer(context);
         stopTemperature(context);
-        stopESM(context);
-        stopInstallations(context);
-        stopKeyboard(context);
         stopScheduler(context);
         stopWebsocket(context);
 
@@ -2644,56 +2508,6 @@ public class Lamp extends Service {
         if (scheduler != null) context.stopService(scheduler);
     }
 
-    /**
-     * Start keyboard module
-     */
-    public static void startKeyboard(Context context) {
-        if (context == null) return;
-        if (keyboard == null) keyboard = new Intent(context, Keyboard.class);
-        context.startService(keyboard);
-    }
-
-    /**
-     * Stop keyboard module
-     */
-    public static void stopKeyboard(Context context) {
-        if (context == null) return;
-        if (keyboard != null) context.stopService(keyboard);
-    }
-
-    /**
-     * Start Installations module
-     */
-    public static void startInstallations(Context context) {
-        if (context == null) return;
-        if (installationsSrv == null) installationsSrv = new Intent(context, Installations.class);
-        context.startService(installationsSrv);
-    }
-
-    /**
-     * Stop Installations module
-     */
-    public static void stopInstallations(Context context) {
-        if (context == null) return;
-        if (installationsSrv != null) context.stopService(installationsSrv);
-    }
-
-    /**
-     * Start ESM module
-     */
-    public static void startESM(Context context) {
-        if (context == null) return;
-        if (esmSrv == null) esmSrv = new Intent(context, ESM.class);
-        context.startService(esmSrv);
-    }
-
-    /**
-     * Stop ESM module
-     */
-    public static void stopESM(Context context) {
-        if (context == null) return;
-        if (esmSrv != null) context.stopService(esmSrv);
-    }
 
     /**
      * Start Temperature module
@@ -2986,23 +2800,6 @@ public class Lamp extends Service {
     }
 
     /**
-     * Start battery module
-     */
-    public static void startBattery(Context context) {
-        if (context == null) return;
-        if (batterySrv == null) batterySrv = new Intent(context, Battery.class);
-        context.startService(batterySrv);
-    }
-
-    /**
-     * Stop battery module
-     */
-    public static void stopBattery(Context context) {
-        if (context == null) return;
-        if (batterySrv != null) context.stopService(batterySrv);
-    }
-
-    /**
      * Start network module
      */
     public static void startNetwork(Context context) {
@@ -3053,26 +2850,6 @@ public class Lamp extends Service {
         if (timeZoneSrv != null) context.stopService(timeZoneSrv);
     }
 
-    /**
-     * Start communication module
-     */
-    public static void startCommunication(Context context) {
-        if (context == null) return;
-        if (communicationSrv == null) communicationSrv = new Intent(context, Communication.class);
-        context.startService(communicationSrv);
-    }
-
-    /**
-     * Stop communication module
-     */
-    public static void stopCommunication(Context context) {
-        if (context == null) return;
-        if (!Lamp.getSetting(context, Lamp_Preferences.STATUS_COMMUNICATION_EVENTS).equals("true")
-                && !Lamp.getSetting(context, Lamp_Preferences.STATUS_CALLS).equals("true")
-                && !Lamp.getSetting(context, Lamp_Preferences.STATUS_MESSAGES).equals("true")) {
-            if (communicationSrv != null) context.stopService(communicationSrv);
-        }
-    }
 
     /**
      * Start MQTT module
