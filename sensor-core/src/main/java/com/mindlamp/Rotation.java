@@ -6,9 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -17,10 +14,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
-
-import com.mindlamp.providers.Rotation_Provider.Rotation_Data;
-import com.mindlamp.providers.Rotation_Provider.Rotation_Sensor;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
@@ -55,7 +50,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
     private static int FREQUENCY = -1;
     private static double THRESHOLD = 0;
     // Reject any data points that come in more often than frequency
-    private static boolean ENFORCE_FREQUENCY = false;
 
     /**
      * Broadcasted event: new rotation values
@@ -95,30 +89,30 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
             if (data_values.size() > 0) {
                 final ContentValues[] data_buffer = new ContentValues[data_values.size()];
                 data_values.toArray(data_buffer);
-                try {
-                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
-
-                                Intent newData = new Intent(ACTION_LAMP_ROTATION);
-                                sendBroadcast(newData);
-                            }
-                        }).run();
-                    }
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+////                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
+//
+//                                Intent newData = new Intent(ACTION_LAMP_ROTATION);
+//                                sendBroadcast(newData);
+//                            }
+//                        }).run();
+//                    }
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
                 data_values.clear();
             }
             return;
         }
 
         long TS = System.currentTimeMillis();
-        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
+        if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
         if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
                 && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
@@ -129,7 +123,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
         LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Rotation_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Rotation_Data.TIMESTAMP, TS);
         rowData.put(Rotation_Data.VALUES_0, event.values[0]);
         rowData.put(Rotation_Data.VALUES_1, event.values[1]);
@@ -188,45 +181,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
         void onRotationChanged(ContentValues data);
     }
 
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Rotation_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Rotation_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveSensorDevice(Sensor sensor) {
-        Cursor sensorInfo = getContentResolver().query(Rotation_Sensor.CONTENT_URI, null, null, null, null);
-        if (sensorInfo == null || !sensorInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Rotation_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Rotation_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Rotation_Sensor.MAXIMUM_RANGE, sensor.getMaximumRange());
-            rowData.put(Rotation_Sensor.MINIMUM_DELAY, sensor.getMinDelay());
-            rowData.put(Rotation_Sensor.NAME, sensor.getName());
-            rowData.put(Rotation_Sensor.POWER_MA, sensor.getPower());
-            rowData.put(Rotation_Sensor.RESOLUTION, sensor.getResolution());
-            rowData.put(Rotation_Sensor.TYPE, sensor.getType());
-            rowData.put(Rotation_Sensor.VENDOR, sensor.getVendor());
-            rowData.put(Rotation_Sensor.VERSION, sensor.getVersion());
-
-            getContentResolver().insert(Rotation_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Rotation sensor info: " + rowData.toString());
-        }
-        if (sensorInfo != null && !sensorInfo.isClosed()) sensorInfo.close();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -282,56 +236,27 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
 
         if (PERMISSIONS_OK) {
             if (mRotation == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have a rotation sensor!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_ROTATION, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_ROTATION, true);
-//                saveSensorDevice(mRotation);
 
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_ROTATION).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_ROTATION, 200000);
-                }
-
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_ROTATION).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_ROTATION, 0.0);
-                }
-//                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ROTATION));
                 int new_frequency = LampConstants.FREQUENCY_ROTATION;
-//                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ROTATION));
                 double new_threshold = LampConstants.THRESHOLD_ROTATION;
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_ROTATION_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
-
-                if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                              if (FREQUENCY != new_frequency
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mRotation);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mRotation, LampConstants.FREQUENCY_ROTATION,sensorHandler);
+                mSensorManager.registerListener(this, mRotation, new_frequency,sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG) Log.d(TAG, "Rotation service active...");
             }
 
-//            if (Aware.isStudy(this)) {
-//                ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this), 1);
-//                ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this), true);
-//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-//                SyncRequest request = new SyncRequest.Builder()
-//                        .syncPeriodic(frequency, frequency / 3)
-//                        .setSyncAdapter(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this))
-//                        .setExtras(new Bundle()).build();
-//                ContentResolver.requestSync(request);
-//            }
         }
 
         return START_STICKY;
@@ -340,5 +265,18 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public static final class Rotation_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String VALUES_0 = "double_values_0";
+        public static final String VALUES_1 = "double_values_1";
+        public static final String VALUES_2 = "double_values_2";
+        public static final String VALUES_3 = "double_values_3";
+        public static final String ACCURACY = "accuracy";
+        public static final String LABEL = "label";
     }
 }

@@ -106,9 +106,6 @@ public class Lamp_Sensor extends Service {
             startActivity(permissions);
         } else {
             PERMISSIONS_OK = true;
-            if (Lamp.getSetting(this, Lamp_Preferences.STATUS_WEBSERVICE).equals("true")) {
-                downloadCertificate(this);
-            }
             //Aware.debug(this, "active: " + getClass().getName() + " package: " + getPackageName());
         }
 
@@ -164,25 +161,7 @@ public class Lamp_Sensor extends Service {
                     e.printStackTrace();
                 }
             }
-            if (intent.getAction().equals(Lamp.ACTION_LAMP_SYNC_DATA) && provider.length() > 0) {
-                Bundle sync = new Bundle();
-                sync.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-                sync.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-                ContentResolver.requestSync(Lamp.getLAMPAccount(context), provider, sync);
-            }
-        }
-    }
 
-    private void downloadCertificate(Context context) {
-        new SSLDownloadTask().execute(context);
-    }
-
-    class SSLDownloadTask extends AsyncTask<Context, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(Context... params) {
-            SSLManager.handleUrl(getApplicationContext(), Lamp.getSetting(params[0], Lamp_Preferences.WEBSERVICE_SERVER), true);
-            return null;
         }
     }
 

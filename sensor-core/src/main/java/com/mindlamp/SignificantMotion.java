@@ -1,18 +1,16 @@
 package com.mindlamp;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SyncRequest;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
 
 import com.mindlamp.providers.Significant_Provider;
@@ -72,8 +70,6 @@ public class SignificantMotion extends Lamp_Sensor implements SensorEventListene
 
         AUTHORITY = Significant_Provider.getAuthority(this);
 
-        DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -90,7 +86,6 @@ public class SignificantMotion extends Lamp_Sensor implements SensorEventListene
             @Override
             public void onContext() {
                 ContentValues rowData = new ContentValues();
-                rowData.put(Significant_Provider.Significant_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
                 rowData.put(Significant_Provider.Significant_Data.TIMESTAMP, System.currentTimeMillis());
                 rowData.put(Significant_Provider.Significant_Data.IS_MOVING, CURRENT_SIGMOTION_STATE);
                 getContentResolver().insert(Significant_Provider.Significant_Data.CONTENT_URI, rowData);
@@ -120,14 +115,10 @@ public class SignificantMotion extends Lamp_Sensor implements SensorEventListene
         if (PERMISSIONS_OK) {
             if (mAccelerometer == null) {
                 if (DEBUG)
-                    Log.d(TAG, "This device does not have an accelerometer sensor. Can't detect significant motion");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_SIGNIFICANT_MOTION, false);
+
                 stopSelf();
 
             } else {
-
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_SIGNIFICANT_MOTION, true);
 
                 mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI, sensorHandler);
                 isSignificantMotionActive = true;
@@ -135,16 +126,6 @@ public class SignificantMotion extends Lamp_Sensor implements SensorEventListene
                 if (Lamp.DEBUG) Log.d(TAG, "Significant motion service active...");
             }
 
-            if (Lamp.isStudy(this)) {
-                ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Significant_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Significant_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Lamp.getLAMPAccount(this), Significant_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
         }
 
         return START_STICKY;
@@ -160,12 +141,6 @@ public class SignificantMotion extends Lamp_Sensor implements SensorEventListene
         sensorThread.quit();
         wakeLock.release();
 
-        ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Significant_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Lamp.getLAMPAccount(this),
-                Significant_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
 
         if (Lamp.DEBUG) Log.d(TAG, "Significant motion service destroyed...");
     }

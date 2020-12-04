@@ -2,29 +2,22 @@
 package com.mindlamp;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SyncRequest;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.mindlamp.providers.Light_Provider;
-import com.mindlamp.providers.Light_Provider.Light_Data;
-import com.mindlamp.providers.Light_Provider.Light_Sensor;
+import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
@@ -106,7 +99,6 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
         LAST_VALUE = event.values[0];
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Light_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Light_Data.TIMESTAMP, TS);
         rowData.put(Light_Data.LIGHT_LUX, event.values[0]);
         rowData.put(Light_Data.ACCURACY, event.accuracy);
@@ -124,23 +116,23 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
 
-        try {
-            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getContentResolver().bulkInsert(Light_Provider.Light_Data.CONTENT_URI, data_buffer);
-
-                        Intent newData = new Intent(ACTION_LAMP_LIGHT);
-                        sendBroadcast(newData);
-                    }
-                }).run();
-            }
-        } catch (SQLiteException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        } catch (SQLException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        }
+//        try {
+//            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        getContentResolver().bulkInsert(Light_Provider.Light_Data.CONTENT_URI, data_buffer);
+//
+//                        Intent newData = new Intent(ACTION_LAMP_LIGHT);
+//                        sendBroadcast(newData);
+//                    }
+//                }).run();
+//            }
+//        } catch (SQLiteException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        } catch (SQLException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        }
         data_values.clear();
         LAST_SAVE = TS;
     }
@@ -159,50 +151,11 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
         void onLightChanged(ContentValues data);
     }
 
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Light_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Light_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveSensorDevice(Sensor sensor) {
-        Cursor sensorInfo = getContentResolver().query(Light_Sensor.CONTENT_URI, null, null, null, null);
-        if (sensorInfo == null || !sensorInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Light_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Light_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Light_Sensor.MAXIMUM_RANGE, sensor.getMaximumRange());
-            rowData.put(Light_Sensor.MINIMUM_DELAY, sensor.getMinDelay());
-            rowData.put(Light_Sensor.NAME, sensor.getName());
-            rowData.put(Light_Sensor.POWER_MA, sensor.getPower());
-            rowData.put(Light_Sensor.RESOLUTION, sensor.getResolution());
-            rowData.put(Light_Sensor.TYPE, sensor.getType());
-            rowData.put(Light_Sensor.VENDOR, sensor.getVendor());
-            rowData.put(Light_Sensor.VERSION, sensor.getVersion());
-
-            getContentResolver().insert(Light_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Light sensor info: " + rowData.toString());
-        }
-        if (sensorInfo != null && !sensorInfo.isClosed()) sensorInfo.close();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Light_Provider.getAuthority(this);
+        AUTHORITY = getPackageName() + ".provider.light";
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -236,13 +189,6 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Light_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Lamp.getLAMPAccount(this),
-                Light_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
-
         if (Lamp.DEBUG) Log.d(TAG, "Light service terminated...");
     }
 
@@ -252,51 +198,25 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
 
         if (PERMISSIONS_OK) {
             if (mLight == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have a light sensor!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_LIGHT, false);
+
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_LIGHT, true);
-                saveSensorDevice(mLight);
 
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_LIGHT).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_LIGHT, 200000);
-                }
-
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_LIGHT).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_LIGHT, 0.0);
-                }
-
-                int new_frequency = Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LIGHT));
-                double new_threshold = Double.parseDouble(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.THRESHOLD_LIGHT));
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LIGHT_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
+                int new_frequency = LampConstants.FREQUENCY_LIGHT;
+                double new_threshold = LampConstants.THRESHOLD_LIGHT;
 
                 if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mLight);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mLight, Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LIGHT)), sensorHandler);
+                mSensorManager.registerListener(this, mLight, new_frequency, sensorHandler);
 
-                if (Lamp.isStudy(this)) {
-                    ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Light_Provider.getAuthority(this), 1);
-                    ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Light_Provider.getAuthority(this), true);
-                    long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                    SyncRequest request = new SyncRequest.Builder()
-                            .syncPeriodic(frequency, frequency / 3)
-                            .setSyncAdapter(Lamp.getLAMPAccount(this), Light_Provider.getAuthority(this))
-                            .setExtras(new Bundle()).build();
-                    ContentResolver.requestSync(request);
-                }
 
                 if (Lamp.DEBUG) Log.d(TAG, "Light service active: " + FREQUENCY + "ms");
             }
@@ -309,4 +229,15 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+    public static final class Light_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String LIGHT_LUX = "double_light_lux";
+        public static final String ACCURACY = "accuracy";
+        public static final String LABEL = "label";
+    }
+
 }

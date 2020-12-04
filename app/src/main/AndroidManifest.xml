@@ -90,8 +90,6 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name="digital.lamp.mindlamp.FitbitActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"/>
         <receiver
             android:name="digital.lamp.mindlamp.AlarmBroadCastReceiver"
             android:directBootAware="true"

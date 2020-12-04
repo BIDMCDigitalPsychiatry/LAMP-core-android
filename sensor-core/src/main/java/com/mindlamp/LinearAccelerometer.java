@@ -2,29 +2,21 @@
 package com.mindlamp;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SyncRequest;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
-
-import com.mindlamp.providers.Linear_Accelerometer_Provider;
-import com.mindlamp.providers.Linear_Accelerometer_Provider.Linear_Accelerometer_Data;
-import com.mindlamp.providers.Linear_Accelerometer_Provider.Linear_Accelerometer_Sensor;
+import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
@@ -94,23 +86,23 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
             if (data_values.size() > 0) {
                 final ContentValues[] data_buffer = new ContentValues[data_values.size()];
                 data_values.toArray(data_buffer);
-                try {
-                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                getContentResolver().bulkInsert(Linear_Accelerometer_Provider.Linear_Accelerometer_Data.CONTENT_URI, data_buffer);
-
-                                Intent newData = new Intent(ACTION_LAMP_LINEAR_ACCELEROMETER);
-                                sendBroadcast(newData);
-                            }
-                        }).run();
-                    }
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                getContentResolver().bulkInsert(Linear_Accelerometer_Provider.Linear_Accelerometer_Data.CONTENT_URI, data_buffer);
+//
+//                                Intent newData = new Intent(ACTION_LAMP_LINEAR_ACCELEROMETER);
+//                                sendBroadcast(newData);
+//                            }
+//                        }).run();
+//                    }
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
                 data_values.clear();
             }
 
@@ -118,7 +110,7 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         }
 
         long TS = System.currentTimeMillis();
-        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
+        if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
         if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
                 && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
@@ -129,7 +121,6 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Linear_Accelerometer_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Linear_Accelerometer_Data.TIMESTAMP, TS);
         rowData.put(Linear_Accelerometer_Data.VALUES_0, event.values[0]);
         rowData.put(Linear_Accelerometer_Data.VALUES_1, event.values[1]);
@@ -149,23 +140,23 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
 
-        try {
-            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getContentResolver().bulkInsert(Linear_Accelerometer_Provider.Linear_Accelerometer_Data.CONTENT_URI, data_buffer);
-
-                        Intent newData = new Intent(ACTION_LAMP_LINEAR_ACCELEROMETER);
-                        sendBroadcast(newData);
-                    }
-                }).run();
-            }
-        } catch (SQLiteException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        } catch (SQLException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        }
+//        try {
+//            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        getContentResolver().bulkInsert(Linear_Accelerometer_Provider.Linear_Accelerometer_Data.CONTENT_URI, data_buffer);
+//
+//                        Intent newData = new Intent(ACTION_LAMP_LINEAR_ACCELEROMETER);
+//                        sendBroadcast(newData);
+//                    }
+//                }).run();
+//            }
+//        } catch (SQLiteException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        } catch (SQLException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        }
         data_values.clear();
         LAST_SAVE = TS;
     }
@@ -184,50 +175,11 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         void onLinearAccelChanged(ContentValues data);
     }
 
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Linear_Accelerometer_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Linear_Accelerometer_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveAccelerometerDevice(Sensor acc) {
-        Cursor accelInfo = getContentResolver().query(Linear_Accelerometer_Sensor.CONTENT_URI, null, null, null, null);
-        if (accelInfo == null || !accelInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Linear_Accelerometer_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Linear_Accelerometer_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Linear_Accelerometer_Sensor.MAXIMUM_RANGE, acc.getMaximumRange());
-            rowData.put(Linear_Accelerometer_Sensor.MINIMUM_DELAY, acc.getMinDelay());
-            rowData.put(Linear_Accelerometer_Sensor.NAME, acc.getName());
-            rowData.put(Linear_Accelerometer_Sensor.POWER_MA, acc.getPower());
-            rowData.put(Linear_Accelerometer_Sensor.RESOLUTION, acc.getResolution());
-            rowData.put(Linear_Accelerometer_Sensor.TYPE, acc.getType());
-            rowData.put(Linear_Accelerometer_Sensor.VENDOR, acc.getVendor());
-            rowData.put(Linear_Accelerometer_Sensor.VERSION, acc.getVersion());
-
-            getContentResolver().insert(Linear_Accelerometer_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer sensor: " + rowData.toString());
-        }
-        if (accelInfo != null && !accelInfo.isClosed()) accelInfo.close();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Linear_Accelerometer_Provider.getAuthority(this);
+        AUTHORITY = getPackageName() + ".provider.accelerometer.linear";
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mLinearAccelerator = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
@@ -260,13 +212,6 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Lamp.getLAMPAccount(this),
-                Linear_Accelerometer_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
-
         if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer service terminated...");
     }
 
@@ -276,55 +221,28 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
 
         if (PERMISSIONS_OK) {
             if (mLinearAccelerator == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have a linear-accelerometer!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_LINEAR_ACCELEROMETER, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                saveAccelerometerDevice(mLinearAccelerator);
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_LINEAR_ACCELEROMETER, true);
 
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER, 200000);
-                }
 
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_LINEAR_ACCELEROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_LINEAR_ACCELEROMETER, 0.0);
-                }
-
-                int new_frequency = Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER));
-                double new_threshold = Double.parseDouble(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.THRESHOLD_LINEAR_ACCELEROMETER));
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
+                int new_frequency = LampConstants.FREQUENCY_ACCELEROMETER;
+                double new_threshold = LampConstants.THRESHOLD_ACCELEROMETER;
 
                 if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mLinearAccelerator);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mLinearAccelerator, Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER)), sensorHandler);
+                mSensorManager.registerListener(this, mLinearAccelerator, new_frequency, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG)
                     Log.d(TAG, "Linear-accelerometer service active: " + FREQUENCY + "ms");
-
-                if (Lamp.isStudy(this)) {
-                    ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this), 1);
-                    ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this), true);
-                    long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                    SyncRequest request = new SyncRequest.Builder()
-                            .syncPeriodic(frequency, frequency / 3)
-                            .setSyncAdapter(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this))
-                            .setExtras(new Bundle()).build();
-                    ContentResolver.requestSync(request);
-                }
             }
         }
 
@@ -334,5 +252,17 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public static final class Linear_Accelerometer_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String VALUES_0 = "double_values_0";
+        public static final String VALUES_1 = "double_values_1";
+        public static final String VALUES_2 = "double_values_2";
+        public static final String ACCURACY = "accuracy";
+        public static final String LABEL = "label";
     }
 }

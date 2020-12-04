@@ -8,6 +8,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 import java.lang.Exception
 
@@ -18,8 +19,6 @@ import java.lang.Exception
 class ScreenStateData constructor(sensorListener: SensorListener, context: Context){
    init {
        try {
-           //Screen State Settings
-           Lamp.setSetting(context, Lamp_Preferences.STATUS_SCREEN, true)
            Lamp.startScreen(context)//Start Screen Sensor
            //Sensor Observer
            Screen.setSensorObserver(object : Screen.LAMPSensorObserver {
@@ -47,6 +46,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : Locked")
+
                    sensorListener.getScreenState(sensorEventData)
                }
 
@@ -74,6 +76,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : Off")
+
                    sensorListener.getScreenState(sensorEventRequest)
                }
 
@@ -101,6 +106,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : On")
+
                    sensorListener.getScreenState(sensorEventRequest)
                }
 
@@ -128,6 +136,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : Unlocked")
+
                    sensorListener.getScreenState(sensorEventRequest)
                }
            })

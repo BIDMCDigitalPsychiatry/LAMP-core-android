@@ -7,7 +7,7 @@ import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
-import com.mindlamp.providers.Locations_Provider;
+
 import com.mindlamp.utils.Lamp_Sensor;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -53,7 +53,7 @@ public class Locations extends Lamp_Sensor {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Locations_Provider.getAuthority(this);
+        AUTHORITY = getPackageName() + ".provider.locations";
 
         REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_FINE_LOCATION);

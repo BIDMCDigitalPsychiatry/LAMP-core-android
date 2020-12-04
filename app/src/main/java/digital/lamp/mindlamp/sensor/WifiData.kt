@@ -18,13 +18,6 @@ import digital.lamp.mindlamp.utils.Utils
 class WifiData constructor(sensorListener: SensorListener, context: Context) {
     init{
         try {
-            //Wifi sensor settings
-            Lamp.setSetting(
-                context,
-                Lamp_Preferences.FREQUENCY_WIFI,
-                5
-            )
-            Lamp.setSetting(context, Lamp_Preferences.STATUS_WIFI, true)
             Lamp.startWiFi(context)//start sensor
             //Sensor Observer
             WiFi.setSensorObserver(object : WiFi.LAMPSensorObserver {
@@ -56,6 +49,9 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                                 data,
                                 "lamp.wifi",System.currentTimeMillis().toDouble()
                             )
+
+                        LampLog.e("Wifi : ${data.bssid}")
+
                         sensorListener.getWifiData(sensorEventData)
 //                        Handler().postDelayed({
 //                            Aware.stopWiFi(context)

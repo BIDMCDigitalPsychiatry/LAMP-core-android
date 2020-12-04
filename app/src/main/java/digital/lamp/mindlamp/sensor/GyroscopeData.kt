@@ -2,9 +2,7 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
 import com.mindlamp.Gyroscope
-import com.mindlamp.providers.Gyroscope_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -18,19 +16,12 @@ import digital.lamp.mindlamp.utils.Utils
 class GyroscopeData constructor(sensorListener: SensorListener, context: Context) {
     init {
         try {
-            //Gyroscope Settings
-            Lamp.setSetting(
-                context,
-                Lamp_Preferences.FREQUENCY_GYROSCOPE,
-                200000
-            ) //20Hz
-            Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_GYROSCOPE, 5f)
             Lamp.startGyroscope(context)//Start Gyroscope Sensor
             //Sensor Observer
             Gyroscope.setSensorObserver {
-                val x = it.getAsDouble(Gyroscope_Provider.Gyroscope_Data.VALUES_0)
-                val y = it.getAsDouble(Gyroscope_Provider.Gyroscope_Data.VALUES_1)
-                val z = it.getAsDouble(Gyroscope_Provider.Gyroscope_Data.VALUES_2)
+                val x = it.getAsDouble(Gyroscope.Gyroscope_Data.VALUES_0)
+                val y = it.getAsDouble(Gyroscope.Gyroscope_Data.VALUES_1)
+                val z = it.getAsDouble(Gyroscope.Gyroscope_Data.VALUES_2)
                 //val value=it.
                 if (it != null) {
                     val dimensionData =
