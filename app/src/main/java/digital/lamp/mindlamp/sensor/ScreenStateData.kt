@@ -19,8 +19,6 @@ import java.lang.Exception
 class ScreenStateData constructor(sensorListener: SensorListener, context: Context){
    init {
        try {
-           //Screen State Settings
-           Lamp.setSetting(context, Lamp_Preferences.STATUS_SCREEN, true)
            Lamp.startScreen(context)//Start Screen Sensor
            //Sensor Observer
            Screen.setSensorObserver(object : Screen.LAMPSensorObserver {

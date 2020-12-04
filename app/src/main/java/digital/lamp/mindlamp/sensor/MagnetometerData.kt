@@ -17,13 +17,6 @@ import digital.lamp.mindlamp.utils.Utils
 class MagnetometerData constructor(sensorListener: SensorListener, context: Context){
     init {
         try {
-            //Rotation Sensor Settings
-            Lamp.setSetting(
-                context,
-                Lamp_Preferences.FREQUENCY_MAGNETOMETER,
-                200000
-            ) //20Hz
-            Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_MAGNETOMETER, 5f)
             Lamp.startMagnetometer(context)//start Sensor
             //Sensor Observer
             Magnetometer.setSensorObserver {

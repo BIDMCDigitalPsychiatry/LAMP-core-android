@@ -22,6 +22,7 @@ import android.util.Log;
 import com.mindlamp.providers.Barometer_Provider;
 import com.mindlamp.providers.Barometer_Provider.Barometer_Data;
 import com.mindlamp.providers.Barometer_Provider.Barometer_Sensor;
+import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         long TS = System.currentTimeMillis();
-        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
+        if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
         if (LAST_VALUE != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUE) < THRESHOLD) {
             return;
@@ -90,7 +91,6 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
         // Proceed with saving as usual.
         ContentValues rowData = new ContentValues();
-        rowData.put(Barometer_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Barometer_Data.TIMESTAMP, TS);
         rowData.put(Barometer_Data.AMBIENT_PRESSURE, event.values[0]);
         rowData.put(Barometer_Data.ACCURACY, event.accuracy);
@@ -189,40 +189,23 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
         if (PERMISSIONS_OK) {
             if (mPressure == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have a barometer sensor!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_BAROMETER, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
 
-                Lamp.setSetting(getApplicationContext(), Lamp_Preferences.STATUS_BAROMETER, true);
-
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_BAROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_BAROMETER, 200000);
-                }
-
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_BAROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_BAROMETER, 0.0);
-                }
-
-                int new_frequency = Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_BAROMETER));
-                double new_threshold = Double.parseDouble(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.THRESHOLD_BAROMETER));
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_BAROMETER_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
+                int new_frequency = LampConstants.FREQUENCY_BAROMETER;
+                double new_threshold = LampConstants.THRESHOLD_BAROMETER;
 
                 if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mPressure);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mPressure, Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_BAROMETER)), sensorHandler);
+                mSensorManager.registerListener(this, mPressure, FREQUENCY, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG) Log.d(TAG, "Barometer service active: " + FREQUENCY + "ms");

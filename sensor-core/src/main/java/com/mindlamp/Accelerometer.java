@@ -99,7 +99,7 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 //        }
 
         long TS = System.currentTimeMillis();
-        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
+        if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
         if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
                 && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
@@ -110,7 +110,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
         LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Accelerometer_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Accelerometer_Data.TIMESTAMP, TS);
         rowData.put(Accelerometer_Data.VALUES_0, event.values[0]);
         rowData.put(Accelerometer_Data.VALUES_1, event.values[1]);
@@ -150,8 +149,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
 
-//        AUTHORITY = Accelerometer_Provider.getAuthority(this);
-
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -181,8 +178,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
         wakeLock.release();
 
         unregisterReceiver(dataLabeler);
-
-        if (Lamp.DEBUG) Log.d(TAG, "Accelerometer service terminated...");
     }
 
     @Override
@@ -191,42 +186,22 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
         if (PERMISSIONS_OK) {
             if (mAccelerometer == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have an accelerometer!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_ACCELEROMETER, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_ACCELEROMETER, true);
-//                saveAccelerometerDevice(mAccelerometer);
-
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_ACCELEROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_ACCELEROMETER, 200000);
-                }
-
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_ACCELEROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_ACCELEROMETER, 0.0);
-                }
-
-//                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ACCELEROMETER));
                 int new_frequency = LampConstants.FREQUENCY_ACCELEROMETER;
-//                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ACCELEROMETER));
                 double new_threshold = LampConstants.THRESHOLD_ACCELEROMETER;
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_ACCELEROMETER_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
 
                 if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mAccelerometer);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mAccelerometer, LampConstants.FREQUENCY_ACCELEROMETER, sensorHandler);
+                mSensorManager.registerListener(this, mAccelerometer, FREQUENCY, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG) Log.d(TAG, "Accelerometer service active: " + FREQUENCY + " ms");

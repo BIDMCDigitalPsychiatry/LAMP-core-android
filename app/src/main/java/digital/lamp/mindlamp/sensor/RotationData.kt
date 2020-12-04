@@ -17,13 +17,6 @@ import digital.lamp.mindlamp.utils.Utils
 class RotationData constructor(sensorListener: SensorListener, context: Context){
     init {
         try {
-            //Rotation Sensor Settings
-            Lamp.setSetting(
-                context,
-                Lamp_Preferences.FREQUENCY_ROTATION,
-                200000
-            ) //20Hz
-            Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_ROTATION, 5f)
             Lamp.startRotation(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {

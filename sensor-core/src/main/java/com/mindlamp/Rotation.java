@@ -125,7 +125,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
         LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Rotation_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Rotation_Data.TIMESTAMP, TS);
         rowData.put(Rotation_Data.VALUES_0, event.values[0]);
         rowData.put(Rotation_Data.VALUES_1, event.values[1]);
@@ -239,56 +238,27 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
 
         if (PERMISSIONS_OK) {
             if (mRotation == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have a rotation sensor!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_ROTATION, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_ROTATION, true);
-//                saveSensorDevice(mRotation);
 
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_ROTATION).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_ROTATION, 200000);
-                }
-
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_ROTATION).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_ROTATION, 0.0);
-                }
-//                int new_frequency = Integer.parseInt(Aware.getSetting(getApplicationContext(), Aware_Preferences.FREQUENCY_ROTATION));
                 int new_frequency = LampConstants.FREQUENCY_ROTATION;
-//                double new_threshold = Double.parseDouble(Aware.getSetting(getApplicationContext(), Aware_Preferences.THRESHOLD_ROTATION));
                 double new_threshold = LampConstants.THRESHOLD_ROTATION;
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_ROTATION_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
-
-                if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                              if (FREQUENCY != new_frequency
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mRotation);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mRotation, LampConstants.FREQUENCY_ROTATION,sensorHandler);
+                mSensorManager.registerListener(this, mRotation, new_frequency,sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG) Log.d(TAG, "Rotation service active...");
             }
 
-//            if (Aware.isStudy(this)) {
-//                ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this), 1);
-//                ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this), true);
-//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-//                SyncRequest request = new SyncRequest.Builder()
-//                        .syncPeriodic(frequency, frequency / 3)
-//                        .setSyncAdapter(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this))
-//                        .setExtras(new Bundle()).build();
-//                ContentResolver.requestSync(request);
-//            }
         }
 
         return START_STICKY;

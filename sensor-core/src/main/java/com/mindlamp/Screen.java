@@ -338,8 +338,6 @@ public class Screen extends Lamp_Sensor {
                 }
             }
 
-            DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-            Lamp.setSetting(this, Lamp_Preferences.STATUS_SCREEN, true);
             if (Lamp.DEBUG) Log.d(TAG, "Screen service active...");
 
 //            //We can only get the touch events if accessibility service is enabled.

@@ -10,8 +10,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -22,7 +20,6 @@ import com.mindlamp.providers.WiFi_Provider.WiFi_Data;
 import com.mindlamp.providers.WiFi_Provider.WiFi_Sensor;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
-import com.mindlamp.utils.Encrypter;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -118,16 +115,8 @@ public class WiFi extends Lamp_Sensor {
 
         if (PERMISSIONS_OK) {
             if (wifiManager == null) {
-                if (DEBUG) Log.d(TAG, "This device does not have a WiFi chip");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_WIFI, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_WIFI, true);
-
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WIFI).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_WIFI, 60);
-                }
 
                 alarmManager.cancel(wifiScan);
                 alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1000, LampConstants.FREQUENCY_WIFI * 1000, wifiScan);
@@ -135,16 +124,6 @@ public class WiFi extends Lamp_Sensor {
                 if (Lamp.DEBUG) Log.d(TAG, "WiFi service active...");
             }
 
-//            if (Aware.isStudy(this)) {
-//                ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), WiFi_Provider.getAuthority(this), 1);
-//                ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), WiFi_Provider.getAuthority(this), true);
-//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-//                SyncRequest request = new SyncRequest.Builder()
-//                        .syncPeriodic(frequency, frequency / 3)
-//                        .setSyncAdapter(Aware.getLAMPAccount(this), WiFi_Provider.getAuthority(this))
-//                        .setExtras(new Bundle()).build();
-//                ContentResolver.requestSync(request);
-//            }
         }
 
         return START_STICKY;
@@ -156,13 +135,6 @@ public class WiFi extends Lamp_Sensor {
 
         unregisterReceiver(wifiMonitor);
         if (wifiScan != null) alarmManager.cancel(wifiScan);
-
-//        ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), WiFi_Provider.getAuthority(this), false);
-//        ContentResolver.removePeriodicSync(
-//                Aware.getLAMPAccount(this),
-//                WiFi_Provider.getAuthority(this),
-//                Bundle.EMPTY
-//        );
 
         if (Lamp.DEBUG) Log.d(TAG, "WiFi service terminated...");
     }
@@ -200,26 +172,25 @@ public class WiFi extends Lamp_Sensor {
         @Override
         public String call() throws Exception {
             ContentValues rowData = new ContentValues();
-            rowData.put(WiFi_Sensor.DEVICE_ID, Lamp.getSetting(mContext, Lamp_Preferences.DEVICE_ID));
             rowData.put(WiFi_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(WiFi_Sensor.MAC_ADDRESS, Encrypter.hashMac(mContext, mWifi.getMacAddress()));
-            rowData.put(WiFi_Sensor.BSSID, Encrypter.hashMac(mContext, mWifi.getBSSID()));
-            rowData.put(WiFi_Sensor.SSID, Encrypter.hashSsid(mContext, mWifi.getSSID()));
+            rowData.put(WiFi_Sensor.MAC_ADDRESS,  mWifi.getMacAddress());
+            rowData.put(WiFi_Sensor.BSSID,  mWifi.getBSSID());
+            rowData.put(WiFi_Sensor.SSID,  mWifi.getSSID());
 
-            try {
-//                mContext.getContentResolver().insert(WiFi_Sensor.CONTENT_URI, rowData);
-
-                Intent currentAp = new Intent(ACTION_LAMP_WIFI_CURRENT_AP);
-                currentAp.putExtra(EXTRA_DATA, rowData);
-                mContext.sendBroadcast(currentAp);
-
-                if (Lamp.DEBUG) Log.d(TAG, "WiFi local sensor information: " + rowData.toString());
-
-            } catch (SQLiteException e) {
-                if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-            } catch (SQLException e) {
-                if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-            }
+//            try {
+////                mContext.getContentResolver().insert(WiFi_Sensor.CONTENT_URI, rowData);
+//
+//                Intent currentAp = new Intent(ACTION_LAMP_WIFI_CURRENT_AP);
+//                currentAp.putExtra(EXTRA_DATA, rowData);
+//                mContext.sendBroadcast(currentAp);
+//
+//                if (Lamp.DEBUG) Log.d(TAG, "WiFi local sensor information: " + rowData.toString());
+//
+//            } catch (SQLiteException e) {
+//                if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//            } catch (SQLException e) {
+//                if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//            }
 
             return Thread.currentThread().getName();
         }
@@ -244,31 +215,30 @@ public class WiFi extends Lamp_Sensor {
 
             for (ScanResult ap : mAPS) {
                 ContentValues rowData = new ContentValues();
-                rowData.put(WiFi_Data.DEVICE_ID, Lamp.getSetting(mContext, Lamp_Preferences.DEVICE_ID));
                 rowData.put(WiFi_Data.TIMESTAMP, currentScan);
-                rowData.put(WiFi_Data.BSSID, Encrypter.hashMac(mContext, ap.BSSID));
-                rowData.put(WiFi_Data.SSID, Encrypter.hashSsid(mContext, ap.SSID));
+                rowData.put(WiFi_Data.BSSID, ap.BSSID);
+                rowData.put(WiFi_Data.SSID, ap.SSID);
                 rowData.put(WiFi_Data.SECURITY, ap.capabilities);
                 rowData.put(WiFi_Data.FREQUENCY, ap.frequency);
                 rowData.put(WiFi_Data.RSSI, ap.level);
 
-                try {
-//                    mContext.getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
-
+//                try {
+////                    mContext.getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
+//
                     if (awareSensor != null) awareSensor.onWiFiAPDetected(rowData);
-
-                    if (Lamp.DEBUG)
-                        Log.d(TAG, ACTION_LAMP_WIFI_NEW_DEVICE + ": " + rowData.toString());
-
-                    Intent detectedAP = new Intent(ACTION_LAMP_WIFI_NEW_DEVICE);
-                    detectedAP.putExtra(EXTRA_DATA, rowData);
-                    mContext.sendBroadcast(detectedAP);
-
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//
+//                    if (Lamp.DEBUG)
+//                        Log.d(TAG, ACTION_LAMP_WIFI_NEW_DEVICE + ": " + rowData.toString());
+//
+//                    Intent detectedAP = new Intent(ACTION_LAMP_WIFI_NEW_DEVICE);
+//                    detectedAP.putExtra(EXTRA_DATA, rowData);
+//                    mContext.sendBroadcast(detectedAP);
+//
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
             }
 
             if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_WIFI_SCAN_ENDED);

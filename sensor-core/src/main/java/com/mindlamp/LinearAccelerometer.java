@@ -20,6 +20,7 @@ import android.os.PowerManager;
 import android.util.Log;
 import com.mindlamp.providers.Linear_Accelerometer_Provider;
 import com.mindlamp.providers.Linear_Accelerometer_Provider.Linear_Accelerometer_Data;
+import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
@@ -113,7 +114,7 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         }
 
         long TS = System.currentTimeMillis();
-        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
+        if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
         if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
                 && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
@@ -124,7 +125,6 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Linear_Accelerometer_Data.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
         rowData.put(Linear_Accelerometer_Data.TIMESTAMP, TS);
         rowData.put(Linear_Accelerometer_Data.VALUES_0, event.values[0]);
         rowData.put(Linear_Accelerometer_Data.VALUES_1, event.values[1]);
@@ -216,13 +216,6 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Lamp.getLAMPAccount(this),
-                Linear_Accelerometer_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
-
         if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer service terminated...");
     }
 
@@ -232,54 +225,28 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
 
         if (PERMISSIONS_OK) {
             if (mLinearAccelerator == null) {
-                if (Lamp.DEBUG) Log.w(TAG, "This device does not have a linear-accelerometer!");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_LINEAR_ACCELEROMETER, false);
                 stopSelf();
             } else {
-                DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
-                Lamp.setSetting(this, Lamp_Preferences.STATUS_LINEAR_ACCELEROMETER, true);
 
-                if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER, 200000);
-                }
 
-                if (Lamp.getSetting(this, Lamp_Preferences.THRESHOLD_LINEAR_ACCELEROMETER).length() == 0) {
-                    Lamp.setSetting(this, Lamp_Preferences.THRESHOLD_LINEAR_ACCELEROMETER, 0.0);
-                }
-
-                int new_frequency = Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER));
-                double new_threshold = Double.parseDouble(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.THRESHOLD_LINEAR_ACCELEROMETER));
-                boolean new_enforce_frequency = (Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER_ENFORCE).equals("true")
-                        || Lamp.getSetting(getApplicationContext(), Lamp_Preferences.ENFORCE_FREQUENCY_ALL).equals("true"));
+                int new_frequency = LampConstants.FREQUENCY_ACCELEROMETER;
+                double new_threshold = LampConstants.THRESHOLD_ACCELEROMETER;
 
                 if (FREQUENCY != new_frequency
-                        || THRESHOLD != new_threshold
-                        || ENFORCE_FREQUENCY != new_enforce_frequency) {
+                        || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
                     mSensorManager.unregisterListener(this, mLinearAccelerator);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
-                    ENFORCE_FREQUENCY = new_enforce_frequency;
                 }
 
-                mSensorManager.registerListener(this, mLinearAccelerator, Integer.parseInt(Lamp.getSetting(getApplicationContext(), Lamp_Preferences.FREQUENCY_LINEAR_ACCELEROMETER)), sensorHandler);
+                mSensorManager.registerListener(this, mLinearAccelerator, new_frequency, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG)
                     Log.d(TAG, "Linear-accelerometer service active: " + FREQUENCY + "ms");
-
-                if (Lamp.isStudy(this)) {
-                    ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this), 1);
-                    ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this), true);
-                    long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                    SyncRequest request = new SyncRequest.Builder()
-                            .syncPeriodic(frequency, frequency / 3)
-                            .setSyncAdapter(Lamp.getLAMPAccount(this), Linear_Accelerometer_Provider.getAuthority(this))
-                            .setExtras(new Bundle()).build();
-                    ContentResolver.requestSync(request);
-                }
             }
         }
 

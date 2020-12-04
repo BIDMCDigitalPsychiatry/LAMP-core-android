@@ -19,10 +19,6 @@ class LocationData constructor(sensorListener: SensorListener, context: Context)
    init {
        try {
            //Location Settings
-           Lamp.setSetting(context, Lamp_Preferences.STATUS_LOCATION_GPS, true)
-           Lamp.setSetting(context, Lamp_Preferences.FREQUENCY_LOCATION_GPS, 0)
-           Lamp.setSetting(context, Lamp_Preferences.STATUS_LOCATION_NETWORK, true)
-           Lamp.setSetting(context, Lamp_Preferences.STATUS_LOCATION_PASSIVE, true)
            Lamp.startLocations(context)
 
            //Location Observer

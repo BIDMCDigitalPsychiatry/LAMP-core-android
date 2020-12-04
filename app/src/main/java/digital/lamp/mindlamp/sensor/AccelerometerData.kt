@@ -19,12 +19,6 @@ class AccelerometerData constructor(sensorListener: SensorListener, context:Cont
      init {
          try {
              //Accelerometer settings
-             Lamp.setSetting(
-                 context,
-                 Lamp_Preferences.FREQUENCY_ACCELEROMETER,
-                 200000
-             ) //20Hz
-             Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_ACCELEROMETER, 5f)
              Lamp.startAccelerometer(context)//start sensor
              //Sensor Observer
              Accelerometer.setSensorObserver {

@@ -18,13 +18,6 @@ import digital.lamp.mindlamp.utils.Utils
 class GyroscopeData constructor(sensorListener: SensorListener, context: Context) {
     init {
         try {
-            //Gyroscope Settings
-            Lamp.setSetting(
-                context,
-                Lamp_Preferences.FREQUENCY_GYROSCOPE,
-                200000
-            ) //20Hz
-            Lamp.setSetting(context, Lamp_Preferences.THRESHOLD_GYROSCOPE, 5f)
             Lamp.startGyroscope(context)//Start Gyroscope Sensor
             //Sensor Observer
             Gyroscope.setSensorObserver {

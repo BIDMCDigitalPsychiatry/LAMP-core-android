@@ -40,25 +40,10 @@
             android:theme="@style/Theme.AppCompat.Translucent" />
 
         <!-- LAMP account service -->
-        <service android:name="com.mindlamp.utils.Lamp_Accounts">
-            <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/aware_authenticator" />
-        </service>
 
         <!-- Sensor services -->
         <service
-            android:name="com.mindlamp.utils.Scheduler"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.Lamp"
-            android:exported="true" />
-
-        <service
-            android:name="com.mindlamp.Lamp$JoinStudy"
             android:exported="true" />
 
         <service
@@ -66,9 +51,6 @@
             android:exported="true" />
         <service
             android:name="com.mindlamp.Screen"
-            android:exported="true" />
-        <service
-            android:name="com.mindlamp.Network"
             android:exported="true" />
         <service
             android:name="com.mindlamp.Accelerometer"
@@ -92,9 +74,6 @@
             android:name="com.mindlamp.Light"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Proximity"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.Magnetometer"
             android:exported="true" />
         <service
@@ -104,28 +83,11 @@
             android:name="com.mindlamp.LinearAccelerometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.utils.DownloadPluginService"
-            android:exported="true" />
-        <service
-            android:name="com.mindlamp.utils.StudyUtils"
-            android:exported="true" />
-        <service
             android:name="com.mindlamp.utils.Lamp_TTS"
             android:exported="true" />
         <service
             android:name="com.mindlamp.SignificantMotion"
             android:exported="true" />
-
-        <receiver
-            android:name="com.mindlamp.Lamp$Storage_Broadcaster"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_MOUNTED" />
-                <action android:name="android.intent.action.MEDIA_UNMOUNTED" />
-
-                <data android:scheme="file" />
-            </intent-filter>
-        </receiver>
 
         <!-- Core providers -->
         <provider
@@ -163,14 +125,6 @@
             android:authorities="${applicationId}.provider.magnetometer"
             android:exported="true"
             android:label="@string/sensor_magnetometer"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
-            android:name="com.mindlamp.providers.Proximity_Provider"
-            android:authorities="${applicationId}.provider.proximity"
-            android:exported="true"
-            android:label="@string/sensor_proximity"
             android:readPermission="com.aware.READ_CONTEXT_DATA"
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
@@ -231,14 +185,6 @@
             android:syncable="true"
             android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
         <provider
-            android:name="com.mindlamp.providers.Network_Provider"
-            android:authorities="${applicationId}.provider.network"
-            android:exported="true"
-            android:label="@string/sensor_network_usage"
-            android:readPermission="com.aware.READ_CONTEXT_DATA"
-            android:syncable="true"
-            android:writePermission="com.aware.WRITE_CONTEXT_DATA" />
-        <provider
             android:name="com.mindlamp.providers.Significant_Provider"
             android:authorities="${applicationId}.provider.significant"
             android:exported="true"
@@ -256,152 +202,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
-
-        <!-- Core Sync-Adapters -->
-
-        <service
-            android:name="com.mindlamp.syncadapters.Accelerometer_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_accelerometer" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Lamp_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_aware_device" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Barometer_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_barometer" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Gyroscope_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_gyroscope" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Light_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_light" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.LinearAccelerometer_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_linear_accelerometer" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Locations_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_locations" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Magnetometer_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_magnetometer" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Network_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_network" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Proximity_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_proximity" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Rotation_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_rotation" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Screen_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_screen" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Significant_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_significant" />
-        </service>
-        <service
-            android:name="com.mindlamp.syncadapters.Wifi_Sync"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
-            </intent-filter>
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_wifi" />
-        </service>
-        <service
-            android:name="com.mindlamp.Websocket"
-            android:exported="true" />
 
     </application>
 
