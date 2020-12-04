@@ -8,9 +8,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SyncRequest;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -206,16 +203,16 @@ public class Network extends Lamp_Sensor {
                 mobile.put(Network_Data.TYPE, NETWORK_TYPE_MOBILE);
                 mobile.put(Network_Data.SUBTYPE, "MOBILE");
                 mobile.put(Network_Data.STATE, STATUS_OFF);
-                try {
-                    getContentResolver().insert(Network_Data.CONTENT_URI, mobile);
-
-                    if (awareSensor != null) awareSensor.onNetworkDataOFF();
-
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+//                    getContentResolver().insert(Network_Data.CONTENT_URI, mobile);
+//
+//                    if (awareSensor != null) awareSensor.onNetworkDataOFF();
+//
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
 
                 if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_MOBILE_OFF);
                 Intent network = new Intent(ACTION_LAMP_MOBILE_OFF);
@@ -227,16 +224,16 @@ public class Network extends Lamp_Sensor {
                 mobile.put(Network_Data.TYPE, NETWORK_TYPE_MOBILE);
                 mobile.put(Network_Data.SUBTYPE, "MOBILE");
                 mobile.put(Network_Data.STATE, STATUS_ON);
-                try {
-                    getContentResolver().insert(Network_Data.CONTENT_URI, mobile);
-
-                    if (awareSensor != null) awareSensor.onNetworkDataON();
-
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+//                    getContentResolver().insert(Network_Data.CONTENT_URI, mobile);
+//
+//                    if (awareSensor != null) awareSensor.onNetworkDataON();
+//
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
 
                 if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_MOBILE_ON);
                 Intent network = new Intent(ACTION_LAMP_MOBILE_ON);
@@ -265,16 +262,16 @@ public class Network extends Lamp_Sensor {
                     started.put(Network_Data.TYPE, NETWORK_TYPE_GPS);
                     started.put(Network_Data.SUBTYPE, "GPS");
                     started.put(Network_Data.STATE, STATUS_ON);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, started);
-
-                        if (awareSensor != null) awareSensor.onGPSON();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, started);
+//
+//                        if (awareSensor != null) awareSensor.onGPSON();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_GPS_ON);
                     Intent gpsOn = new Intent(ACTION_LAMP_GPS_ON);
@@ -286,16 +283,16 @@ public class Network extends Lamp_Sensor {
                     stopped.put(Network_Data.TYPE, NETWORK_TYPE_GPS);
                     stopped.put(Network_Data.SUBTYPE, "GPS");
                     stopped.put(Network_Data.STATE, STATUS_OFF);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, stopped);
-
-                        if (awareSensor != null) awareSensor.onGPSOFF();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, stopped);
+//
+//                        if (awareSensor != null) awareSensor.onGPSOFF();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_GPS_OFF);
                     Intent gpsOff = new Intent(ACTION_LAMP_GPS_OFF);
@@ -314,16 +311,16 @@ public class Network extends Lamp_Sensor {
                     rowData.put(Network_Data.TYPE, NETWORK_TYPE_AIRPLANE);
                     rowData.put(Network_Data.SUBTYPE, "AIRPLANE");
                     rowData.put(Network_Data.STATE, STATUS_ON);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
-
-                        if (awareSensor != null) awareSensor.onAirplaneON();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
+//
+//                        if (awareSensor != null) awareSensor.onAirplaneON();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_AIRPLANE_ON);
                     Intent noNetwork = new Intent(ACTION_LAMP_AIRPLANE_ON);
@@ -335,16 +332,16 @@ public class Network extends Lamp_Sensor {
                     rowData.put(Network_Data.TYPE, NETWORK_TYPE_AIRPLANE);
                     rowData.put(Network_Data.SUBTYPE, "AIRPLANE");
                     rowData.put(Network_Data.STATE, STATUS_OFF);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
-
-                        if (awareSensor != null) awareSensor.onAirplaneOFF();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
+//
+//                        if (awareSensor != null) awareSensor.onAirplaneOFF();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_AIRPLANE_OFF);
                     Intent noNetwork = new Intent(ACTION_LAMP_AIRPLANE_OFF);
@@ -363,16 +360,16 @@ public class Network extends Lamp_Sensor {
                     data.put(Network_Data.TYPE, NETWORK_TYPE_WIFI);
                     data.put(Network_Data.SUBTYPE, "WIFI");
                     data.put(Network_Data.STATE, STATUS_ON);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
-
-                        if (awareSensor != null) awareSensor.onWiFiON();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
+//
+//                        if (awareSensor != null) awareSensor.onWiFiON();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_WIFI_ON);
                     Intent wifiOn = new Intent(ACTION_LAMP_WIFI_ON);
@@ -384,16 +381,16 @@ public class Network extends Lamp_Sensor {
                     data.put(Network_Data.TYPE, NETWORK_TYPE_WIFI);
                     data.put(Network_Data.SUBTYPE, "WIFI");
                     data.put(Network_Data.STATE, STATUS_OFF);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
-
-                        if (awareSensor != null) awareSensor.onWiFiOFF();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
+//
+//                        if (awareSensor != null) awareSensor.onWiFiOFF();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_WIFI_OFF);
                     Intent wifiOn = new Intent(ACTION_LAMP_WIFI_OFF);
@@ -412,16 +409,16 @@ public class Network extends Lamp_Sensor {
                     rowData.put(Network_Data.TYPE, NETWORK_TYPE_BLUETOOTH);
                     rowData.put(Network_Data.SUBTYPE, "BLUETOOTH");
                     rowData.put(Network_Data.STATE, STATUS_ON);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
-
-                        if (awareSensor != null) awareSensor.onBluetoothON();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
+//
+//                        if (awareSensor != null) awareSensor.onBluetoothON();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_BLUETOOTH_ON);
                     Intent bluetooth = new Intent(ACTION_LAMP_BLUETOOTH_ON);
@@ -433,16 +430,16 @@ public class Network extends Lamp_Sensor {
                     rowData.put(Network_Data.TYPE, NETWORK_TYPE_BLUETOOTH);
                     rowData.put(Network_Data.SUBTYPE, "BLUETOOTH");
                     rowData.put(Network_Data.STATE, STATUS_OFF);
-                    try {
-                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
-
-                        if (awareSensor != null) awareSensor.onBluetoothOFF();
-
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+//                        context.getContentResolver().insert(Network_Data.CONTENT_URI, rowData);
+//
+//                        if (awareSensor != null) awareSensor.onBluetoothOFF();
+//
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_BLUETOOTH_OFF);
                     Intent bluetooth = new Intent(ACTION_LAMP_BLUETOOTH_OFF);
@@ -460,16 +457,16 @@ public class Network extends Lamp_Sensor {
                         data.put(Network_Data.TYPE, NETWORK_TYPE_WIMAX);
                         data.put(Network_Data.SUBTYPE, "WIMAX");
                         data.put(Network_Data.STATE, STATUS_ON);
-                        try {
-                            context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
-
-                            if (awareSensor != null) awareSensor.onWimaxON();
-
-                        } catch (SQLiteException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        } catch (SQLException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        }
+//                        try {
+//                            context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
+//
+//                            if (awareSensor != null) awareSensor.onWimaxON();
+//
+//                        } catch (SQLiteException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        } catch (SQLException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        }
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_WIMAX_ON);
                         Intent wimaxOn = new Intent(ACTION_LAMP_WIMAX_ON);
@@ -481,16 +478,16 @@ public class Network extends Lamp_Sensor {
                         data.put(Network_Data.TYPE, NETWORK_TYPE_WIMAX);
                         data.put(Network_Data.SUBTYPE, "WIMAX");
                         data.put(Network_Data.STATE, STATUS_OFF);
-                        try {
-                            context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
-
-                            if (awareSensor != null) awareSensor.onWimaxOFF();
-
-                        } catch (SQLiteException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        } catch (SQLException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        }
+//                        try {
+//                            context.getContentResolver().insert(Network_Data.CONTENT_URI, data);
+//
+//                            if (awareSensor != null) awareSensor.onWimaxOFF();
+//
+//                        } catch (SQLiteException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        } catch (SQLException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        }
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_WIMAX_OFF);
                         Intent wimaxOn = new Intent(ACTION_LAMP_WIMAX_OFF);
@@ -589,16 +586,6 @@ public class Network extends Lamp_Sensor {
 
             if (Lamp.DEBUG) Log.d(TAG, "Network service active...");
 
-            if (Lamp.isStudy(this)) {
-                ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Network_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Network_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Lamp.getLAMPAccount(this), Network_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
         }
 
         return START_STICKY;

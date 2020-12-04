@@ -6,9 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,7 +17,6 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.mindlamp.providers.Rotation_Provider.Rotation_Data;
-import com.mindlamp.providers.Rotation_Provider.Rotation_Sensor;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
@@ -95,23 +91,23 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
             if (data_values.size() > 0) {
                 final ContentValues[] data_buffer = new ContentValues[data_values.size()];
                 data_values.toArray(data_buffer);
-                try {
-                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
-
-                                Intent newData = new Intent(ACTION_LAMP_ROTATION);
-                                sendBroadcast(newData);
-                            }
-                        }).run();
-                    }
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+////                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
+//
+//                                Intent newData = new Intent(ACTION_LAMP_ROTATION);
+//                                sendBroadcast(newData);
+//                            }
+//                        }).run();
+//                    }
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
                 data_values.clear();
             }
             return;
@@ -186,45 +182,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
 
     public interface LAMPSensorObserver {
         void onRotationChanged(ContentValues data);
-    }
-
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Rotation_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Rotation_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveSensorDevice(Sensor sensor) {
-        Cursor sensorInfo = getContentResolver().query(Rotation_Sensor.CONTENT_URI, null, null, null, null);
-        if (sensorInfo == null || !sensorInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Rotation_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Rotation_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Rotation_Sensor.MAXIMUM_RANGE, sensor.getMaximumRange());
-            rowData.put(Rotation_Sensor.MINIMUM_DELAY, sensor.getMinDelay());
-            rowData.put(Rotation_Sensor.NAME, sensor.getName());
-            rowData.put(Rotation_Sensor.POWER_MA, sensor.getPower());
-            rowData.put(Rotation_Sensor.RESOLUTION, sensor.getResolution());
-            rowData.put(Rotation_Sensor.TYPE, sensor.getType());
-            rowData.put(Rotation_Sensor.VENDOR, sensor.getVendor());
-            rowData.put(Rotation_Sensor.VERSION, sensor.getVersion());
-
-            getContentResolver().insert(Rotation_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Rotation sensor info: " + rowData.toString());
-        }
-        if (sensorInfo != null && !sensorInfo.isClosed()) sensorInfo.close();
     }
 
     @Override

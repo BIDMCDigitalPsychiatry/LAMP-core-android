@@ -8,6 +8,7 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
 import digital.lamp.mindlamp.network.model.SensorEventData
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 import java.lang.Exception
 
@@ -47,6 +48,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : Locked")
+
                    sensorListener.getScreenState(sensorEventData)
                }
 
@@ -74,6 +78,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : Off")
+
                    sensorListener.getScreenState(sensorEventRequest)
                }
 
@@ -101,6 +108,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : On")
+
                    sensorListener.getScreenState(sensorEventRequest)
                }
 
@@ -128,6 +138,9 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                            data,
                            "lamp.screen_state",System.currentTimeMillis().toDouble()
                        )
+
+                   LampLog.e("Screen State : Unlocked")
+
                    sensorListener.getScreenState(sensorEventRequest)
                }
            })

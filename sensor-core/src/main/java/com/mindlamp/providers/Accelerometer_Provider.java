@@ -2,7 +2,6 @@
 package com.mindlamp.providers;
 
 import android.content.ContentProvider;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
@@ -21,8 +20,6 @@ import java.util.HashMap;
  * @author denzil
  */
 public class Accelerometer_Provider extends ContentProvider {
-
-    public static final int DATABASE_VERSION = 5;
 
     /**
      * Authority of content provider

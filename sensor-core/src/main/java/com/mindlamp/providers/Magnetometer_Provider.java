@@ -2,21 +2,15 @@
 package com.mindlamp.providers;
 
 import android.content.ContentProvider;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.util.Log;
 
-import com.mindlamp.Accelerometer;
-import com.mindlamp.Lamp;
-import com.mindlamp.utils.DatabaseHelper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 
@@ -28,8 +22,6 @@ import java.util.HashMap;
  * @author denzil
  */
 public class Magnetometer_Provider extends ContentProvider {
-
-    public static final int DATABASE_VERSION = 3;
 
     /**
      * Authority of content provider
@@ -125,49 +117,6 @@ public class Magnetometer_Provider extends ContentProvider {
     private HashMap<String, String> sensorDeviceMap = null;
     private HashMap<String, String> sensorDataMap = null;
 
-    private DatabaseHelper dbHelper;
-    private static SQLiteDatabase database;
-
-    private void initialiseDatabase() {
-        if (dbHelper == null)
-            dbHelper = new DatabaseHelper(getContext(), DATABASE_NAME, null, DATABASE_VERSION, DATABASE_TABLES, TABLES_FIELDS);
-        if (database == null)
-            database = dbHelper.getWritableDatabase();
-    }
-
-    /**
-     * Delete entry from the database
-     */
-    @Override
-    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
-
-        initialiseDatabase();
-
-        //lock database for transaction
-        database.beginTransaction();
-
-        int count;
-        switch (sUriMatcher.match(uri)) {
-            case SENSOR_DEV:
-                count = database.delete(DATABASE_TABLES[0], selection,
-                        selectionArgs);
-                break;
-            case SENSOR_DATA:
-                count = database.delete(DATABASE_TABLES[1], selection,
-                        selectionArgs);
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-        return count;
-    }
-
     @Override
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
@@ -184,108 +133,20 @@ public class Magnetometer_Provider extends ContentProvider {
         }
     }
 
-    /**
-     * Insert entry to the database
-     */
+    @Nullable
     @Override
-    public synchronized Uri insert(Uri uri, ContentValues initialValues) {
-
-        initialiseDatabase();
-
-        ContentValues values = (initialValues != null) ? new ContentValues(initialValues) : new ContentValues();
-
-        database.beginTransaction();
-
-        switch (sUriMatcher.match(uri)) {
-            case SENSOR_DEV:
-                long accel_id = database.insertWithOnConflict(DATABASE_TABLES[0],
-                        Magnetometer_Sensor.DEVICE_ID, values, SQLiteDatabase.CONFLICT_IGNORE);
-                database.setTransactionSuccessful();
-                database.endTransaction();
-                if (accel_id > 0) {
-                    Uri accelUri = ContentUris.withAppendedId(
-                            Magnetometer_Sensor.CONTENT_URI, accel_id);
-                    getContext().getContentResolver().notifyChange(accelUri, null, false);
-                    return accelUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            case SENSOR_DATA:
-                long accelData_id = database.insertWithOnConflict(DATABASE_TABLES[1],
-                        Magnetometer_Data.DEVICE_ID, values, SQLiteDatabase.CONFLICT_IGNORE);
-                database.setTransactionSuccessful();
-                database.endTransaction();
-                if (accelData_id > 0) {
-                    Uri accelDataUri = ContentUris.withAppendedId(
-                            Magnetometer_Data.CONTENT_URI, accelData_id);
-                    getContext().getContentResolver().notifyChange(accelDataUri,null, false);
-                    return accelDataUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        return null;
     }
 
-    /**
-     * Batch insert for high performance sensors (e.g., accelerometer, etc)
-     *
-     * @param uri
-     * @param values
-     * @return values.length
-     */
     @Override
-    public synchronized int bulkInsert(Uri uri, ContentValues[] values) {
+    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
+    }
 
-        initialiseDatabase();
-
-        database.beginTransaction();
-
-        int count = 0;
-        switch (sUriMatcher.match(uri)) {
-            case SENSOR_DEV:
-                for (ContentValues v : values) {
-                    long id;
-                    try {
-                        id = database.insertOrThrow(DATABASE_TABLES[0], Magnetometer_Sensor.DEVICE_ID, v);
-                    } catch (SQLException e) {
-                        id = database.replace(DATABASE_TABLES[0], Magnetometer_Sensor.DEVICE_ID, v);
-                    }
-                    if (id <= 0) {
-                        Log.w(Accelerometer.TAG, "Failed to insert/replace row into " + uri);
-                    } else {
-                        count++;
-                    }
-                }
-                break;
-            case SENSOR_DATA:
-                for (ContentValues v : values) {
-                    long id;
-                    try {
-                        id = database.insertOrThrow(DATABASE_TABLES[1], Magnetometer_Data.DEVICE_ID, v);
-                    } catch (SQLException e) {
-                        id = database.replace(DATABASE_TABLES[1], Magnetometer_Data.DEVICE_ID, v);
-                    }
-                    if (id <= 0) {
-                        Log.w(Accelerometer.TAG, "Failed to insert/replace row into " + uri);
-                    } else {
-                        count++;
-                    }
-                }
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-
-        return count;
+    @Override
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
     }
 
     /**
@@ -351,72 +212,10 @@ public class Magnetometer_Provider extends ContentProvider {
         return true;
     }
 
-    /**
-     * Query entries from the database
-     */
+    @Nullable
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-                        String[] selectionArgs, String sortOrder) {
-
-        initialiseDatabase();
-
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setStrict(true);
-        switch (sUriMatcher.match(uri)) {
-            case SENSOR_DEV:
-                qb.setTables(DATABASE_TABLES[0]);
-                qb.setProjectionMap(sensorDeviceMap);
-                break;
-            case SENSOR_DATA:
-                qb.setTables(DATABASE_TABLES[1]);
-                qb.setProjectionMap(sensorDataMap);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-        try {
-            Cursor c = qb.query(database, projection, selection, selectionArgs,
-                    null, null, sortOrder);
-            c.setNotificationUri(getContext().getContentResolver(), uri);
-            return c;
-        } catch (IllegalStateException e) {
-            if (Lamp.DEBUG)
-                Log.e(Lamp.TAG, e.getMessage());
-
-            return null;
-        }
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        return null;
     }
 
-    /**
-     * Update application on the database
-     */
-    @Override
-    public synchronized int update(Uri uri, ContentValues values, String selection,
-                                   String[] selectionArgs) {
-
-        initialiseDatabase();
-
-        database.beginTransaction();
-
-        int count;
-        switch (sUriMatcher.match(uri)) {
-            case SENSOR_DEV:
-                count = database.update(DATABASE_TABLES[0], values, selection,
-                        selectionArgs);
-                break;
-            case SENSOR_DATA:
-                count = database.update(DATABASE_TABLES[1], values, selection,
-                        selectionArgs);
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-        return count;
-    }
 }

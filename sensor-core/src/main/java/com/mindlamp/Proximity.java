@@ -7,10 +7,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SyncRequest;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -24,7 +20,6 @@ import android.util.Log;
 
 import com.mindlamp.providers.Proximity_Provider;
 import com.mindlamp.providers.Proximity_Provider.Proximity_Data;
-import com.mindlamp.providers.Proximity_Provider.Proximity_Sensor;
 import com.mindlamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
@@ -116,23 +111,23 @@ public class Proximity extends Lamp_Sensor implements SensorEventListener {
 
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
-        try {
-            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getContentResolver().bulkInsert(Proximity_Provider.Proximity_Data.CONTENT_URI, data_buffer);
-
-                        Intent newData = new Intent(ACTION_LAMP_PROXIMITY);
-                        sendBroadcast(newData);
-                    }
-                }).run();
-            }
-        } catch (SQLiteException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        } catch (SQLException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        }
+//        try {
+//            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        getContentResolver().bulkInsert(Proximity_Provider.Proximity_Data.CONTENT_URI, data_buffer);
+//
+//                        Intent newData = new Intent(ACTION_LAMP_PROXIMITY);
+//                        sendBroadcast(newData);
+//                    }
+//                }).run();
+//            }
+//        } catch (SQLiteException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        } catch (SQLException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        }
         data_values.clear();
         LAST_SAVE = TS;
     }
@@ -149,45 +144,6 @@ public class Proximity extends Lamp_Sensor implements SensorEventListener {
 
     public interface LAMPSensorObserver {
         void onProximityChanged(ContentValues data);
-    }
-
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Proximity_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Proximity_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveSensorDevice(Sensor sensor) {
-        Cursor sensorInfo = getContentResolver().query(Proximity_Sensor.CONTENT_URI, null, null, null, null);
-        if (sensorInfo == null || !sensorInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Proximity_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Proximity_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Proximity_Sensor.MAXIMUM_RANGE, sensor.getMaximumRange());
-            rowData.put(Proximity_Sensor.MINIMUM_DELAY, sensor.getMinDelay());
-            rowData.put(Proximity_Sensor.NAME, sensor.getName());
-            rowData.put(Proximity_Sensor.POWER_MA, sensor.getPower());
-            rowData.put(Proximity_Sensor.RESOLUTION, sensor.getResolution());
-            rowData.put(Proximity_Sensor.TYPE, sensor.getType());
-            rowData.put(Proximity_Sensor.VENDOR, sensor.getVendor());
-            rowData.put(Proximity_Sensor.VERSION, sensor.getVersion());
-
-            getContentResolver().insert(Proximity_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Proximity sensor: " + rowData.toString());
-        }
-        if (sensorInfo != null && !sensorInfo.isClosed()) sensorInfo.close();
     }
 
     @Override
@@ -252,7 +208,6 @@ public class Proximity extends Lamp_Sensor implements SensorEventListener {
 
                 DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
                 Lamp.setSetting(this, Lamp_Preferences.STATUS_PROXIMITY, true);
-                saveSensorDevice(mProximity);
 
                 if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_PROXIMITY).length() == 0) {
                     Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_PROXIMITY, 200000);
@@ -285,16 +240,6 @@ public class Proximity extends Lamp_Sensor implements SensorEventListener {
                 if (Lamp.DEBUG) Log.d(TAG, "Proximity service active: " + FREQUENCY + "ms");
             }
 
-            if (Lamp.isStudy(this)) {
-                ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Proximity_Provider.getAuthority(this), 1);
-                ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Proximity_Provider.getAuthority(this), true);
-                long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                SyncRequest request = new SyncRequest.Builder()
-                        .syncPeriodic(frequency, frequency / 3)
-                        .setSyncAdapter(Lamp.getLAMPAccount(this), Proximity_Provider.getAuthority(this))
-                        .setExtras(new Bundle()).build();
-                ContentResolver.requestSync(request);
-            }
         }
 
         return START_STICKY;

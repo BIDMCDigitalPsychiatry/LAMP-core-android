@@ -6,8 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -142,14 +140,14 @@ public class Screen extends Lamp_Sensor {
 //                rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
 //                rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
 //                rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_ON);
-                try {
-//                    getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                    if (awareSensor != null) awareSensor.onScreenOn();
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+////                    getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                    if (awareSensor != null) awareSensor.onScreenOn();
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
 
                 Log.d(TAG, ACTION_LAMP_SCREEN_ON);
                 sendBroadcast(new Intent(ACTION_LAMP_SCREEN_ON));
@@ -159,14 +157,14 @@ public class Screen extends Lamp_Sensor {
 //                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
 //                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
 //                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
-                    try {
-//                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                        if (awareSensor != null) awareSensor.onScreenUnlocked();
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                        if (awareSensor != null) awareSensor.onScreenUnlocked();
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
@@ -180,14 +178,14 @@ public class Screen extends Lamp_Sensor {
 //                rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
 //                rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
 //                rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_OFF);
-                try {
-//                    getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                    if (awareSensor != null) awareSensor.onScreenOff();
-                } catch (SQLiteException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                } catch (SQLException e) {
-                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                }
+//                try {
+////                    getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                    if (awareSensor != null) awareSensor.onScreenOff();
+//                } catch (SQLiteException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                } catch (SQLException e) {
+//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                }
 
                 if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_OFF);
                 sendBroadcast(new Intent(ACTION_LAMP_SCREEN_OFF));
@@ -197,14 +195,14 @@ public class Screen extends Lamp_Sensor {
 //                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
 //                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
 //                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
-                    try {
-//                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                        if (awareSensor != null) awareSensor.onScreenLocked();
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                        if (awareSensor != null) awareSensor.onScreenLocked();
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
@@ -218,14 +216,14 @@ public class Screen extends Lamp_Sensor {
 //                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
 //                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
 //                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_UNLOCKED);
-                    try {
-//                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                        if (awareSensor != null) awareSensor.onScreenUnlocked();
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                        if (awareSensor != null) awareSensor.onScreenUnlocked();
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_UNLOCKED);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_UNLOCKED));
@@ -254,14 +252,14 @@ public class Screen extends Lamp_Sensor {
 //                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
 //                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_ON);
 
-                    try {
-//                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                        if (awareSensor != null) awareSensor.onScreenOn();
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                        if (awareSensor != null) awareSensor.onScreenOn();
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_ON);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_ON));
@@ -272,14 +270,14 @@ public class Screen extends Lamp_Sensor {
 //                        rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
 //                        rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
 
-                        try {
-//                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                            if (awareSensor != null) awareSensor.onScreenUnlocked();
-                        } catch (SQLiteException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        } catch (SQLException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        }
+//                        try {
+////                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                            if (awareSensor != null) awareSensor.onScreenUnlocked();
+//                        } catch (SQLiteException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        } catch (SQLException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        }
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                         sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
@@ -288,15 +286,15 @@ public class Screen extends Lamp_Sensor {
 //                        rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
 //                        rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
 //                        rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_UNLOCKED);
-
-                        try {
-//                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                            if (awareSensor != null) awareSensor.onScreenUnlocked();
-                        } catch (SQLiteException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        } catch (SQLException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        }
+//
+//                        try {
+////                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                            if (awareSensor != null) awareSensor.onScreenUnlocked();
+//                        } catch (SQLiteException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        } catch (SQLException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        }
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_UNLOCKED);
                         sendBroadcast(new Intent(ACTION_LAMP_SCREEN_UNLOCKED));
@@ -307,14 +305,14 @@ public class Screen extends Lamp_Sensor {
 //                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
 //                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_OFF);
 
-                    try {
-//                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                        if (awareSensor != null) awareSensor.onScreenOff();
-                    } catch (SQLiteException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    } catch (SQLException e) {
-                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                    }
+//                    try {
+////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                        if (awareSensor != null) awareSensor.onScreenOff();
+//                    } catch (SQLiteException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    } catch (SQLException e) {
+//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                    }
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_OFF);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_OFF));
@@ -325,14 +323,14 @@ public class Screen extends Lamp_Sensor {
 //                        rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
 //                        rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
 
-                        try {
-//                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-                            if (awareSensor != null) awareSensor.onScreenLocked();
-                        } catch (SQLiteException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        } catch (SQLException e) {
-                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-                        }
+//                        try {
+////                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
+//                            if (awareSensor != null) awareSensor.onScreenLocked();
+//                        } catch (SQLiteException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        } catch (SQLException e) {
+//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//                        }
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                         sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));

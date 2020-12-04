@@ -287,17 +287,6 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
                 LAST_SAVE = System.currentTimeMillis();
 
                 if (Lamp.DEBUG) Log.d(TAG, "Magnetometer service active...");
-
-//                if (Aware.isStudy(this)) {
-//                    ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), Magnetometer_Provider.getAuthority(this), 1);
-//                    ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Magnetometer_Provider.getAuthority(this), true);
-//                    long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-//                    SyncRequest request = new SyncRequest.Builder()
-//                            .syncPeriodic(frequency, frequency / 3)
-//                            .setSyncAdapter(Aware.getLAMPAccount(this), Magnetometer_Provider.getAuthority(this))
-//                            .setExtras(new Bundle()).build();
-//                    ContentResolver.requestSync(request);
-//                }
             }
         }
 

@@ -2,20 +2,15 @@
 package com.mindlamp.providers;
 
 import android.content.ContentProvider;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.util.Log;
 
-import com.mindlamp.Lamp;
-import com.mindlamp.utils.DatabaseHelper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 
@@ -27,8 +22,6 @@ import java.util.HashMap;
  * @author denzil
  */
 public class Locations_Provider extends ContentProvider {
-
-    public static final int DATABASE_VERSION = 3;
 
     /**
      * Authority of Locations content provider
@@ -86,45 +79,6 @@ public class Locations_Provider extends ContentProvider {
     private static UriMatcher sUriMatcher = null;
     private static HashMap<String, String> locationsProjectionMap = null;
 
-    private DatabaseHelper dbHelper;
-    private static SQLiteDatabase database;
-
-    private void initialiseDatabase() {
-        if (dbHelper == null)
-            dbHelper = new DatabaseHelper(getContext(), DATABASE_NAME, null, DATABASE_VERSION, DATABASE_TABLES, TABLES_FIELDS);
-        if (database == null)
-            database = dbHelper.getWritableDatabase();
-    }
-
-    /**
-     * Delete entry from the database
-     */
-    @Override
-    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
-
-        initialiseDatabase();
-
-        //lock database for transaction
-        database.beginTransaction();
-
-        int count;
-        switch (sUriMatcher.match(uri)) {
-            case LOCATIONS:
-                count = database.delete(DATABASE_TABLES[0], selection,
-                        selectionArgs);
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-        return count;
-    }
-
     @Override
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
@@ -137,36 +91,20 @@ public class Locations_Provider extends ContentProvider {
         }
     }
 
-    /**
-     * Insert entry to the database
-     */
+    @Nullable
     @Override
-    public synchronized Uri insert(Uri uri, ContentValues initialValues) {
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        return null;
+    }
 
-        initialiseDatabase();
+    @Override
+    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
+    }
 
-        ContentValues values = (initialValues != null) ? new ContentValues(initialValues) : new ContentValues();
-
-        database.beginTransaction();
-
-        switch (sUriMatcher.match(uri)) {
-            case LOCATIONS:
-                long location_id = database.insertWithOnConflict(DATABASE_TABLES[0],
-                        Locations_Data.PROVIDER, values, SQLiteDatabase.CONFLICT_IGNORE);
-                database.setTransactionSuccessful();
-                database.endTransaction();
-                if (location_id > 0) {
-                    Uri locationUri = ContentUris.withAppendedId(
-                            Locations_Data.CONTENT_URI, location_id);
-                    getContext().getContentResolver().notifyChange(locationUri, null, false);
-                    return locationUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
+    @Override
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
     }
 
     /**
@@ -210,65 +148,10 @@ public class Locations_Provider extends ContentProvider {
         return true;
     }
 
-    /**
-     * Query entries from the database
-     */
+    @Nullable
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
-                        String[] selectionArgs, String sortOrder) {
-
-        initialiseDatabase();
-
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setStrict(true);
-        switch (sUriMatcher.match(uri)) {
-            case LOCATIONS:
-                qb.setTables(DATABASE_TABLES[0]);
-                qb.setProjectionMap(locationsProjectionMap);
-                break;
-            default:
-
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-        try {
-            Cursor c = qb.query(database, projection, selection, selectionArgs,
-                    null, null, sortOrder);
-            c.setNotificationUri(getContext().getContentResolver(), uri);
-            return c;
-        } catch (IllegalStateException e) {
-            if (Lamp.DEBUG)
-                Log.e(Lamp.TAG, e.getMessage());
-
-            return null;
-        }
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        return null;
     }
 
-    /**
-     * Update entry on the database
-     */
-    @Override
-    public synchronized int update(Uri uri, ContentValues values, String selection,
-                      String[] selectionArgs) {
-
-        initialiseDatabase();
-
-        database.beginTransaction();
-
-        int count;
-        switch (sUriMatcher.match(uri)) {
-            case LOCATIONS:
-                count = database.update(DATABASE_TABLES[0], values, selection,
-                        selectionArgs);
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-        return count;
-    }
 }

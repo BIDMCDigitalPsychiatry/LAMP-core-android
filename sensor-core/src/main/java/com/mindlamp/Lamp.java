@@ -2288,10 +2288,6 @@ public class Lamp extends Service {
             startLocations(context);
         } else stopLocations(context);
 
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_BLUETOOTH).equals("true")) {
-            startBluetooth(context);
-        } else stopBluetooth(context);
-
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_SCREEN).equals("true")) {
             startScreen(context);
         } else stopScreen(context);
@@ -2300,22 +2296,6 @@ public class Lamp extends Service {
             startNetwork(context);
         } else stopNetwork(context);
 
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_NETWORK_TRAFFIC).equals("true")) {
-            startTraffic(context);
-        } else stopTraffic(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_PROCESSOR).equals("true")) {
-            startProcessor(context);
-        } else stopProcessor(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_TIMEZONE).equals("true")) {
-            startTimeZone(context);
-        } else stopTimeZone(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_MQTT).equals("true")) {
-            startMQTT(context);
-        } else stopMQTT(context);
-
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_GYROSCOPE).equals("true")) {
             startGyroscope(context);
         } else stopGyroscope(context);
@@ -2323,10 +2303,6 @@ public class Lamp extends Service {
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_WIFI).equals("true")) {
             startWiFi(context);
         } else stopWiFi(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_TELEPHONY).equals("true")) {
-            startTelephony(context);
-        } else stopTelephony(context);
 
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_ROTATION).equals("true")) {
             startRotation(context);
@@ -2348,17 +2324,9 @@ public class Lamp extends Service {
             startBarometer(context);
         } else stopBarometer(context);
 
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_GRAVITY).equals("true")) {
-            startGravity(context);
-        } else stopGravity(context);
-
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_LINEAR_ACCELEROMETER).equals("true")) {
             startLinearAccelerometer(context);
         } else stopLinearAccelerometer(context);
-
-        if (Lamp.getSetting(context, Lamp_Preferences.STATUS_TEMPERATURE).equals("true")) {
-            startTemperature(context);
-        } else stopTemperature(context);
 
         if (Lamp.getSetting(context, Lamp_Preferences.STATUS_WEBSOCKET).equals("true")) {
             startWebsocket(context);
@@ -2441,25 +2409,17 @@ public class Lamp extends Service {
 
         stopSignificant(context);
         stopAccelerometer(context);
-        stopBluetooth(context);
         stopLocations(context);
         stopNetwork(context);
-        stopTraffic(context);
         stopScreen(context);
-        stopProcessor(context);
-        stopMQTT(context);
         stopGyroscope(context);
         stopWiFi(context);
-        stopTelephony(context);
-        stopTimeZone(context);
         stopRotation(context);
         stopLight(context);
         stopProximity(context);
         stopMagnetometer(context);
         stopBarometer(context);
-        stopGravity(context);
         stopLinearAccelerometer(context);
-        stopTemperature(context);
         stopScheduler(context);
         stopWebsocket(context);
 
@@ -2508,24 +2468,6 @@ public class Lamp extends Service {
         if (scheduler != null) context.stopService(scheduler);
     }
 
-
-    /**
-     * Start Temperature module
-     */
-    public static void startTemperature(Context context) {
-        if (context == null) return;
-        if (temperatureSrv == null) temperatureSrv = new Intent(context, Temperature.class);
-        context.startService(temperatureSrv);
-    }
-
-    /**
-     * Stop Temperature module
-     */
-    public static void stopTemperature(Context context) {
-        if (context == null) return;
-        if (temperatureSrv != null) context.stopService(temperatureSrv);
-    }
-
     /**
      * Start Linear Accelerometer module
      */
@@ -2542,23 +2484,6 @@ public class Lamp extends Service {
     public static void stopLinearAccelerometer(Context context) {
         if (context == null) return;
         if (linear_accelSrv != null) context.stopService(linear_accelSrv);
-    }
-
-    /**
-     * Start Gravity module
-     */
-    public static void startGravity(Context context) {
-        if (context == null) return;
-        if (gravitySrv == null) gravitySrv = new Intent(context, Gravity.class);
-        context.startService(gravitySrv);
-    }
-
-    /**
-     * Stop Gravity module
-     */
-    public static void stopGravity(Context context) {
-        if (context == null) return;
-        if (gravitySrv != null) context.stopService(gravitySrv);
     }
 
     /**
@@ -2647,23 +2572,6 @@ public class Lamp extends Service {
     }
 
     /**
-     * Start the Telephony module
-     */
-    public static void startTelephony(Context context) {
-        if (context == null) return;
-        if (telephonySrv == null) telephonySrv = new Intent(context, Telephony.class);
-        context.startService(telephonySrv);
-    }
-
-    /**
-     * Stop the Telephony module
-     */
-    public static void stopTelephony(Context context) {
-        if (context == null) return;
-        if (telephonySrv != null) context.stopService(telephonySrv);
-    }
-
-    /**
      * Start the WiFi module
      */
     public static void startWiFi(Context context) {
@@ -2727,22 +2635,6 @@ public class Lamp extends Service {
         if (context == null) return;
         if (activityTransitionSrv != null) context.stopService(activityTransitionSrv);
     }
-    /**
-     * Start the Processor module
-     */
-    public static void startProcessor(Context context) {
-        if (context == null) return;
-        if (processorSrv == null) processorSrv = new Intent(context, Processor.class);
-        context.startService(processorSrv);
-    }
-
-    /**
-     * Stop the Processor module
-     */
-    public static void stopProcessor(Context context) {
-        if (context == null) return;
-        if (processorSrv != null) context.stopService(processorSrv);
-    }
 
     /**
      * Start the locations module
@@ -2763,23 +2655,6 @@ public class Lamp extends Service {
                 && !Lamp.getSetting(context, Lamp_Preferences.STATUS_LOCATION_PASSIVE).equals("true")) {
             if (locationsSrv != null) context.stopService(locationsSrv);
         }
-    }
-
-    /**
-     * Start the bluetooth module
-     */
-    public static void startBluetooth(Context context) {
-        if (context == null) return;
-        if (bluetoothSrv == null) bluetoothSrv = new Intent(context, Bluetooth.class);
-        context.startService(bluetoothSrv);
-    }
-
-    /**
-     * Stop the bluetooth module
-     */
-    public static void stopBluetooth(Context context) {
-        if (context == null) return;
-        if (bluetoothSrv != null) context.stopService(bluetoothSrv);
     }
 
     /**
@@ -2814,58 +2689,6 @@ public class Lamp extends Service {
     public static void stopNetwork(Context context) {
         if (context == null) return;
         if (networkSrv != null) context.stopService(networkSrv);
-    }
-
-    /**
-     * Start traffic module
-     */
-    public static void startTraffic(Context context) {
-        if (context == null) return;
-        if (trafficSrv == null) trafficSrv = new Intent(context, Traffic.class);
-        context.startService(trafficSrv);
-    }
-
-    /**
-     * Stop traffic module
-     */
-    public static void stopTraffic(Context context) {
-        if (context == null) return;
-        if (trafficSrv != null) context.stopService(trafficSrv);
-    }
-
-    /**
-     * Start the Timezone module
-     */
-    public static void startTimeZone(Context context) {
-        if (context == null) return;
-        if (timeZoneSrv == null) timeZoneSrv = new Intent(context, Timezone.class);
-        context.startService(timeZoneSrv);
-    }
-
-    /**
-     * Stop the Timezone module
-     */
-    public static void stopTimeZone(Context context) {
-        if (context == null) return;
-        if (timeZoneSrv != null) context.stopService(timeZoneSrv);
-    }
-
-
-    /**
-     * Start MQTT module
-     */
-    public static void startMQTT(Context context) {
-        if (context == null) return;
-        if (mqttSrv == null) mqttSrv = new Intent(context, Mqtt.class);
-        context.startService(mqttSrv);
-    }
-
-    /**
-     * Stop MQTT module
-     */
-    public static void stopMQTT(Context context) {
-        if (context == null) return;
-        if (mqttSrv != null) context.stopService(mqttSrv);
     }
 
     /**

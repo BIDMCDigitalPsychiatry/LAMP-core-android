@@ -56,6 +56,9 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                                 data,
                                 "lamp.wifi",System.currentTimeMillis().toDouble()
                             )
+
+                        LampLog.e("Wifi : ${data.bssid}")
+
                         sensorListener.getWifiData(sensorEventData)
 //                        Handler().postDelayed({
 //                            Aware.stopWiFi(context)

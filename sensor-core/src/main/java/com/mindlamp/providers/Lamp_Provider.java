@@ -7,15 +7,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.util.Log;
 
-import com.mindlamp.Lamp;
-import com.mindlamp.utils.DatabaseHelper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 
@@ -26,8 +22,6 @@ import java.util.HashMap;
  * @author df
  */
 public class Lamp_Provider extends ContentProvider {
-
-    public static final int DATABASE_VERSION = 18;
 
     /**
      * LAMP framework content authority
@@ -222,57 +216,6 @@ public class Lamp_Provider extends ContentProvider {
     private HashMap<String, String> studiesMap;
     private HashMap<String, String> logMap;
 
-    private DatabaseHelper dbHelper;
-    private static SQLiteDatabase database;
-
-    private void initialiseDatabase() {
-        if (dbHelper == null)
-            dbHelper = new DatabaseHelper(getContext(), DATABASE_NAME, null, DATABASE_VERSION, DATABASE_TABLES, TABLES_FIELDS);
-        if (database == null)
-            database = dbHelper.getWritableDatabase();
-    }
-
-    /**
-     * Delete entry from the database
-     */
-    @Override
-    public synchronized int delete(Uri uri, String selection, String[] selectionArgs) {
-
-        initialiseDatabase();
-        if (database == null) return 0;
-
-        database.beginTransaction();
-
-        int count;
-        switch (sUriMatcher.match(uri)) {
-            case DEVICE_INFO:
-                count = database.delete(DATABASE_TABLES[0], selection, selectionArgs);
-                break;
-            case SETTING:
-                count = database.delete(DATABASE_TABLES[1], selection, selectionArgs);
-                break;
-            case PLUGIN:
-                count = database.delete(DATABASE_TABLES[2], selection, selectionArgs);
-                break;
-            case STUDY:
-                count = database.delete(DATABASE_TABLES[3], selection, selectionArgs);
-                break;
-            case LOG:
-                count = database.delete(DATABASE_TABLES[4], selection, selectionArgs);
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-
-        return count;
-    }
-
     @Override
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
@@ -301,81 +244,20 @@ public class Lamp_Provider extends ContentProvider {
         }
     }
 
-    /**
-     * Insert entry to the database
-     */
+    @Nullable
     @Override
-    public synchronized Uri insert(Uri uri, ContentValues initialValues) {
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        return null;
+    }
 
-        initialiseDatabase();
-        if (database == null) throw new SQLException("Failed to read database: " + uri);
+    @Override
+    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
+    }
 
-        ContentValues values = (initialValues != null) ? new ContentValues(initialValues) : new ContentValues();
-
-        database.beginTransaction();
-
-        switch (sUriMatcher.match(uri)) {
-            case DEVICE_INFO:
-                long dev_id = database.insertWithOnConflict(DATABASE_TABLES[0], Aware_Device.DEVICE_ID, values, SQLiteDatabase.CONFLICT_IGNORE);
-                if (dev_id > 0) {
-                    Uri devUri = ContentUris.withAppendedId(
-                            Aware_Device.CONTENT_URI, dev_id);
-                    getContext().getContentResolver().notifyChange(devUri, null, false);
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
-                    return devUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            case SETTING:
-                long sett_id = database.insertWithOnConflict(DATABASE_TABLES[1], Aware_Settings.SETTING_KEY, values, SQLiteDatabase.CONFLICT_IGNORE);
-                if (sett_id > 0) {
-                    Uri settUri = ContentUris.withAppendedId(
-                            Aware_Settings.CONTENT_URI, sett_id);
-                    getContext().getContentResolver().notifyChange(settUri, null, false);
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
-                    return settUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            case PLUGIN:
-                long plug_id = database.insertWithOnConflict(DATABASE_TABLES[2], Aware_Plugins.PLUGIN_NAME, values, SQLiteDatabase.CONFLICT_IGNORE);
-                if (plug_id > 0) {
-                    Uri settUri = ContentUris.withAppendedId(Aware_Plugins.CONTENT_URI, plug_id);
-                    getContext().getContentResolver().notifyChange(settUri, null, false);
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
-                    return settUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            case STUDY:
-                long study_id = database.insertWithOnConflict(DATABASE_TABLES[3], Aware_Studies.STUDY_DEVICE_ID, values, SQLiteDatabase.CONFLICT_IGNORE);
-                if (study_id > 0) {
-                    Uri settUri = ContentUris.withAppendedId(Aware_Studies.CONTENT_URI, study_id);
-                    getContext().getContentResolver().notifyChange(settUri, null, false);
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
-                    return settUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            case LOG:
-                long log_id = database.insertWithOnConflict(DATABASE_TABLES[4], Aware_Log.LOG_DEVICE_ID, values, SQLiteDatabase.CONFLICT_IGNORE);
-                if (log_id > 0) {
-                    Uri settUri = ContentUris.withAppendedId(Aware_Log.CONTENT_URI, log_id);
-                    getContext().getContentResolver().notifyChange(settUri, null, false);
-                    database.setTransactionSuccessful();
-                    database.endTransaction();
-                    return settUri;
-                }
-                database.endTransaction();
-                throw new SQLException("Failed to insert row into " + uri);
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
+    @Override
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
     }
 
     /**
@@ -461,90 +343,10 @@ public class Lamp_Provider extends ContentProvider {
         return true;
     }
 
-
-    /**
-     * Query entries from the database
-     */
+    @Nullable
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-
-        initialiseDatabase();
-        if (database == null) return null;
-
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setStrict(true);
-        switch (sUriMatcher.match(uri)) {
-            case DEVICE_INFO:
-                qb.setTables(DATABASE_TABLES[0]);
-                qb.setProjectionMap(deviceMap);
-                break;
-            case SETTING:
-                qb.setTables(DATABASE_TABLES[1]);
-                qb.setProjectionMap(settingsMap);
-                break;
-            case PLUGIN:
-                qb.setTables(DATABASE_TABLES[2]);
-                qb.setProjectionMap(pluginsMap);
-                break;
-            case STUDY:
-                qb.setTables(DATABASE_TABLES[3]);
-                qb.setProjectionMap(studiesMap);
-                break;
-            case LOG:
-                qb.setTables(DATABASE_TABLES[4]);
-                qb.setProjectionMap(logMap);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-        try {
-            Cursor c = qb.query(database, projection, selection, selectionArgs, null, null, sortOrder);
-            c.setNotificationUri(getContext().getContentResolver(), uri);
-            return c;
-        } catch (IllegalStateException e) {
-            if (Lamp.DEBUG) Log.e(Lamp.TAG, e.getMessage());
-            return null;
-        }
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        return null;
     }
 
-    /**
-     * Update application on the database
-     */
-    @Override
-    public synchronized int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-
-        initialiseDatabase();
-        if (database == null) return 0;
-
-        database.beginTransaction();
-
-        int count;
-        switch (sUriMatcher.match(uri)) {
-            case DEVICE_INFO:
-                count = database.update(DATABASE_TABLES[0], values, selection, selectionArgs);
-                break;
-            case SETTING:
-                count = database.update(DATABASE_TABLES[1], values, selection, selectionArgs);
-                break;
-            case PLUGIN:
-                count = database.update(DATABASE_TABLES[2], values, selection, selectionArgs);
-                break;
-            case STUDY:
-                count = database.update(DATABASE_TABLES[3], values, selection, selectionArgs);
-                break;
-            case LOG:
-                count = database.update(DATABASE_TABLES[4], values, selection, selectionArgs);
-                break;
-            default:
-                database.endTransaction();
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-
-        database.setTransactionSuccessful();
-        database.endTransaction();
-
-        getContext().getContentResolver().notifyChange(uri, null, false);
-
-        return count;
-    }
 }

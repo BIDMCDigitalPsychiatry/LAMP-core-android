@@ -8,9 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SyncRequest;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -110,23 +107,23 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
-        try {
-            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        getContentResolver().bulkInsert(Barometer_Provider.Barometer_Data.CONTENT_URI, data_buffer);
-
-                        Intent accelData = new Intent(ACTION_LAMP_BAROMETER);
-                        sendBroadcast(accelData);
-                    }
-                }).run();
-            }
-        } catch (SQLiteException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        } catch (SQLException e) {
-            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-        }
+//        try {
+//            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        getContentResolver().bulkInsert(Barometer_Provider.Barometer_Data.CONTENT_URI, data_buffer);
+//
+//                        Intent accelData = new Intent(ACTION_LAMP_BAROMETER);
+//                        sendBroadcast(accelData);
+//                    }
+//                }).run();
+//            }
+//        } catch (SQLiteException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        } catch (SQLException e) {
+//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
+//        }
         data_values.clear();
         LAST_SAVE = TS;
     }
@@ -143,47 +140,6 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
     public interface LAMPSensorObserver {
         void onBarometerChanged(ContentValues data);
-    }
-
-    /**
-     * Calculates the sampling rate in Hz (i.e., how many samples did we collect in the past second)
-     *
-     * @param context
-     * @return hz
-     */
-    public static int getFrequency(Context context) {
-        int hz = 0;
-        String[] columns = new String[]{"count(*) as frequency", "datetime(" + Barometer_Data.TIMESTAMP + "/1000, 'unixepoch','localtime') as sample_time"};
-        Cursor qry = context.getContentResolver().query(Barometer_Data.CONTENT_URI, columns, "1) group by (sample_time", null, "sample_time DESC LIMIT 1 OFFSET 2");
-        if (qry != null && qry.moveToFirst()) {
-            hz = qry.getInt(0);
-        }
-        if (qry != null && !qry.isClosed()) qry.close();
-        return hz;
-    }
-
-    private void saveSensorDevice(Sensor sensor) {
-        if (sensor == null) return;
-
-        Cursor sensorInfo = getContentResolver().query(Barometer_Sensor.CONTENT_URI, null, null, null, null);
-        if (sensorInfo == null || !sensorInfo.moveToFirst()) {
-            ContentValues rowData = new ContentValues();
-            rowData.put(Barometer_Sensor.DEVICE_ID, Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEVICE_ID));
-            rowData.put(Barometer_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(Barometer_Sensor.MAXIMUM_RANGE, sensor.getMaximumRange());
-            rowData.put(Barometer_Sensor.MINIMUM_DELAY, sensor.getMinDelay());
-            rowData.put(Barometer_Sensor.NAME, sensor.getName());
-            rowData.put(Barometer_Sensor.POWER_MA, sensor.getPower());
-            rowData.put(Barometer_Sensor.RESOLUTION, sensor.getResolution());
-            rowData.put(Barometer_Sensor.TYPE, sensor.getType());
-            rowData.put(Barometer_Sensor.VENDOR, sensor.getVendor());
-            rowData.put(Barometer_Sensor.VERSION, sensor.getVersion());
-
-            getContentResolver().insert(Barometer_Sensor.CONTENT_URI, rowData);
-
-            if (Lamp.DEBUG) Log.d(TAG, "Barometer sensor info: " + rowData.toString());
-        }
-        if (sensorInfo != null && !sensorInfo.isClosed()) sensorInfo.close();
     }
 
     @Override
@@ -224,13 +180,6 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
         unregisterReceiver(dataLabeler);
 
-        ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Barometer_Provider.getAuthority(this), false);
-        ContentResolver.removePeriodicSync(
-                Lamp.getLAMPAccount(this),
-                Barometer_Provider.getAuthority(this),
-                Bundle.EMPTY
-        );
-
         if (Lamp.DEBUG) Log.d(TAG, "Barometer service terminated...");
     }
 
@@ -247,7 +196,6 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
                 DEBUG = Lamp.getSetting(this, Lamp_Preferences.DEBUG_FLAG).equals("true");
 
                 Lamp.setSetting(getApplicationContext(), Lamp_Preferences.STATUS_BAROMETER, true);
-                saveSensorDevice(mPressure);
 
                 if (Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_BAROMETER).length() == 0) {
                     Lamp.setSetting(this, Lamp_Preferences.FREQUENCY_BAROMETER, 200000);
@@ -279,16 +227,6 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
                 if (Lamp.DEBUG) Log.d(TAG, "Barometer service active: " + FREQUENCY + "ms");
 
-                if (Lamp.isStudy(this)) {
-                    ContentResolver.setIsSyncable(Lamp.getLAMPAccount(this), Barometer_Provider.getAuthority(this), 1);
-                    ContentResolver.setSyncAutomatically(Lamp.getLAMPAccount(this), Barometer_Provider.getAuthority(this), true);
-                    long frequency = Long.parseLong(Lamp.getSetting(this, Lamp_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-                    SyncRequest request = new SyncRequest.Builder()
-                            .syncPeriodic(frequency, frequency / 3)
-                            .setSyncAdapter(Lamp.getLAMPAccount(this), Barometer_Provider.getAuthority(this))
-                            .setExtras(new Bundle()).build();
-                    ContentResolver.requestSync(request);
-                }
             }
         }
 
