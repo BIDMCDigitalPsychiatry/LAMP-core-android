@@ -21,7 +21,7 @@ import java.util.HashMap;
  *
  * @author denzil
  */
-public class Significant_Provider extends ContentProvider {
+public class Significant_Provider {
 
     /**
      * Authority of content provider
@@ -51,48 +51,6 @@ public class Significant_Provider extends ContentProvider {
         public static final String IS_MOVING = "is_moving";
     }
 
-    public static String DATABASE_NAME = "significant.db";
-
-    public static final String[] DATABASE_TABLES = {"significant"};
-
-    public static final String[] TABLES_FIELDS = {
-            // sensor data
-            Significant_Data._ID + " integer primary key autoincrement,"
-                    + Significant_Data.TIMESTAMP + " real default 0,"
-                    + Significant_Data.DEVICE_ID + " text default '',"
-                    + Significant_Data.IS_MOVING + " integer default 0"
-    };
-
-    private UriMatcher sUriMatcher = null;
-    private HashMap<String, String> sensorDataMap = null;
-
-    @Override
-    public String getType(Uri uri) {
-        switch (sUriMatcher.match(uri)) {
-            case SENSOR_DATA:
-                return Significant_Data.CONTENT_TYPE;
-            case SENSOR_DATA_ID:
-                return Significant_Data.CONTENT_ITEM_TYPE;
-            default:
-                throw new IllegalArgumentException("Unknown URI " + uri);
-        }
-    }
-
-    @Nullable
-    @Override
-    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        return null;
-    }
-
-    @Override
-    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
-    }
-
-    @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
-    }
 
     /**
      * Returns the provider authority that is dynamic
@@ -103,29 +61,5 @@ public class Significant_Provider extends ContentProvider {
         return AUTHORITY;
     }
 
-    @Override
-    public boolean onCreate() {
-        AUTHORITY = getContext().getPackageName() + ".provider.significant";
 
-        sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        sUriMatcher.addURI(Significant_Provider.AUTHORITY, DATABASE_TABLES[0], SENSOR_DATA);
-        sUriMatcher.addURI(Significant_Provider.AUTHORITY, DATABASE_TABLES[0] + "/#", SENSOR_DATA_ID);
-
-        sensorDataMap = new HashMap<>();
-        sensorDataMap.put(Significant_Data._ID, Significant_Data._ID);
-        sensorDataMap.put(Significant_Data.TIMESTAMP,
-                Significant_Data.TIMESTAMP);
-        sensorDataMap.put(Significant_Data.DEVICE_ID,
-                Significant_Data.DEVICE_ID);
-        sensorDataMap.put(Significant_Data.IS_MOVING,
-                Significant_Data.IS_MOVING);
-
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-        return null;
-    }
 }

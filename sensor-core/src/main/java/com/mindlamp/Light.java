@@ -2,7 +2,6 @@
 package com.mindlamp;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -11,16 +10,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.mindlamp.providers.Light_Provider;
-import com.mindlamp.providers.Light_Provider.Light_Data;
-import com.mindlamp.providers.Light_Provider.Light_Sensor;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
@@ -159,7 +155,7 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Light_Provider.getAuthority(this);
+        AUTHORITY = getPackageName() + ".provider.light";
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -233,4 +229,15 @@ public class Light extends Lamp_Sensor implements SensorEventListener {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+    public static final class Light_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String LIGHT_LUX = "double_light_lux";
+        public static final String ACCURACY = "accuracy";
+        public static final String LABEL = "label";
+    }
+
 }

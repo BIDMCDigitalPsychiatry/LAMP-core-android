@@ -2,9 +2,7 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
 import com.mindlamp.Rotation
-import com.mindlamp.providers.Rotation_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.model.RotationData
@@ -20,9 +18,9 @@ class RotationData constructor(sensorListener: SensorListener, context: Context)
             Lamp.startRotation(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {
-                val x = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_0)
-                val y = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_1)
-                val z = it.getAsDouble(Rotation_Provider.Rotation_Data.VALUES_2)
+                val x = it.getAsDouble(Rotation.Rotation_Data.VALUES_0)
+                val y = it.getAsDouble(Rotation.Rotation_Data.VALUES_1)
+                val z = it.getAsDouble(Rotation.Rotation_Data.VALUES_2)
                 //val value=it.
                 if (it != null) {
                     val rotationData =

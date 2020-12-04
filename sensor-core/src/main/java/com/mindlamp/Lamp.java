@@ -9,7 +9,6 @@ import android.graphics.Color;
 import android.os.*;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
-import com.mindlamp.providers.Lamp_Provider;
 
 /**
  * Main LAMP framework service. awareContext will start and manage all the services and settings.
@@ -155,7 +154,7 @@ public class Lamp extends Service {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = Lamp_Provider.getAuthority(this);
+        AUTHORITY = getPackageName() + ".provider.aware";
 
         IntentFilter foreground = new IntentFilter();
         foreground.addAction(Lamp.ACTION_LAMP_PRIORITY_FOREGROUND);
@@ -513,5 +512,4 @@ public class Lamp extends Service {
         if (context == null) return;
         if (screenSrv != null) context.stopService(screenSrv);
     }
-
 }

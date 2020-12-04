@@ -3,8 +3,6 @@ package digital.lamp.mindlamp.sensor
 import android.content.Context
 import com.mindlamp.Accelerometer
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
-import com.mindlamp.providers.Accelerometer_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest
@@ -22,9 +20,9 @@ class AccelerometerData constructor(sensorListener: SensorListener, context:Cont
              Lamp.startAccelerometer(context)//start sensor
              //Sensor Observer
              Accelerometer.setSensorObserver {
-                 val x = it.getAsDouble(Accelerometer_Provider.Accelerometer_Data.VALUES_0)
-                 val y = it.getAsDouble(Accelerometer_Provider.Accelerometer_Data.VALUES_1)
-                 val z = it.getAsDouble(Accelerometer_Provider.Accelerometer_Data.VALUES_2)
+                 val x = it.getAsDouble(Accelerometer.Accelerometer_Data.VALUES_0)
+                 val y = it.getAsDouble(Accelerometer.Accelerometer_Data.VALUES_1)
+                 val z = it.getAsDouble(Accelerometer.Accelerometer_Data.VALUES_2)
                  if (it != null) {
                      val dimensionData =
                          DimensionData(

@@ -14,10 +14,8 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
+import android.provider.BaseColumns;
 import android.util.Log;
-
-import com.mindlamp.providers.WiFi_Provider.WiFi_Data;
-import com.mindlamp.providers.WiFi_Provider.WiFi_Sensor;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
@@ -40,16 +38,6 @@ public class WiFi extends Lamp_Sensor {
     private static PendingIntent wifiScan = null;
     private static Intent backgroundService = null;
 
-    /**
-     * Broadcasted event: currently connected to this AP
-     */
-    public static final String ACTION_LAMP_WIFI_CURRENT_AP = "ACTION_LAMP_WIFI_CURRENT_AP";
-
-    /**
-     * Broadcasted event: new WiFi AP device detected
-     */
-    public static final String ACTION_LAMP_WIFI_NEW_DEVICE = "ACTION_LAMP_WIFI_NEW_DEVICE";
-    public static final String EXTRA_DATA = "data";
 
     /**
      * Broadcasted event: WiFi scan started
@@ -69,8 +57,6 @@ public class WiFi extends Lamp_Sensor {
     @Override
     public void onCreate() {
         super.onCreate();
-
-//        AUTHORITY = WiFi_Provider.getAuthority(this);
 
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         wifiManager = (WifiManager) this.getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -172,10 +158,10 @@ public class WiFi extends Lamp_Sensor {
         @Override
         public String call() throws Exception {
             ContentValues rowData = new ContentValues();
-            rowData.put(WiFi_Sensor.TIMESTAMP, System.currentTimeMillis());
-            rowData.put(WiFi_Sensor.MAC_ADDRESS,  mWifi.getMacAddress());
-            rowData.put(WiFi_Sensor.BSSID,  mWifi.getBSSID());
-            rowData.put(WiFi_Sensor.SSID,  mWifi.getSSID());
+            rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
+            rowData.put(WiFi_Data.MAC_ADDRESS,  mWifi.getMacAddress());
+            rowData.put(WiFi_Data.BSSID,  mWifi.getBSSID());
+            rowData.put(WiFi_Data.SSID,  mWifi.getSSID());
 
 //            try {
 ////                mContext.getContentResolver().insert(WiFi_Sensor.CONTENT_URI, rowData);
@@ -327,5 +313,19 @@ public class WiFi extends Lamp_Sensor {
                 }
             }
         }
+    }
+
+    public static final class WiFi_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String BSSID = "bssid";
+        public static final String SSID = "ssid";
+        public static final String SECURITY = "security";
+        public static final String FREQUENCY = "frequency";
+        public static final String MAC_ADDRESS = "mac_address";
+        public static final String RSSI = "rssi";
+        public static final String LABEL = "label";
     }
 }

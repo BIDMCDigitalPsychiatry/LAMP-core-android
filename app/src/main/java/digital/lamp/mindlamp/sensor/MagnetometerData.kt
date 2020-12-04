@@ -2,10 +2,7 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
 import com.mindlamp.Magnetometer
-import com.mindlamp.Rotation
-import com.mindlamp.providers.Magnetometer_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.utils.LampLog
@@ -20,9 +17,9 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
             Lamp.startMagnetometer(context)//start Sensor
             //Sensor Observer
             Magnetometer.setSensorObserver {
-                val x = it.getAsDouble(Magnetometer_Provider.Magnetometer_Data.VALUES_0)
-                val y = it.getAsDouble(Magnetometer_Provider.Magnetometer_Data.VALUES_1)
-                val z = it.getAsDouble(Magnetometer_Provider.Magnetometer_Data.VALUES_2)
+                val x = it.getAsDouble(Magnetometer.Magnetometer_Data.VALUES_0)
+                val y = it.getAsDouble(Magnetometer.Magnetometer_Data.VALUES_1)
+                val z = it.getAsDouble(Magnetometer.Magnetometer_Data.VALUES_2)
                 //val value=it.
                 if (it != null) {
                     val magnetData =

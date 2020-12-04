@@ -14,9 +14,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
-
-import com.mindlamp.providers.Rotation_Provider.Rotation_Data;
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 
@@ -51,7 +50,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
     private static int FREQUENCY = -1;
     private static double THRESHOLD = 0;
     // Reject any data points that come in more often than frequency
-    private static boolean ENFORCE_FREQUENCY = false;
 
     /**
      * Broadcasted event: new rotation values
@@ -114,7 +112,7 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
         }
 
         long TS = System.currentTimeMillis();
-        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
+        if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
         if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
                 && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
@@ -267,5 +265,18 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public static final class Rotation_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String VALUES_0 = "double_values_0";
+        public static final String VALUES_1 = "double_values_1";
+        public static final String VALUES_2 = "double_values_2";
+        public static final String VALUES_3 = "double_values_3";
+        public static final String ACCURACY = "accuracy";
+        public static final String LABEL = "label";
     }
 }

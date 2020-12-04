@@ -1,11 +1,8 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import com.mindlamp.Accelerometer
 import com.mindlamp.ActivityTransitions
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
-import com.mindlamp.providers.Accelerometer_Provider
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.ActivityData
 import digital.lamp.mindlamp.network.model.DimensionData

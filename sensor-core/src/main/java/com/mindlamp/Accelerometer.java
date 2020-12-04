@@ -14,8 +14,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
-import com.mindlamp.providers.Accelerometer_Provider.Accelerometer_Data;
+
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 import java.util.ArrayList;
@@ -215,5 +216,17 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public static final class Accelerometer_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String VALUES_0 = "double_values_0";
+        public static final String VALUES_1 = "double_values_1";
+        public static final String VALUES_2 = "double_values_2";
+        public static final String ACCURACY = "accuracy";
+        public static final String LABEL = "label";
     }
 }

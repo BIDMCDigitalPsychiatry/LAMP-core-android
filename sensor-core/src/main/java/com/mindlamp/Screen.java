@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.provider.BaseColumns;
 import android.util.Log;
-
 import com.mindlamp.utils.Lamp_Sensor;
 
 /**
@@ -376,5 +376,13 @@ public class Screen extends Lamp_Sensor {
                 startService(new Intent(context, Screen.class).setAction(Screen.ACTION_LAMP_SCREEN_UNLOCKED));
             }
         }
+    }
+
+    public static final class Screen_Data implements BaseColumns {
+
+        public static final String _ID = "_id";
+        public static final String TIMESTAMP = "timestamp";
+        public static final String DEVICE_ID = "device_id";
+        public static final String SCREEN_STATUS = "screen_status";
     }
 }

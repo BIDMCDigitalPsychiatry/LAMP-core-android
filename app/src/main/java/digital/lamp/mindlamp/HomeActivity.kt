@@ -104,7 +104,7 @@ class HomeActivity : AppCompatActivity() {
 //            initializeWebview()
 //        }
 
-//        AppState.session.isLoggedIn = true
+        AppState.session.isLoggedIn = true
         startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
