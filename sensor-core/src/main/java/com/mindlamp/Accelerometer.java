@@ -16,7 +16,6 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.BaseColumns;
 import android.util.Log;
-
 import com.mindlamp.utils.LampConstants;
 import com.mindlamp.utils.Lamp_Sensor;
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
     private static int FREQUENCY = -1;
     private static double THRESHOLD = 0;
-    private static boolean ENFORCE_FREQUENCY = false;
 
     public static final String ACTION_LAMP_ACCELEROMETER = "ACTION_LAMP_ACCELEROMETER";
     public static final String ACTION_LAMP_ACCELEROMETER_LABEL = "ACTION_LAMP_ACCELEROMETER_LABEL";
@@ -73,32 +71,6 @@ public class Accelerometer extends Lamp_Sensor implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-//        if (SignificantMotion.isSignificantMotionActive && !SignificantMotion.CURRENT_SIGMOTION_STATE) {
-//            if (data_values.size() > 0) {
-//                final ContentValues[] data_buffer = new ContentValues[data_values.size()];
-//                data_values.toArray(data_buffer);
-//                try {
-//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                getContentResolver().bulkInsert(Accelerometer_Data.CONTENT_URI, data_buffer);
-//
-//                                Intent accelData = new Intent(ACTION_LAMP_ACCELEROMETER);
-//                                sendBroadcast(accelData);
-//                            }
-//                        }).run();
-//                    }
-//                } catch (SQLiteException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                } catch (SQLException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                }
-//                data_values.clear();
-//            }
-//            return;
-//        }
-
         long TS = System.currentTimeMillis();
         if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;

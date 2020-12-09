@@ -89,23 +89,7 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
             if (data_values.size() > 0) {
                 final ContentValues[] data_buffer = new ContentValues[data_values.size()];
                 data_values.toArray(data_buffer);
-//                try {
-//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-////                                getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
-//
-//                                Intent newData = new Intent(ACTION_LAMP_ROTATION);
-//                                sendBroadcast(newData);
-//                            }
-//                        }).run();
-//                    }
-//                } catch (SQLiteException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                } catch (SQLException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                }
+
                 data_values.clear();
             }
             return;
@@ -144,24 +128,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
 
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
-
-//        try {
-//            if (!Aware.getSetting(getApplicationContext(), Aware_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        getContentResolver().bulkInsert(Rotation_Provider.Rotation_Data.CONTENT_URI, data_buffer);
-//
-//                        Intent newData = new Intent(ACTION_LAMP_ROTATION);
-//                        sendBroadcast(newData);
-//                    }
-//                }).run();
-//            }
-//        } catch (SQLiteException e) {
-//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-//        } catch (SQLException e) {
-//            if (Aware.DEBUG) Log.d(TAG, e.getMessage());
-//        }
 
         data_values.clear();
         LAST_SAVE = TS;
@@ -219,13 +185,6 @@ public class Rotation extends Lamp_Sensor implements SensorEventListener {
         wakeLock.release();
 
         unregisterReceiver(dataLabeler);
-
-//        ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Rotation_Provider.getAuthority(this), false);
-//        ContentResolver.removePeriodicSync(
-//                Aware.getLAMPAccount(this),
-//                Rotation_Provider.getAuthority(this),
-//                Bundle.EMPTY
-//        );
 
         if (Lamp.DEBUG) Log.d(TAG, "Rotation service terminated...");
     }

@@ -86,23 +86,6 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
             if (data_values.size() > 0) {
                 final ContentValues[] data_buffer = new ContentValues[data_values.size()];
                 data_values.toArray(data_buffer);
-//                try {
-//                    if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                getContentResolver().bulkInsert(Linear_Accelerometer_Provider.Linear_Accelerometer_Data.CONTENT_URI, data_buffer);
-//
-//                                Intent newData = new Intent(ACTION_LAMP_LINEAR_ACCELEROMETER);
-//                                sendBroadcast(newData);
-//                            }
-//                        }).run();
-//                    }
-//                } catch (SQLiteException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                } catch (SQLException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                }
                 data_values.clear();
             }
 
@@ -140,23 +123,6 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
 
-//        try {
-//            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        getContentResolver().bulkInsert(Linear_Accelerometer_Provider.Linear_Accelerometer_Data.CONTENT_URI, data_buffer);
-//
-//                        Intent newData = new Intent(ACTION_LAMP_LINEAR_ACCELEROMETER);
-//                        sendBroadcast(newData);
-//                    }
-//                }).run();
-//            }
-//        } catch (SQLiteException e) {
-//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//        } catch (SQLException e) {
-//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//        }
         data_values.clear();
         LAST_SAVE = TS;
     }

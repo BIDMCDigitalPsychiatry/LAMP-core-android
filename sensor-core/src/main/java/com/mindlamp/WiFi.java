@@ -212,19 +212,7 @@ public class WiFi extends Lamp_Sensor {
 ////                    mContext.getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
 //
                     if (awareSensor != null) awareSensor.onWiFiAPDetected(rowData);
-//
-//                    if (Lamp.DEBUG)
-//                        Log.d(TAG, ACTION_LAMP_WIFI_NEW_DEVICE + ": " + rowData.toString());
-//
-//                    Intent detectedAP = new Intent(ACTION_LAMP_WIFI_NEW_DEVICE);
-//                    detectedAP.putExtra(EXTRA_DATA, rowData);
-//                    mContext.sendBroadcast(detectedAP);
-//
-//                } catch (SQLiteException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                } catch (SQLException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                }
+
             }
 
             if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_WIFI_SCAN_ENDED);

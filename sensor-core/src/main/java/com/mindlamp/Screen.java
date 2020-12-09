@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.provider.BaseColumns;
 import android.util.Log;
 import com.mindlamp.utils.Lamp_Sensor;
 
@@ -47,31 +46,6 @@ public class Screen extends Lamp_Sensor {
      * Broadcasted event: screen is unlocked
      */
     public static final String ACTION_LAMP_SCREEN_UNLOCKED = "ACTION_LAMP_SCREEN_UNLOCKED";
-
-    public static final String ACTION_LAMP_TOUCH_CLICKED = "ACTION_LAMP_TOUCH_CLICKED";
-    public static final String ACTION_LAMP_TOUCH_LONG_CLICKED = "ACTION_LAMP_TOUCH_LONG_CLICKED";
-    public static final String ACTION_LAMP_TOUCH_SCROLLED_UP = "ACTION_LAMP_TOUCH_SCROLLED_UP";
-    public static final String ACTION_LAMP_TOUCH_SCROLLED_DOWN = "ACTION_LAMP_TOUCH_SCROLLED_DOWN";
-
-    /**
-     * Screen status: OFF = 0
-     */
-    public static final int STATUS_SCREEN_OFF = 0;
-
-    /**
-     * Screen status: ON = 1
-     */
-    public static final int STATUS_SCREEN_ON = 1;
-
-    /**
-     * Screen status: LOCKED = 2
-     */
-    public static final int STATUS_SCREEN_LOCKED = 2;
-
-    /**
-     * Screen status: UNLOCKED = 3
-     */
-    public static final int STATUS_SCREEN_UNLOCKED = 3;
 
     private ScreenMonitor screenMonitor = null;
 
@@ -115,13 +89,6 @@ public class Screen extends Lamp_Sensor {
 
         if (screenMonitor != null) unregisterReceiver(screenMonitor);
 
-//        ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Screen_Provider.getAuthority(this), false);
-//        ContentResolver.removePeriodicSync(
-//                Aware.getLAMPAccount(this),
-//                Screen_Provider.getAuthority(this),
-//                Bundle.EMPTY
-//        );
-
         if (Lamp.DEBUG) Log.d(TAG, "Screen service terminated...");
     }
 
@@ -136,36 +103,12 @@ public class Screen extends Lamp_Sensor {
 
             if (intent.getAction().equals(ACTION_LAMP_SCREEN_ON)) {
 
-//                ContentValues rowData = new ContentValues();
-//                rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_ON);
-//                try {
-////                    getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                    if (awareSensor != null) awareSensor.onScreenOn();
-//                } catch (SQLiteException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                } catch (SQLException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                }
-
+                if (awareSensor != null) awareSensor.onScreenOn();
                 Log.d(TAG, ACTION_LAMP_SCREEN_ON);
                 sendBroadcast(new Intent(ACTION_LAMP_SCREEN_ON));
 
                 if (km.isKeyguardLocked()) {
-//                    rowData = new ContentValues();
-//                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
-//                    try {
-////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                        if (awareSensor != null) awareSensor.onScreenUnlocked();
-//                    } catch (SQLiteException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    } catch (SQLException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    }
-
+                        if (awareSensor != null) awareSensor.onScreenUnlocked();
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
                 }
@@ -173,36 +116,13 @@ public class Screen extends Lamp_Sensor {
                 return START_STICKY;
             }
             if (intent.getAction().equals(ACTION_LAMP_SCREEN_OFF)) {
-
-//                ContentValues rowData = new ContentValues();
-//                rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_OFF);
-//                try {
-////                    getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                    if (awareSensor != null) awareSensor.onScreenOff();
-//                } catch (SQLiteException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                } catch (SQLException e) {
-//                    if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                }
+                if (awareSensor != null) awareSensor.onScreenOff();
 
                 if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_OFF);
                 sendBroadcast(new Intent(ACTION_LAMP_SCREEN_OFF));
 
                 if (km.isKeyguardLocked()) {
-//                    rowData = new ContentValues();
-//                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
-//                    try {
-////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                        if (awareSensor != null) awareSensor.onScreenLocked();
-//                    } catch (SQLiteException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    } catch (SQLException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    }
+                    if (awareSensor != null) awareSensor.onScreenLocked();
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
@@ -212,18 +132,7 @@ public class Screen extends Lamp_Sensor {
 
             if (intent.getAction().equals(ACTION_LAMP_SCREEN_UNLOCKED)) {
                 if (!km.isKeyguardLocked()) {
-//                    ContentValues rowData = new ContentValues();
-//                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_UNLOCKED);
-//                    try {
-////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                        if (awareSensor != null) awareSensor.onScreenUnlocked();
-//                    } catch (SQLiteException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    } catch (SQLException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    }
+                    if (awareSensor != null) awareSensor.onScreenUnlocked();
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_UNLOCKED);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_UNLOCKED));
@@ -247,90 +156,30 @@ public class Screen extends Lamp_Sensor {
                 KeyguardManager km = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
 
                 if (pm.isInteractive()) {
-//                    ContentValues rowData = new ContentValues();
-//                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
-//                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_ON);
-
-//                    try {
-////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                        if (awareSensor != null) awareSensor.onScreenOn();
-//                    } catch (SQLiteException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    } catch (SQLException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    }
+                    if (awareSensor != null) awareSensor.onScreenOn();
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_ON);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_ON));
 
                     if (km.isKeyguardLocked()) {
-//                        rowData = new ContentValues();
-//                        rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                        rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
-//                        rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
-
-//                        try {
-////                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                            if (awareSensor != null) awareSensor.onScreenUnlocked();
-//                        } catch (SQLiteException e) {
-//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                        } catch (SQLException e) {
-//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                        }
+                        if (awareSensor != null) awareSensor.onScreenUnlocked();
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                         sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
                     } else {
-//                        rowData = new ContentValues();
-//                        rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                        rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
-//                        rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_UNLOCKED);
-//
-//                        try {
-////                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                            if (awareSensor != null) awareSensor.onScreenUnlocked();
-//                        } catch (SQLiteException e) {
-//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                        } catch (SQLException e) {
-//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                        }
+                        if (awareSensor != null) awareSensor.onScreenUnlocked();
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_UNLOCKED);
                         sendBroadcast(new Intent(ACTION_LAMP_SCREEN_UNLOCKED));
                     }
                 } else {
-//                    ContentValues rowData = new ContentValues();
-//                    rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                    rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
-//                    rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_OFF);
-
-//                    try {
-////                        getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                        if (awareSensor != null) awareSensor.onScreenOff();
-//                    } catch (SQLiteException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    } catch (SQLException e) {
-//                        if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                    }
+                    if (awareSensor != null) awareSensor.onScreenOff();
 
                     if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_OFF);
                     sendBroadcast(new Intent(ACTION_LAMP_SCREEN_OFF));
 
                     if (km.isKeyguardLocked()) {
-//                        rowData = new ContentValues();
-//                        rowData.put(Screen_Data.TIMESTAMP, System.currentTimeMillis());
-//                        rowData.put(Screen_Data.DEVICE_ID, Aware.getSetting(this, Aware_Preferences.DEVICE_ID));
-//                        rowData.put(Screen_Data.SCREEN_STATUS, Screen.STATUS_SCREEN_LOCKED);
-
-//                        try {
-////                            getContentResolver().insert(Screen_Data.CONTENT_URI, rowData);
-//                            if (awareSensor != null) awareSensor.onScreenLocked();
-//                        } catch (SQLiteException e) {
-//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                        } catch (SQLException e) {
-//                            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//                        }
+                            if (awareSensor != null) awareSensor.onScreenLocked();
 
                         if (Lamp.DEBUG) Log.d(TAG, ACTION_LAMP_SCREEN_LOCKED);
                         sendBroadcast(new Intent(ACTION_LAMP_SCREEN_LOCKED));
@@ -339,22 +188,6 @@ public class Screen extends Lamp_Sensor {
             }
 
             if (Lamp.DEBUG) Log.d(TAG, "Screen service active...");
-
-//            //We can only get the touch events if accessibility service is enabled.
-//            if (Lamp.getSetting(this, Lamp_Preferences.STATUS_TOUCH).equals("true")) {
-//                Applications.isAccessibilityServiceActive(this);
-//            }
-
-//            if (Aware.isStudy(this)) {
-//                ContentResolver.setIsSyncable(Aware.getLAMPAccount(this), Screen_Provider.getAuthority(this), 1);
-//                ContentResolver.setSyncAutomatically(Aware.getLAMPAccount(this), Screen_Provider.getAuthority(this), true);
-//                long frequency = Long.parseLong(Aware.getSetting(this, Aware_Preferences.FREQUENCY_WEBSERVICE)) * 60;
-//                SyncRequest request = new SyncRequest.Builder()
-//                        .syncPeriodic(frequency, frequency / 3)
-//                        .setSyncAdapter(Aware.getLAMPAccount(this), Screen_Provider.getAuthority(this))
-//                        .setExtras(new Bundle()).build();
-//                ContentResolver.requestSync(request);
-//            }
         }
         return START_STICKY;
     }
@@ -378,11 +211,4 @@ public class Screen extends Lamp_Sensor {
         }
     }
 
-    public static final class Screen_Data implements BaseColumns {
-
-        public static final String _ID = "_id";
-        public static final String TIMESTAMP = "timestamp";
-        public static final String DEVICE_ID = "device_id";
-        public static final String SCREEN_STATUS = "screen_status";
-    }
 }

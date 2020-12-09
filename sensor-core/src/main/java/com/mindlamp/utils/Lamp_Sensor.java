@@ -4,14 +4,11 @@ package com.mindlamp.utils;
 import android.Manifest;
 import android.app.Service;
 import android.content.*;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.core.content.PermissionChecker;
 import com.mindlamp.Lamp;
-import com.mindlamp.Lamp_Preferences;
 import com.mindlamp.ui.PermissionsHandler;
 
 import java.util.ArrayList;

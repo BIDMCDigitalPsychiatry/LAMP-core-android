@@ -101,23 +101,7 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
         final ContentValues[] data_buffer = new ContentValues[data_values.size()];
         data_values.toArray(data_buffer);
-//        try {
-//            if (!Lamp.getSetting(getApplicationContext(), Lamp_Preferences.DEBUG_DB_SLOW).equals("true")) {
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        getContentResolver().bulkInsert(Barometer_Provider.Barometer_Data.CONTENT_URI, data_buffer);
-//
-//                        Intent accelData = new Intent(ACTION_LAMP_BAROMETER);
-//                        sendBroadcast(accelData);
-//                    }
-//                }).run();
-//            }
-//        } catch (SQLiteException e) {
-//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//        } catch (SQLException e) {
-//            if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//        }
+
         data_values.clear();
         LAST_SAVE = TS;
     }
