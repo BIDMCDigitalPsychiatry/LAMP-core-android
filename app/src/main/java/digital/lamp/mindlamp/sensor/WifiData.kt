@@ -3,7 +3,6 @@ package digital.lamp.mindlamp.sensor
 import android.content.ContentValues
 import android.content.Context
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
 import com.mindlamp.WiFi
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData

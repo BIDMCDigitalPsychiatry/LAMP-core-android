@@ -163,21 +163,6 @@ public class WiFi extends Lamp_Sensor {
             rowData.put(WiFi_Data.BSSID,  mWifi.getBSSID());
             rowData.put(WiFi_Data.SSID,  mWifi.getSSID());
 
-//            try {
-////                mContext.getContentResolver().insert(WiFi_Sensor.CONTENT_URI, rowData);
-//
-//                Intent currentAp = new Intent(ACTION_LAMP_WIFI_CURRENT_AP);
-//                currentAp.putExtra(EXTRA_DATA, rowData);
-//                mContext.sendBroadcast(currentAp);
-//
-//                if (Lamp.DEBUG) Log.d(TAG, "WiFi local sensor information: " + rowData.toString());
-//
-//            } catch (SQLiteException e) {
-//                if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//            } catch (SQLException e) {
-//                if (Lamp.DEBUG) Log.d(TAG, e.getMessage());
-//            }
-
             return Thread.currentThread().getName();
         }
     }
@@ -207,10 +192,6 @@ public class WiFi extends Lamp_Sensor {
                 rowData.put(WiFi_Data.SECURITY, ap.capabilities);
                 rowData.put(WiFi_Data.FREQUENCY, ap.frequency);
                 rowData.put(WiFi_Data.RSSI, ap.level);
-
-//                try {
-////                    mContext.getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
-//
                     if (awareSensor != null) awareSensor.onWiFiAPDetected(rowData);
 
             }
@@ -260,27 +241,12 @@ public class WiFi extends Lamp_Sensor {
                                 Log.d(WiFi.TAG, "WiFi is off");
                             }
 
-//                            ContentValues rowData = new ContentValues();
-//                            rowData.put(WiFi_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                            rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
-//                            rowData.put(WiFi_Data.LABEL, "disabled");
-//
-//                            getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
-
                             if (awareSensor != null) awareSensor.onWiFiDisabled();
                         }
                     } catch (NullPointerException e) {
                         if (Lamp.DEBUG) {
                             Log.d(WiFi.TAG, "WiFi is off");
                         }
-
-//                        ContentValues rowData = new ContentValues();
-//                        rowData.put(WiFi_Data.DEVICE_ID, Aware.getSetting(getApplicationContext(), Aware_Preferences.DEVICE_ID));
-//                        rowData.put(WiFi_Data.TIMESTAMP, System.currentTimeMillis());
-//                        rowData.put(WiFi_Data.LABEL, "disabled");
-//
-//                        getContentResolver().insert(WiFi_Data.CONTENT_URI, rowData);
-
                         if (awareSensor != null) awareSensor.onWiFiDisabled();
                     }
                 }

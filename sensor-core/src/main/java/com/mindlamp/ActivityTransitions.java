@@ -30,12 +30,6 @@ public class ActivityTransitions extends Lamp_Sensor implements SensorEventListe
 
     public static String TAG = "LAMP::Activity Transition";
 
-    private static String LABEL = "";
-
-    public static final String ACTION_LAMP_ACTIVITY = "ACTION_LAMP_ACTIVITY";
-    public static final String ACTION_LAMP_ACTIVITY_LABEL = "ACTION_LAMP_ACTIVITY_LABEL";
-    public static final String EXTRA_LABEL = "label";
-
     // Action fired when transitions are triggered.
     private final String TRANSITIONS_RECEIVER_ACTION = "TRANSITIONS_RECEIVER_ACTION";
 

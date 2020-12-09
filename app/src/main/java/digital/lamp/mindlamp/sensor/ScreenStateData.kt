@@ -2,7 +2,6 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import com.mindlamp.Lamp
-import com.mindlamp.Lamp_Preferences
 import com.mindlamp.Screen
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
