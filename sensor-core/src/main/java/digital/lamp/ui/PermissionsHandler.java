@@ -1,4 +1,4 @@
-package com.mindlamp.ui;
+package digital.lamp.ui;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -7,7 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.core.app.ActivityCompat;
-import com.mindlamp.Lamp;
+import digital.lamp.Lamp;
 
 import java.util.ArrayList;
 

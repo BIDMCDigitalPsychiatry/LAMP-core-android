@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.accounts.Account;
 import android.app.*;

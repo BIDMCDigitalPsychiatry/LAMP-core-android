@@ -1,8 +1,8 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import com.mindlamp.ActivityTransitions
-import com.mindlamp.Lamp
+import digital.lamp.ActivityTransitions
+import digital.lamp.Lamp
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.ActivityData
 import digital.lamp.mindlamp.network.model.DimensionData

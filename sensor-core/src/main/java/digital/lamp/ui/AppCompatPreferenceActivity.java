@@ -1,4 +1,4 @@
-package com.mindlamp.ui;
+package digital.lamp.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;

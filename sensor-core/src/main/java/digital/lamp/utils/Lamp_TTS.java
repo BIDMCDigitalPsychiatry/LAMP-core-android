@@ -1,5 +1,5 @@
 
-package com.mindlamp.utils;
+package digital.lamp.utils;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;

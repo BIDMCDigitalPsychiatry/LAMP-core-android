@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -17,26 +17,29 @@ import android.os.PowerManager;
 import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.mindlamp.utils.LampConstants;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.LampConstants;
+import digital.lamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * LAMP Barometer module
- * - Ambient pressure raw data, in mbar
- * - Ambient pressure sensor information
+ * LAMP Light module
+ * - Light raw data
+ * - Light sensor information
  *
  * @author df
  */
-public class Barometer extends Lamp_Sensor implements SensorEventListener {
+public class Light extends Lamp_Sensor implements SensorEventListener {
 
-    public static String TAG = "LAMP::Barometer";
+    /**
+     * Logging tag (default = "LAMP::Light")
+     */
+    private static String TAG = "LAMP::Light";
 
     private static SensorManager mSensorManager;
-    private static Sensor mPressure;
+    private static Sensor mLight;
+
     private static HandlerThread sensorThread = null;
     private static Handler sensorHandler = null;
 
@@ -49,19 +52,30 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
     private static int FREQUENCY = -1;
     private static double THRESHOLD = 0;
     // Reject any data points that come in more often than frequency
+    private static boolean ENFORCE_FREQUENCY = false;
 
-    public static final String ACTION_LAMP_BAROMETER = "ACTION_LAMP_BAROMETER";
-    public static final String ACTION_LAMP_BAROMETER_LABEL = "ACTION_LAMP_BAROMETER_LABEL";
+    /**
+     * Broadcasted event: new light values
+     * ContentProvider: LightProvider
+     */
+    public static final String ACTION_LAMP_LIGHT = "ACTION_LAMP_LIGHT";
+    public static final String ACTION_LAMP_LIGHT_LABEL = "ACTION_LAMP_LIGHT_LABEL";
     public static final String EXTRA_LABEL = "label";
 
+    /**
+     * Until today, no available Android phone samples higher than 208Hz (Nexus 7).
+     * http://ilessendata.blogspot.com/2012/11/android-accelerometer-sampling-rates.html
+     */
     private List<ContentValues> data_values = new ArrayList<ContentValues>();
+
     private static String LABEL = "";
+
     private static DataLabel dataLabeler = new DataLabel();
 
     public static class DataLabel extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_LAMP_BAROMETER_LABEL)) {
+            if (intent.getAction().equals(ACTION_LAMP_LIGHT_LABEL)) {
                 LABEL = intent.getStringExtra(EXTRA_LABEL);
             }
         }
@@ -75,22 +89,22 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         long TS = System.currentTimeMillis();
-        if ((TS - LAST_TS) < LampConstants.INTERVAL)
+        if (ENFORCE_FREQUENCY && TS < LAST_TS + FREQUENCY / 1000)
             return;
         if (LAST_VALUE != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUE) < THRESHOLD) {
             return;
         }
 
+        LAST_TS = TS;
         LAST_VALUE = event.values[0];
 
-        // Proceed with saving as usual.
         ContentValues rowData = new ContentValues();
-        rowData.put(Barometer_Data.TIMESTAMP, TS);
-        rowData.put(Barometer_Data.AMBIENT_PRESSURE, event.values[0]);
-        rowData.put(Barometer_Data.ACCURACY, event.accuracy);
-        rowData.put(Barometer_Data.LABEL, LABEL);
+        rowData.put(Light_Data.TIMESTAMP, TS);
+        rowData.put(Light_Data.LIGHT_LUX, event.values[0]);
+        rowData.put(Light_Data.ACCURACY, event.accuracy);
+        rowData.put(Light_Data.LABEL, LABEL);
 
-        if (awareSensor != null) awareSensor.onBarometerChanged(rowData);
+        if (awareSensor != null) awareSensor.onLightChanged(rowData);
 
         data_values.add(rowData);
         LAST_TS = TS;
@@ -106,27 +120,28 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
         LAST_SAVE = TS;
     }
 
-    private static Barometer.LAMPSensorObserver awareSensor;
+    private static Light.LAMPSensorObserver awareSensor;
 
-    public static void setSensorObserver(Barometer.LAMPSensorObserver observer) {
+    public static void setSensorObserver(Light.LAMPSensorObserver observer) {
         awareSensor = observer;
     }
 
-    public static Barometer.LAMPSensorObserver getSensorObserver() {
+    public static Light.LAMPSensorObserver getSensorObserver() {
         return awareSensor;
     }
 
     public interface LAMPSensorObserver {
-        void onBarometerChanged(ContentValues data);
+        void onLightChanged(ContentValues data);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        AUTHORITY = getPackageName() + ".provider.light";
 
-        mPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 
         sensorThread = new HandlerThread(TAG);
         sensorThread.start();
@@ -138,10 +153,11 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
         sensorHandler = new Handler(sensorThread.getLooper());
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_LAMP_BAROMETER_LABEL);
+        filter.addAction(ACTION_LAMP_LIGHT_LABEL);
         registerReceiver(dataLabeler, filter);
 
-        if (Lamp.DEBUG) Log.d(TAG, "Barometer service created!");
+
+        if (Lamp.DEBUG) Log.d(TAG, "Light service created!");
     }
 
     @Override
@@ -149,14 +165,14 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
         super.onDestroy();
 
         sensorHandler.removeCallbacksAndMessages(null);
-        mSensorManager.unregisterListener(this, mPressure);
+        mSensorManager.unregisterListener(this, mLight);
         sensorThread.quit();
 
         wakeLock.release();
 
         unregisterReceiver(dataLabeler);
 
-        if (Lamp.DEBUG) Log.d(TAG, "Barometer service terminated...");
+        if (Lamp.DEBUG) Log.d(TAG, "Light service terminated...");
     }
 
     @Override
@@ -164,28 +180,28 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
         super.onStartCommand(intent, flags, startId);
 
         if (PERMISSIONS_OK) {
-            if (mPressure == null) {
+            if (mLight == null) {
+
                 stopSelf();
             } else {
 
-                int new_frequency = LampConstants.FREQUENCY_BAROMETER;
-                double new_threshold = LampConstants.THRESHOLD_BAROMETER;
+                int new_frequency = LampConstants.FREQUENCY_LIGHT;
+                double new_threshold = LampConstants.THRESHOLD_LIGHT;
 
                 if (FREQUENCY != new_frequency
                         || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
-                    mSensorManager.unregisterListener(this, mPressure);
+                    mSensorManager.unregisterListener(this, mLight);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
                 }
 
-                mSensorManager.registerListener(this, mPressure, FREQUENCY, sensorHandler);
-                LAST_SAVE = System.currentTimeMillis();
+                mSensorManager.registerListener(this, mLight, new_frequency, sensorHandler);
 
-                if (Lamp.DEBUG) Log.d(TAG, "Barometer service active: " + FREQUENCY + "ms");
 
+                if (Lamp.DEBUG) Log.d(TAG, "Light service active: " + FREQUENCY + "ms");
             }
         }
 
@@ -197,13 +213,14 @@ public class Barometer extends Lamp_Sensor implements SensorEventListener {
         return null;
     }
 
-    public static final class Barometer_Data implements BaseColumns {
+    public static final class Light_Data implements BaseColumns {
 
         public static final String _ID = "_id";
         public static final String TIMESTAMP = "timestamp";
         public static final String DEVICE_ID = "device_id";
-        public static final String AMBIENT_PRESSURE = "double_values_0";
+        public static final String LIGHT_LUX = "double_light_lux";
         public static final String ACCURACY = "accuracy";
         public static final String LABEL = "label";
     }
+
 }

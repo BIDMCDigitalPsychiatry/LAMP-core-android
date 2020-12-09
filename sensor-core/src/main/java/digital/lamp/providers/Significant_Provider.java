@@ -1,5 +1,5 @@
 
-package com.mindlamp.providers;
+package digital.lamp.providers;
 
 
 import android.content.Context;

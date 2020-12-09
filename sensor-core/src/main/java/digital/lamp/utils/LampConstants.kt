@@ -1,4 +1,4 @@
-package com.mindlamp.utils
+package digital.lamp.utils
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020

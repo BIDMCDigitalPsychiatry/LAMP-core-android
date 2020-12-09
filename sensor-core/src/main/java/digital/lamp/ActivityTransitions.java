@@ -1,4 +1,4 @@
-package com.mindlamp;
+package digital.lamp;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -22,7 +22,7 @@ import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.Lamp_Sensor;
 import java.util.ArrayList;
 import java.util.List;
 

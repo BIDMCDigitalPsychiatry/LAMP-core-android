@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -16,60 +16,52 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.BaseColumns;
 import android.util.Log;
-import com.mindlamp.utils.LampConstants;
-import com.mindlamp.utils.Lamp_Sensor;
+
+import digital.lamp.utils.LampConstants;
+import digital.lamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
+ * LAMP Barometer module
+ * - Ambient pressure raw data, in mbar
+ * - Ambient pressure sensor information
+ *
  * @author df
  */
-public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListener {
+public class Barometer extends Lamp_Sensor implements SensorEventListener {
 
-    /**
-     * Logging tag (default = "LAMP::LinearAcc.")
-     */
-    private static String TAG = "LAMP::Linear Acc.";
+    public static String TAG = "LAMP::Barometer";
 
     private static SensorManager mSensorManager;
-    private static Sensor mLinearAccelerator;
-
+    private static Sensor mPressure;
     private static HandlerThread sensorThread = null;
     private static Handler sensorHandler = null;
+
     private static PowerManager.WakeLock wakeLock = null;
 
-    private static Float[] LAST_VALUES = null;
+    private static Float LAST_VALUE = null;
     private static long LAST_TS = 0;
     private static long LAST_SAVE = 0;
 
     private static int FREQUENCY = -1;
     private static double THRESHOLD = 0;
     // Reject any data points that come in more often than frequency
-    private static boolean ENFORCE_FREQUENCY = false;
 
-    /**
-     * Broadcasted event: new sensor values
-     * ContentProvider: LinearAccelerationProvider
-     */
-    public static final String ACTION_LAMP_LINEAR_ACCELEROMETER = "ACTION_LAMP_LINEAR_ACCELEROMETER";
-    public static final String ACTION_LAMP_LINEAR_LABEL = "ACTION_LAMP_LINEAR_LABEL";
+    public static final String ACTION_LAMP_BAROMETER = "ACTION_LAMP_BAROMETER";
+    public static final String ACTION_LAMP_BAROMETER_LABEL = "ACTION_LAMP_BAROMETER_LABEL";
     public static final String EXTRA_LABEL = "label";
 
-    /**
-     * Until today, no available Android phone samples higher than 208Hz (Nexus 7).
-     * http://ilessendata.blogspot.com/2012/11/android-accelerometer-sampling-rates.html
-     */
     private List<ContentValues> data_values = new ArrayList<ContentValues>();
-
     private static String LABEL = "";
-
     private static DataLabel dataLabeler = new DataLabel();
 
     public static class DataLabel extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_LAMP_LINEAR_LABEL)) {
+            if (intent.getAction().equals(ACTION_LAMP_BAROMETER_LABEL)) {
                 LABEL = intent.getStringExtra(EXTRA_LABEL);
             }
         }
@@ -82,39 +74,26 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (SignificantMotion.isSignificantMotionActive && !SignificantMotion.CURRENT_SIGMOTION_STATE) {
-            if (data_values.size() > 0) {
-                final ContentValues[] data_buffer = new ContentValues[data_values.size()];
-                data_values.toArray(data_buffer);
-                data_values.clear();
-            }
-
-            return;
-        }
-
         long TS = System.currentTimeMillis();
         if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
-        if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
-                && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
-                && Math.abs(event.values[2] - LAST_VALUES[2]) < THRESHOLD) {
+        if (LAST_VALUE != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUE) < THRESHOLD) {
             return;
         }
 
-        LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
+        LAST_VALUE = event.values[0];
 
+        // Proceed with saving as usual.
         ContentValues rowData = new ContentValues();
-        rowData.put(Linear_Accelerometer_Data.TIMESTAMP, TS);
-        rowData.put(Linear_Accelerometer_Data.VALUES_0, event.values[0]);
-        rowData.put(Linear_Accelerometer_Data.VALUES_1, event.values[1]);
-        rowData.put(Linear_Accelerometer_Data.VALUES_2, event.values[2]);
-        rowData.put(Linear_Accelerometer_Data.ACCURACY, event.accuracy);
-        rowData.put(Linear_Accelerometer_Data.LABEL, LABEL);
+        rowData.put(Barometer_Data.TIMESTAMP, TS);
+        rowData.put(Barometer_Data.AMBIENT_PRESSURE, event.values[0]);
+        rowData.put(Barometer_Data.ACCURACY, event.accuracy);
+        rowData.put(Barometer_Data.LABEL, LABEL);
+
+        if (awareSensor != null) awareSensor.onBarometerChanged(rowData);
 
         data_values.add(rowData);
         LAST_TS = TS;
-
-        if (awareSensor != null) awareSensor.onLinearAccelChanged(rowData);
 
         if (data_values.size() < 250 && TS < LAST_SAVE + 300000) {
             return;
@@ -127,28 +106,27 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         LAST_SAVE = TS;
     }
 
-    private static LinearAccelerometer.LAMPSensorObserver awareSensor;
+    private static Barometer.LAMPSensorObserver awareSensor;
 
-    public static void setSensorObserver(LinearAccelerometer.LAMPSensorObserver observer) {
+    public static void setSensorObserver(Barometer.LAMPSensorObserver observer) {
         awareSensor = observer;
     }
 
-    public static LinearAccelerometer.LAMPSensorObserver getSensorObserver() {
+    public static Barometer.LAMPSensorObserver getSensorObserver() {
         return awareSensor;
     }
 
     public interface LAMPSensorObserver {
-        void onLinearAccelChanged(ContentValues data);
+        void onBarometerChanged(ContentValues data);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = getPackageName() + ".provider.accelerometer.linear";
-
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mLinearAccelerator = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+
+        mPressure = mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 
         sensorThread = new HandlerThread(TAG);
         sensorThread.start();
@@ -160,10 +138,10 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         sensorHandler = new Handler(sensorThread.getLooper());
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_LAMP_LINEAR_LABEL);
+        filter.addAction(ACTION_LAMP_BAROMETER_LABEL);
         registerReceiver(dataLabeler, filter);
 
-        if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer service created!");
+        if (Lamp.DEBUG) Log.d(TAG, "Barometer service created!");
     }
 
     @Override
@@ -171,14 +149,14 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         super.onDestroy();
 
         sensorHandler.removeCallbacksAndMessages(null);
-        mSensorManager.unregisterListener(this, mLinearAccelerator);
+        mSensorManager.unregisterListener(this, mPressure);
         sensorThread.quit();
 
         wakeLock.release();
 
         unregisterReceiver(dataLabeler);
 
-        if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer service terminated...");
+        if (Lamp.DEBUG) Log.d(TAG, "Barometer service terminated...");
     }
 
     @Override
@@ -186,29 +164,28 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         super.onStartCommand(intent, flags, startId);
 
         if (PERMISSIONS_OK) {
-            if (mLinearAccelerator == null) {
+            if (mPressure == null) {
                 stopSelf();
             } else {
 
-
-                int new_frequency = LampConstants.FREQUENCY_ACCELEROMETER;
-                double new_threshold = LampConstants.THRESHOLD_ACCELEROMETER;
+                int new_frequency = LampConstants.FREQUENCY_BAROMETER;
+                double new_threshold = LampConstants.THRESHOLD_BAROMETER;
 
                 if (FREQUENCY != new_frequency
                         || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
-                    mSensorManager.unregisterListener(this, mLinearAccelerator);
+                    mSensorManager.unregisterListener(this, mPressure);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
                 }
 
-                mSensorManager.registerListener(this, mLinearAccelerator, new_frequency, sensorHandler);
+                mSensorManager.registerListener(this, mPressure, FREQUENCY, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
-                if (Lamp.DEBUG)
-                    Log.d(TAG, "Linear-accelerometer service active: " + FREQUENCY + "ms");
+                if (Lamp.DEBUG) Log.d(TAG, "Barometer service active: " + FREQUENCY + "ms");
+
             }
         }
 
@@ -220,14 +197,12 @@ public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListe
         return null;
     }
 
-    public static final class Linear_Accelerometer_Data implements BaseColumns {
+    public static final class Barometer_Data implements BaseColumns {
 
         public static final String _ID = "_id";
         public static final String TIMESTAMP = "timestamp";
         public static final String DEVICE_ID = "device_id";
-        public static final String VALUES_0 = "double_values_0";
-        public static final String VALUES_1 = "double_values_1";
-        public static final String VALUES_2 = "double_values_2";
+        public static final String AMBIENT_PRESSURE = "double_values_0";
         public static final String ACCURACY = "accuracy";
         public static final String LABEL = "label";
     }

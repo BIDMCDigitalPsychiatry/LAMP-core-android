@@ -1,5 +1,5 @@
 
-package com.mindlamp.utils;
+package digital.lamp.utils;
 
 import android.Manifest;
 import android.app.Service;
@@ -8,8 +8,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.core.content.PermissionChecker;
-import com.mindlamp.Lamp;
-import com.mindlamp.ui.PermissionsHandler;
+import digital.lamp.Lamp;
+import digital.lamp.ui.PermissionsHandler;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
@@ -9,7 +9,7 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.Lamp_Sensor;
 
 /**
  * Service that logs users' interactions with the screen

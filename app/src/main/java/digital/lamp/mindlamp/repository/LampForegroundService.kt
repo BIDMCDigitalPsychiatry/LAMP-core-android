@@ -15,7 +15,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.mindlamp.Lamp
+import digital.lamp.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState

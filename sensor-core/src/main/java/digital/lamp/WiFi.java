@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.Manifest;
 import android.app.AlarmManager;
@@ -16,8 +16,8 @@ import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.provider.BaseColumns;
 import android.util.Log;
-import com.mindlamp.utils.LampConstants;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.LampConstants;
+import digital.lamp.utils.Lamp_Sensor;
 
 import java.util.List;
 import java.util.concurrent.Callable;

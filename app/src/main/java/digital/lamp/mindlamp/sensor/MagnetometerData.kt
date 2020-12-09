@@ -1,8 +1,8 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import com.mindlamp.Lamp
-import com.mindlamp.Magnetometer
+import digital.lamp.Lamp
+import digital.lamp.Magnetometer
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.utils.LampLog

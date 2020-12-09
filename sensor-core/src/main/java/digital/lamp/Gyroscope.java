@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -16,8 +16,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.BaseColumns;
 import android.util.Log;
-import com.mindlamp.utils.LampConstants;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.LampConstants;
+import digital.lamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
 import java.util.List;

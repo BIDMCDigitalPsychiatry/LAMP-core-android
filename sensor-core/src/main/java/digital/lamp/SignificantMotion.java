@@ -1,4 +1,4 @@
-package com.mindlamp;
+package digital.lamp;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -12,8 +12,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.mindlamp.providers.Significant_Provider;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.providers.Significant_Provider;
+import digital.lamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
 

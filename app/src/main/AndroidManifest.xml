@@ -102,7 +102,7 @@
         </receiver>
 
         <receiver
-            android:name="com.mindlamp.Lamp$AndroidPackageMonitor" android:exported="true">
+            android:name="digital.lamp.Lamp$AndroidPackageMonitor" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />

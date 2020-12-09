@@ -1,8 +1,8 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import com.mindlamp.Lamp
-import com.mindlamp.Screen
+import digital.lamp.Lamp
+import digital.lamp.Screen
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest

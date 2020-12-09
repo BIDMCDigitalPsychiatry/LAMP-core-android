@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mindlamp">
+    package="digital.lamp">
 
     <uses-permission android:name="com.mindlamp.READ_CONTEXT_DATA" />
     <uses-permission android:name="com.mindlamp.WRITE_CONTEXT_DATA" />
@@ -33,7 +33,7 @@
         <!-- Activities -->
 
         <activity
-            android:name="com.mindlamp.ui.PermissionsHandler"
+            android:name="digital.lamp.ui.PermissionsHandler"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:launchMode="standard"
@@ -43,50 +43,50 @@
 
         <!-- Sensor services -->
         <service
-            android:name="com.mindlamp.Lamp"
+            android:name=".Lamp"
             android:exported="true" />
 
         <service
-            android:name="com.mindlamp.Locations"
+            android:name=".Locations"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Screen"
+            android:name=".Screen"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Accelerometer"
+            android:name=".Accelerometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.ActivityTransitions"
+            android:name=".ActivityTransitions"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Gyroscope"
+            android:name=".Gyroscope"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.WiFi"
+            android:name=".WiFi"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.WiFi$BackgroundService"
+            android:name=".WiFi$BackgroundService"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Rotation"
+            android:name=".Rotation"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Light"
+            android:name=".Light"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Magnetometer"
+            android:name=".Magnetometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Barometer"
+            android:name=".Barometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.LinearAccelerometer"
+            android:name=".LinearAccelerometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.utils.Lamp_TTS"
+            android:name=".Lamp_TTS"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.SignificantMotion"
+            android:name=".SignificantMotion"
             android:exported="true" />
 
         <provider

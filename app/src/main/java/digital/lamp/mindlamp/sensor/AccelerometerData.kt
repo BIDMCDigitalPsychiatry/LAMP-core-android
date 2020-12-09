@@ -1,8 +1,8 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import com.mindlamp.Accelerometer
-import com.mindlamp.Lamp
+import digital.lamp.Accelerometer
+import digital.lamp.Lamp
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.DimensionData
 import digital.lamp.mindlamp.network.model.LogEventRequest

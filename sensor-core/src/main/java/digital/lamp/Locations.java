@@ -1,4 +1,4 @@
-package com.mindlamp;
+package digital.lamp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -8,7 +8,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.Lamp_Sensor;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;

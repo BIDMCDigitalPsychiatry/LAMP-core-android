@@ -1,8 +1,8 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import com.mindlamp.Lamp
-import com.mindlamp.Rotation
+import digital.lamp.Lamp
+import digital.lamp.Rotation
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.network.model.*
 import digital.lamp.mindlamp.network.model.RotationData

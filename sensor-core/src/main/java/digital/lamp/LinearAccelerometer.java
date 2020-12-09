@@ -1,5 +1,5 @@
 
-package com.mindlamp;
+package digital.lamp;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
@@ -16,28 +16,24 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.BaseColumns;
 import android.util.Log;
-import com.mindlamp.utils.LampConstants;
-import com.mindlamp.utils.Lamp_Sensor;
+import digital.lamp.utils.LampConstants;
+import digital.lamp.utils.Lamp_Sensor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LAMP Magnetometer module
- * - Magnetometer raw data
- * - Magnetometer sensor information
- *
  * @author df
  */
-public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
+public class LinearAccelerometer extends Lamp_Sensor implements SensorEventListener {
 
     /**
-     * Logging tag (default = "LAMP::Magnetometer")
+     * Logging tag (default = "LAMP::LinearAcc.")
      */
-    private static String TAG = "LAMP::Magnetometer";
+    private static String TAG = "LAMP::Linear Acc.";
 
     private static SensorManager mSensorManager;
-    private static Sensor mMagnetometer;
+    private static Sensor mLinearAccelerator;
 
     private static HandlerThread sensorThread = null;
     private static Handler sensorHandler = null;
@@ -50,13 +46,14 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
     private static int FREQUENCY = -1;
     private static double THRESHOLD = 0;
     // Reject any data points that come in more often than frequency
+    private static boolean ENFORCE_FREQUENCY = false;
 
     /**
      * Broadcasted event: new sensor values
-     * ContentProvider: MagnetometerProvider
+     * ContentProvider: LinearAccelerationProvider
      */
-    public static final String ACTION_LAMP_MAGNETOMETER = "ACTION_LAMP_MAGNETOMETER";
-    public static final String ACTION_LAMP_MAGNETOMETER_LABEL = "ACTION_LAMP_MAGNETOMETER_LABEL";
+    public static final String ACTION_LAMP_LINEAR_ACCELEROMETER = "ACTION_LAMP_LINEAR_ACCELEROMETER";
+    public static final String ACTION_LAMP_LINEAR_LABEL = "ACTION_LAMP_LINEAR_LABEL";
     public static final String EXTRA_LABEL = "label";
 
     /**
@@ -72,7 +69,7 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
     public static class DataLabel extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_LAMP_MAGNETOMETER_LABEL)) {
+            if (intent.getAction().equals(ACTION_LAMP_LINEAR_LABEL)) {
                 LABEL = intent.getStringExtra(EXTRA_LABEL);
             }
         }
@@ -85,31 +82,39 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (SignificantMotion.isSignificantMotionActive && !SignificantMotion.CURRENT_SIGMOTION_STATE) {
+            if (data_values.size() > 0) {
+                final ContentValues[] data_buffer = new ContentValues[data_values.size()];
+                data_values.toArray(data_buffer);
+                data_values.clear();
+            }
+
+            return;
+        }
+
         long TS = System.currentTimeMillis();
         if ((TS - LAST_TS) < LampConstants.INTERVAL)
             return;
-        if (LAST_VALUES != null && THRESHOLD > 0 &&
-                Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD &&
-                Math.abs(event.values[0] - LAST_VALUES[1]) < THRESHOLD &&
-                Math.abs(event.values[0] - LAST_VALUES[2]) < THRESHOLD) {
-            float val = Math.abs(event.values[0] - LAST_VALUES[0]);
+        if (LAST_VALUES != null && THRESHOLD > 0 && Math.abs(event.values[0] - LAST_VALUES[0]) < THRESHOLD
+                && Math.abs(event.values[1] - LAST_VALUES[1]) < THRESHOLD
+                && Math.abs(event.values[2] - LAST_VALUES[2]) < THRESHOLD) {
             return;
         }
 
         LAST_VALUES = new Float[]{event.values[0], event.values[1], event.values[2]};
 
         ContentValues rowData = new ContentValues();
-        rowData.put(Magnetometer_Data.TIMESTAMP, TS);
-        rowData.put(Magnetometer_Data.VALUES_0, event.values[0]);
-        rowData.put(Magnetometer_Data.VALUES_1, event.values[1]);
-        rowData.put(Magnetometer_Data.VALUES_2, event.values[2]);
-        rowData.put(Magnetometer_Data.ACCURACY, event.accuracy);
-        rowData.put(Magnetometer_Data.LABEL, LABEL);
-
-        if (awareSensor != null) awareSensor.onMagnetometerChanged(rowData);
+        rowData.put(Linear_Accelerometer_Data.TIMESTAMP, TS);
+        rowData.put(Linear_Accelerometer_Data.VALUES_0, event.values[0]);
+        rowData.put(Linear_Accelerometer_Data.VALUES_1, event.values[1]);
+        rowData.put(Linear_Accelerometer_Data.VALUES_2, event.values[2]);
+        rowData.put(Linear_Accelerometer_Data.ACCURACY, event.accuracy);
+        rowData.put(Linear_Accelerometer_Data.LABEL, LABEL);
 
         data_values.add(rowData);
         LAST_TS = TS;
+
+        if (awareSensor != null) awareSensor.onLinearAccelChanged(rowData);
 
         if (data_values.size() < 250 && TS < LAST_SAVE + 300000) {
             return;
@@ -122,29 +127,28 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
         LAST_SAVE = TS;
     }
 
-    private static Magnetometer.LAMPSensorObserver awareSensor;
+    private static LinearAccelerometer.LAMPSensorObserver awareSensor;
 
-    public static void setSensorObserver(Magnetometer.LAMPSensorObserver observer) {
+    public static void setSensorObserver(LinearAccelerometer.LAMPSensorObserver observer) {
         awareSensor = observer;
     }
 
-    public static Magnetometer.LAMPSensorObserver getSensorObserver() {
+    public static LinearAccelerometer.LAMPSensorObserver getSensorObserver() {
         return awareSensor;
     }
 
     public interface LAMPSensorObserver {
-        void onMagnetometerChanged(ContentValues data);
+        void onLinearAccelChanged(ContentValues data);
     }
-
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-//        AUTHORITY = Magnetometer_Provider.getAuthority(this);
+        AUTHORITY = getPackageName() + ".provider.accelerometer.linear";
 
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mLinearAccelerator = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
         sensorThread = new HandlerThread(TAG);
         sensorThread.start();
@@ -156,10 +160,10 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
         sensorHandler = new Handler(sensorThread.getLooper());
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_LAMP_MAGNETOMETER_LABEL);
+        filter.addAction(ACTION_LAMP_LINEAR_LABEL);
         registerReceiver(dataLabeler, filter);
 
-        if (Lamp.DEBUG) Log.d(TAG, "Magnetometer service created!");
+        if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer service created!");
     }
 
     @Override
@@ -167,14 +171,14 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
         super.onDestroy();
 
         sensorHandler.removeCallbacksAndMessages(null);
-        mSensorManager.unregisterListener(this, mMagnetometer);
+        mSensorManager.unregisterListener(this, mLinearAccelerator);
         sensorThread.quit();
 
         wakeLock.release();
 
         unregisterReceiver(dataLabeler);
 
-        if (Lamp.DEBUG) Log.d(TAG, "Magnetometer service terminated...");
+        if (Lamp.DEBUG) Log.d(TAG, "Linear-accelerometer service terminated...");
     }
 
     @Override
@@ -182,26 +186,29 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
         super.onStartCommand(intent, flags, startId);
 
         if (PERMISSIONS_OK) {
-            if (mMagnetometer == null) {
+            if (mLinearAccelerator == null) {
                 stopSelf();
             } else {
-                int new_frequency = LampConstants.FREQUENCY_MAGNETOMETER;
-                double new_threshold = LampConstants.THRESHOLD_MAGNETOMETER;
+
+
+                int new_frequency = LampConstants.FREQUENCY_ACCELEROMETER;
+                double new_threshold = LampConstants.THRESHOLD_ACCELEROMETER;
 
                 if (FREQUENCY != new_frequency
                         || THRESHOLD != new_threshold) {
 
                     sensorHandler.removeCallbacksAndMessages(null);
-                    mSensorManager.unregisterListener(this, mMagnetometer);
+                    mSensorManager.unregisterListener(this, mLinearAccelerator);
 
                     FREQUENCY = new_frequency;
                     THRESHOLD = new_threshold;
                 }
 
-                mSensorManager.registerListener(this, mMagnetometer, new_frequency, sensorHandler);
+                mSensorManager.registerListener(this, mLinearAccelerator, new_frequency, sensorHandler);
                 LAST_SAVE = System.currentTimeMillis();
 
-                if (Lamp.DEBUG) Log.d(TAG, "Magnetometer service active...");
+                if (Lamp.DEBUG)
+                    Log.d(TAG, "Linear-accelerometer service active: " + FREQUENCY + "ms");
             }
         }
 
@@ -213,7 +220,7 @@ public class Magnetometer extends Lamp_Sensor implements SensorEventListener {
         return null;
     }
 
-    public static final class Magnetometer_Data implements BaseColumns {
+    public static final class Linear_Accelerometer_Data implements BaseColumns {
 
         public static final String _ID = "_id";
         public static final String TIMESTAMP = "timestamp";
