@@ -98,11 +98,11 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
-//        if(checkAndRequestPermissions(this)){
-//            //Fit SignIn Auth
-//            fitSignIn()
-//            initializeWebview()
-//        }
+        if(checkAndRequestPermissions(this)){
+            //Fit SignIn Auth
+            fitSignIn()
+            initializeWebview()
+        }
 
         AppState.session.isLoggedIn = true
         startLampService()
