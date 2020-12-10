@@ -100,17 +100,6 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <receiver
-            android:name="digital.lamp.Lamp$AndroidPackageMonitor" android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_REMOVED" />
-
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>
-
         <service
             android:name=".notification.LampFirebaseMessagingService"
             android:exported="false">

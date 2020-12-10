@@ -9,15 +9,10 @@ buildscript {
         lifecycle_version = '2.2.0'
         room_version = "2.2.5"
 
-        compile_sdk = 29
-        target_sdk = 29
+        compile_sdk = 30
+        target_sdk = 30
         minimum_sdk = 24
-        build_tools = "29.0.3"
-        version_code = 817
-        version_readable = "4.0." + version_code + "." + "bundle"
-        mqtt_libs = '1.2.2'
-        ion_libs = "2.+"
-        anko_version = "0.10.8"
+        build_tools = "30.0.2"
         play_services_location = '17.0.0'
     }
 
@@ -26,13 +21,11 @@ buildscript {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven{url "https://oss.sonatype.org/content/repositories/snapshots"}
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
+        classpath 'com.android.tools.build:gradle:4.1.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.gms:google-services:4.3.4'
-        classpath 'com.github.triplet.gradle:play-publisher:2.0.0-SNAPSHOT'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.4.1'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

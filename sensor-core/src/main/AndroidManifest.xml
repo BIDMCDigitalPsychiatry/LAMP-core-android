@@ -83,9 +83,6 @@
             android:name=".LinearAccelerometer"
             android:exported="true" />
         <service
-            android:name=".Lamp_TTS"
-            android:exported="true" />
-        <service
             android:name=".SignificantMotion"
             android:exported="true" />
 
