@@ -3,6 +3,7 @@ package digital.lamp.mindlamp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
@@ -13,10 +14,13 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.Window
+import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -31,6 +35,7 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.appstate.SessionState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.network.model.SendTokenRequest
 import digital.lamp.mindlamp.network.model.TokenData
@@ -54,9 +59,10 @@ import kotlinx.coroutines.launch
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity(), View.OnClickListener {
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    lateinit var oDisclosureDialog: Dialog
 
     companion object{
         private val TAG = HomeActivity::class.java.simpleName
@@ -98,11 +104,17 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
-        if(checkAndRequestPermissions(this)){
-            //Fit SignIn Auth
-            fitSignIn()
-            initializeWebview()
+        if(AppState.session.showDisclosureAlert){
+            progressBar.visibility = View.GONE
+            populateOnDisclosureARAlert()
+        }else {
+            if(checkAndRequestPermissions(this)){
+                //Fit SignIn Auth
+                fitSignIn()
+                initializeWebview()
+            }
         }
+
 
 //        AppState.session.isLoggedIn = true
 //        startLampService()
@@ -112,6 +124,7 @@ class HomeActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
+        progressBar.visibility = View.VISIBLE
         webView.clearCache(true)
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
@@ -457,5 +470,34 @@ class HomeActivity : AppCompatActivity() {
         //Firebase Event Tracking
         val params = Bundle()
         firebaseAnalytics.logEvent(eventName, params)
+    }
+    private fun populateOnDisclosureARAlert() {
+        oDisclosureDialog = Dialog(this, R.style.CustomDialog)
+        oDisclosureDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        oDisclosureDialog.setContentView(R.layout.disclosure_alert_layout)
+        oDisclosureDialog.setCancelable(false)
+        oDisclosureDialog.window?.setLayout(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT
+        )
+        oDisclosureDialog.show()
+        AppState.session.showDisclosureAlert = false
+        val closeBtn = oDisclosureDialog.findViewById<View>(R.id.close_btn) as ImageView
+        closeBtn.setOnClickListener(this)
+    }
+
+    override fun onClick(v: View) {
+        when (v.id) {
+            R.id.close_btn -> {
+                if (::oDisclosureDialog.isInitialized && oDisclosureDialog.isShowing)
+                    oDisclosureDialog.dismiss()
+                //Check for permissions and start service
+                if(checkAndRequestPermissions(this)){
+                    //Fit SignIn Auth
+                    fitSignIn()
+                    initializeWebview()
+                }
+            }
+        }
     }
 }
