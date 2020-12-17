@@ -17,10 +17,10 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -35,7 +35,6 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import digital.lamp.mindlamp.appstate.AppState
-import digital.lamp.mindlamp.appstate.SessionState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.network.model.SendTokenRequest
 import digital.lamp.mindlamp.network.model.TokenData
@@ -59,7 +58,7 @@ import kotlinx.coroutines.launch
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 
-class HomeActivity : AppCompatActivity(), View.OnClickListener {
+class HomeActivity : AppCompatActivity(){
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
     lateinit var oDisclosureDialog: Dialog
@@ -124,7 +123,6 @@ class HomeActivity : AppCompatActivity(), View.OnClickListener {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
-        progressBar.visibility = View.VISIBLE
         webView.clearCache(true)
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
@@ -472,32 +470,25 @@ class HomeActivity : AppCompatActivity(), View.OnClickListener {
         firebaseAnalytics.logEvent(eventName, params)
     }
     private fun populateOnDisclosureARAlert() {
-        oDisclosureDialog = Dialog(this, R.style.CustomDialog)
-        oDisclosureDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        oDisclosureDialog.setContentView(R.layout.disclosure_alert_layout)
-        oDisclosureDialog.setCancelable(false)
-        oDisclosureDialog.window?.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT
-        )
-        oDisclosureDialog.show()
-        AppState.session.showDisclosureAlert = false
-        val closeBtn = oDisclosureDialog.findViewById<View>(R.id.close_btn) as ImageView
-        closeBtn.setOnClickListener(this)
-    }
-
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.close_btn -> {
-                if (::oDisclosureDialog.isInitialized && oDisclosureDialog.isShowing)
-                    oDisclosureDialog.dismiss()
-                //Check for permissions and start service
-                if(checkAndRequestPermissions(this)){
-                    //Fit SignIn Auth
-                    fitSignIn()
-                    initializeWebview()
-                }
+        val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+            dialog.cancel()
+            AppState.session.showDisclosureAlert = false
+            if(checkAndRequestPermissions(this)){
+                //Fit SignIn Auth
+                fitSignIn()
+                initializeWebview()
             }
+        }
+
+        val builder = AlertDialog.Builder(this)
+
+        with(builder)
+        {
+            setTitle(getString(R.string.app_name))
+            setMessage(getString(R.string.app_disclosure))
+            setCancelable(false)
+            setPositiveButton("OK", DialogInterface.OnClickListener(function = positiveButtonClick))
+            show()
         }
     }
 }
