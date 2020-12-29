@@ -2,13 +2,12 @@ package digital.lamp;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
-
-import digital.lamp.utils.Lamp_Sensor;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -22,7 +21,7 @@ import com.google.android.gms.location.LocationServices;
  * @author denzil
  */
 @SuppressLint("MissingPermission")
-public class Locations extends Lamp_Sensor {
+public class Locations extends Service {
 
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
@@ -53,11 +52,6 @@ public class Locations extends Lamp_Sensor {
     public void onCreate() {
         super.onCreate();
 
-        AUTHORITY = getPackageName() + ".provider.locations";
-
-        REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-        REQUIRED_PERMISSIONS.add(Manifest.permission.ACCESS_FINE_LOCATION);
-
         locationRequest = LocationRequest.create();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
@@ -84,7 +78,6 @@ public class Locations extends Lamp_Sensor {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        if (PERMISSIONS_OK) {
             locationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -102,7 +95,7 @@ public class Locations extends Lamp_Sensor {
             fusedLocationClient.requestLocationUpdates(locationRequest,
                     locationCallback,
                     Looper.getMainLooper());
-        }
+
         return START_STICKY;
     }
 }

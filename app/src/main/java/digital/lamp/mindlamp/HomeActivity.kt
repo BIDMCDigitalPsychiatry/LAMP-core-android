@@ -3,7 +3,6 @@ package digital.lamp.mindlamp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
@@ -14,13 +13,9 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -34,11 +29,10 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import digital.lamp.Lamp
+import digital.lamp.apis.SensorEventAPI
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
-import digital.lamp.mindlamp.network.model.SendTokenRequest
-import digital.lamp.mindlamp.network.model.TokenData
-import digital.lamp.mindlamp.repository.HomeRepository
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
@@ -48,11 +42,11 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
+import digital.lamp.models.SensorEvent
+import digital.lamp.models.TokenData
 import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -61,7 +55,6 @@ import kotlinx.coroutines.launch
 class HomeActivity : AppCompatActivity(){
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
-    lateinit var oDisclosureDialog: Dialog
 
     companion object{
         private val TAG = HomeActivity::class.java.simpleName
@@ -103,20 +96,20 @@ class HomeActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
-        if(AppState.session.showDisclosureAlert){
-            progressBar.visibility = View.GONE
-            populateOnDisclosureARAlert()
-        }else {
-            if(checkAndRequestPermissions(this)){
-                //Fit SignIn Auth
-                fitSignIn()
-                initializeWebview()
-            }
-        }
+//        if(AppState.session.showDisclosureAlert){
+//            progressBar.visibility = View.GONE
+//            populateOnDisclosureARAlert()
+//        }else {
+//            if(checkAndRequestPermissions(this)){
+//                //Fit SignIn Auth
+//                fitSignIn()
+//                initializeWebview()
+//            }
+//        }
 
 
-//        AppState.session.isLoggedIn = true
-//        startLampService()
+        AppState.session.isLoggedIn = true
+        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 
@@ -172,26 +165,14 @@ class HomeActivity : AppCompatActivity(){
             REQUEST_ID_MULTIPLE_PERMISSIONS -> {
                 val perms = HashMap<String, Int>()
                 // Initialize the map with both permissions
-                perms[Manifest.permission.READ_CALENDAR] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.CAMERA] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.READ_CONTACTS] = PackageManager.PERMISSION_GRANTED
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.READ_EXTERNAL_STORAGE] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.READ_SYNC_SETTINGS] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.READ_SYNC_STATS] = PackageManager.PERMISSION_GRANTED
                 perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
 
                 if (grantResults.isNotEmpty()) {
                     for (i in permissions.indices)
                         perms[permissions[i]] = grantResults[i]
                     // Check for both permissions
-                    if (perms[Manifest.permission.READ_CALENDAR] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.CAMERA] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.READ_CONTACTS] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.READ_EXTERNAL_STORAGE] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.READ_SYNC_SETTINGS] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.READ_SYNC_STATS] == PackageManager.PERMISSION_GRANTED
+                    if (perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
                         && perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
                     ) {
                         //Fit SignIn Auth
@@ -202,31 +183,7 @@ class HomeActivity : AppCompatActivity(){
                         //Now further we check if used denied permanently or not
                         if (ActivityCompat.shouldShowRequestPermissionRationale(
                                 this,
-                                Manifest.permission.READ_CALENDAR
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.CAMERA
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.READ_CONTACTS
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
                                 Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.READ_EXTERNAL_STORAGE
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.READ_SYNC_SETTINGS
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.READ_SYNC_STATS
                             )
                             || ActivityCompat.shouldShowRequestPermissionRationale(
                                 this,
@@ -325,26 +282,31 @@ class HomeActivity : AppCompatActivity(){
 
     private fun showSignedOut() {
 
-        val homeRepository = HomeRepository()
         val tokenData = TokenData()
         tokenData.action = "logout"
         tokenData.device_type = "Android"
-        val sendTokenRequest = SendTokenRequest(
+        val sendTokenRequest = SensorEvent(
             tokenData,
             "lamp.analytics",
-            System.currentTimeMillis()
+            System.currentTimeMillis().toDouble()
         )
-        GlobalScope.launch(Dispatchers.IO){
-            try {
-                val response = homeRepository.sendTokenData(
-                    AppState.session.userId,
-                    sendTokenRequest
-                )
-                AppState.session.clearData()
-                if (response.code() == 200)
-                    Log.e(TAG, "Token Updated to server")
-            }catch (er: Exception){er.printStackTrace()}
+
+        val basic = "Basic ${Utils.toBase64(
+            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                "https://"
+            ).removePrefix("http://")
+        )}"
+        val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+            AppState.session.userId,
+            sendTokenRequest,
+            basic
+        )
+        LampLog.e(TAG, " Lamp Core Response -  $state")
+        if(state.isNotEmpty()){
+            //Code for drop DB
+            AppState.session.clearData()
         }
+        Lamp.stopLAMP(this)
         stopLampService()
     }
 
@@ -416,26 +378,30 @@ class HomeActivity : AppCompatActivity(){
             val token = it.result?.token
             Log.e(TAG, "FCM Token : $token")
             DebugLogs.writeToFile("Token : $token")
-            val homeRepository = HomeRepository()
+
             val tokenData = TokenData()
             tokenData.action = "login"
             tokenData.device_token = token.toString()
             tokenData.device_type = "Android"
-            val sendTokenRequest = SendTokenRequest(
+            val sendTokenRequest = SensorEvent(
                 tokenData,
                 "lamp.analytics",
-                System.currentTimeMillis()
+                System.currentTimeMillis().toDouble()
             )
-            GlobalScope.launch(Dispatchers.IO){
-                try {
-                    val response = homeRepository.sendTokenData(
-                        AppState.session.userId,
-                        sendTokenRequest
-                    )
 
-                    if (response.code() == 200)
-                        Log.e(TAG, "Token Updated to server")
-                }catch (er: Exception){er.printStackTrace()}
+            val basic = "Basic ${Utils.toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                    "https://"
+                ).removePrefix("http://")
+            )}"
+
+            GlobalScope.launch {
+                val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+                    AppState.session.userId,
+                    sendTokenRequest,
+                    basic
+                )
+                LampLog.e(TAG, " Lamp Core Response -  $state")
             }
             //Setting User Attributes for Firebase
             firebaseAnalytics.setUserProperty("user_fcm_token",token)

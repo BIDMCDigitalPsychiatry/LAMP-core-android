@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.utils
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
@@ -8,19 +9,16 @@ import java.io.UnsupportedEncodingException
 
 
 object Utils {
+    @SuppressLint("NewApi")
     fun toBase64(message: String): String? {
         val data: ByteArray
         try {
             data = message.toByteArray(charset("UTF-8"))
-            return Base64.encodeToString(data, Base64.DEFAULT)
+            return java.util.Base64.getMimeEncoder().encodeToString(data)
         } catch (e: UnsupportedEncodingException) {
             e.printStackTrace()
         }
         return null
-    }
-
-    fun getApplicationName(context: Context): String {
-        return context.applicationInfo.loadLabel(context.packageManager).toString()
     }
 
     @Suppress("DEPRECATION")

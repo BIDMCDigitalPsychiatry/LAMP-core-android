@@ -5,17 +5,15 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import digital.lamp.apis.SensorEventAPI
+import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.ActionData
-import digital.lamp.mindlamp.network.model.NotificationData
-import digital.lamp.mindlamp.network.model.NotificationEventRequest
-import digital.lamp.mindlamp.repository.HomeRepository
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
+import digital.lamp.mindlamp.utils.Utils
+import digital.lamp.models.NotificationData
+import digital.lamp.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
@@ -48,11 +46,13 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
         if (AppState.session.isLoggedIn) {
             val notificationData =
                 NotificationData("notification", "Open App", remoteMessage.data.toString())
-            val notificationEvent = NotificationEventRequest(
-                notificationData,
-                "lamp.analytics",
-                System.currentTimeMillis()
-            )
+
+            val notificationEvent =
+                SensorEvent(
+                    notificationData,
+                    "lamp.analytics",System.currentTimeMillis().toDouble()
+                )
+
             invokeNotificationData(notificationEvent)
         }
     }
@@ -66,19 +66,18 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
         private val TAG = LampFirebaseMessagingService::class.java.simpleName
     }
 
-    private fun invokeNotificationData(notificationEventRequest: NotificationEventRequest) {
-        val homeRepository = HomeRepository()
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val response = homeRepository.addNotificationData(
-                    AppState.session.userId,
-                    notificationEventRequest
-                )
-                LampLog.e(TAG, " : $response")
-
-            } catch (er: Exception) {
-                er.printStackTrace()
-            }
-        }
+    private fun invokeNotificationData(notificationEventRequest: SensorEvent) {
+        val basic = "Basic ${
+            Utils.toBase64(
+            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                "https://"
+            ).removePrefix("http://")
+        )}"
+        val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+            AppState.session.userId,
+            notificationEventRequest,
+            basic
+        )
+        LampLog.e(TAG, " Notification Data Send -  $state")
     }
 }

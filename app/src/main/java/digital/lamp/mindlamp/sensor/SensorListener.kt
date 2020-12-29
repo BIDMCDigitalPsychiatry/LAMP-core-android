@@ -1,31 +1,27 @@
 package digital.lamp.mindlamp.sensor
 
-import digital.lamp.mindlamp.network.model.SensorEventData
+import digital.lamp.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 interface SensorListener {
     //Callback to Acclerometer Data
-    fun getAccelerometerData(sensorEventData: SensorEventData)
+    fun getAccelerometerData(sensorEventData: SensorEvent)
     //Callback to Rotation Data
-    fun getRotationData(sensorEventData: SensorEventData)
+    fun getRotationData(sensorEventData: SensorEvent)
     //Callback to Magnetic Data
-    fun getMagneticData(sensorEventData: SensorEventData)
+    fun getMagneticData(sensorEventData: SensorEvent)
     //Callback to gyroscope Data
-    fun getGyroscopeData(sensorEventData: SensorEventData)
+    fun getGyroscopeData(sensorEventData: SensorEvent)
     //Callback to Location Data
-    fun getLocationData(sensorEventData: SensorEventData)
+    fun getLocationData(sensorEventData: SensorEvent)
     //Callback to wifi Data
-    fun getWifiData(sensorEventData: SensorEventData)
+    fun getWifiData(sensorEventData: SensorEvent)
     //Callback to ScreenState Data
-    fun getScreenState(sensorEventData: SensorEventData)
-    //Callback to SMS data
-    fun getSmsData(sensorEventData: SensorEventData)
-    //Callback to Bluetooth Data
-    fun getBluetoothData(sensorEventData: SensorEventData)
+    fun getScreenState(sensorEventData: SensorEvent)
     //Callback to Activity Data
-    fun getActivityData(sensorEventData: SensorEventData)
+    fun getActivityData(sensorEventData: SensorEvent)
     //Callback to Fitbit Data
-    fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>)
+    fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>)
 }

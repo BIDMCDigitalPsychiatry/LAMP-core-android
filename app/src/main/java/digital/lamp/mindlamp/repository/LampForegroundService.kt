@@ -16,21 +16,21 @@ import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import digital.lamp.Lamp
+import digital.lamp.apis.SensorEventAPI
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
-import digital.lamp.mindlamp.R
+import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.Analytics
 import digital.lamp.mindlamp.database.AnalyticsDao
 import digital.lamp.mindlamp.database.AppDatabase
-import digital.lamp.mindlamp.network.model.LogEventRequest
-import digital.lamp.mindlamp.network.model.SensorEventData
-import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
+import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
+import digital.lamp.models.SensorEvent
 import kotlinx.coroutines.*
 
 
@@ -78,7 +78,7 @@ class LampForegroundService : Service(),
         }
         else {
             //This will execute every 10 min if logged in
-            val sensorEventDataList: ArrayList<SensorEventData> = arrayListOf<SensorEventData>()
+            val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
             sensorEventDataList.clear()
 
             val gson = GsonBuilder()
@@ -89,7 +89,7 @@ class LampForegroundService : Service(),
                     sensorEventDataList.add(
                         gson.fromJson(
                             it.analyticsData,
-                            SensorEventData::class.java
+                            SensorEvent::class.java
                         )
                     )
                 }
@@ -179,39 +179,6 @@ class LampForegroundService : Service(),
             }
         }
         timer.start()
-
-        //check for GPS
-        if(!NetworkUtils.isGPSEnabled(this@LampForegroundService)){
-            val logEventRequest = LogEventRequest()
-            logEventRequest.message = getString(R.string.gps_off)
-            LogUtils.invokeLogData(
-                Utils.getApplicationName(this@LampForegroundService),
-                "info",
-                logEventRequest
-            )
-        }
-        //Battery value
-        if(NetworkUtils.getBatteryPercentage(this@LampForegroundService) < 15){
-            val logEventRequest = LogEventRequest()
-            logEventRequest.message = getString(R.string.battery_low)
-            LogUtils.invokeLogData(
-                Utils.getApplicationName(this@LampForegroundService),
-                getString(R.string.info),
-                logEventRequest
-            )
-        }
-        //Upload Crash Details
-        if(AppState.session.crashValue.isNotEmpty()){
-            val logEventRequest = LogEventRequest()
-            logEventRequest.message = getString(R.string.app_crash)+" : "+AppState.session.crashValue
-            LogUtils.invokeLogData(
-                Utils.getApplicationName(this@LampForegroundService),
-                getString(R.string.error),
-                logEventRequest
-            )
-            AppState.session.crashValue = ""
-        }
-
         trackSingleEvent("Service_Started")
     }
 
@@ -225,99 +192,33 @@ class LampForegroundService : Service(),
     }
 
 
-    private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEventData>) {
-
-        
+    private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>) {
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
             DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             trackSingleEvent("API_Send_${sensorEventDataList.size}")
-            val homeRepository = HomeRepository()
-            GlobalScope.launch(Dispatchers.IO) {
-                try {
-                    val response = homeRepository.addSensorData(
-                        AppState.session.userId,
-                        sensorEventDataList
-                    )
-                    when (response.code()) {
-                        200 -> {
-                            DebugLogs.writeToFile("API Success : ${response.body().toString()}")
-                            //Code for drop DB
-                            oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                        }
-                        400 -> {
-                            val logEventRequest = LogEventRequest()
-                            logEventRequest.message = "Network error - 400 Bad Request"
-                            LogUtils.invokeLogData(
-                                Utils.getApplicationName(this@LampForegroundService),
-                                "error",
-                                logEventRequest
-                            )
-                        }
-                        401 -> {
-                            val logEventRequest = LogEventRequest()
-                            logEventRequest.message = "Network error - 401 Unauthorized"
-                            LogUtils.invokeLogData(
-                                Utils.getApplicationName(this@LampForegroundService),
-                                "error",
-                                logEventRequest
-                            )
-                        }
-                        403 -> {
-                            val logEventRequest = LogEventRequest()
-                            logEventRequest.message = "Network error - 403 Forbidden"
-                            LogUtils.invokeLogData(
-                                Utils.getApplicationName(this@LampForegroundService),
-                                "error",
-                                logEventRequest
-                            )
-                        }
-                        404 -> {
-                            val logEventRequest = LogEventRequest()
-                            logEventRequest.message = "Network error - 404 Not Found"
-                            LogUtils.invokeLogData(
-                                Utils.getApplicationName(this@LampForegroundService),
-                                "error",
-                                logEventRequest
-                            )
-                        }
-                        500 -> {
-                            val logEventRequest = LogEventRequest()
-                            logEventRequest.message = "Network error - 500 Internal Server Error"
-                            LogUtils.invokeLogData(
-                                Utils.getApplicationName(this@LampForegroundService),
-                                "error",
-                                logEventRequest
-                            )
-                        }
 
-                    }
-                } catch (er: Exception) {
-                    er.printStackTrace()
-                    val logEventRequest = LogEventRequest()
-                    logEventRequest.message = "Network error - 500 Internal Server Error"
-                    LogUtils.invokeLogData(
-                        Utils.getApplicationName(this@LampForegroundService),
-                        "error",
-                        logEventRequest
-                    )
+            val basic = "Basic ${Utils.toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                    "https://"
+                ).removePrefix("http://")
+            )}"
+            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+                AppState.session.userId,
+                sensorEventDataList,
+                basic
+            )
+            LampLog.e(TAG, " Lamp Core Response -  $state")
+            if(state.isNotEmpty()){
+                //Code for drop DB
+                GlobalScope.launch(Dispatchers.IO) {
+                    oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                 }
-//                stopForeground(true)
-//                stopSelf()
             }
         }
     }
 
-    fun invokeLogData(origin: String, level: String, logEventRequest: LogEventRequest) {
-        val homeRepository = HomeRepository()
-        GlobalScope.launch(Dispatchers.IO){
-            try {
-                val addLogEventResult = homeRepository.addLogData(origin, level, logEventRequest)
-                LampLog.e(TAG, " : $addLogEventResult")
-            }catch (er: Exception){er.printStackTrace()}
-        }
-    }
 
-    override fun getAccelerometerData(sensorEventData: SensorEventData) {
+    override fun getAccelerometerData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -325,7 +226,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getRotationData(sensorEventData: SensorEventData) {
+    override fun getRotationData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -333,7 +234,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getMagneticData(sensorEventData: SensorEventData) {
+    override fun getMagneticData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -341,7 +242,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getGyroscopeData(sensorEventData: SensorEventData) {
+    override fun getGyroscopeData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -349,7 +250,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getLocationData(sensorEventData: SensorEventData) {
+    override fun getLocationData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -357,7 +258,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getWifiData(sensorEventData: SensorEventData) {
+    override fun getWifiData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -365,7 +266,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getScreenState(sensorEventData: SensorEventData) {
+    override fun getScreenState(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -373,15 +274,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getSmsData(sensorEventData: SensorEventData) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getBluetoothData(sensorEventData: SensorEventData) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getActivityData(sensorEventData: SensorEventData) {
+    override fun getActivityData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         oScope.async{
@@ -389,7 +282,7 @@ class LampForegroundService : Service(),
         }
     }
 
-    override fun getGoogleFitData(sensorEventData: ArrayList<SensorEventData>) {
+    override fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>) {
         LampLog.e("Google Fit : ${oGson.toJson(sensorEventData)}")
         val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
         oScope.async{
