@@ -96,20 +96,20 @@ class HomeActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
-//        if(AppState.session.showDisclosureAlert){
-//            progressBar.visibility = View.GONE
-//            populateOnDisclosureARAlert()
-//        }else {
-//            if(checkAndRequestPermissions(this)){
-//                //Fit SignIn Auth
-//                fitSignIn()
-//                initializeWebview()
-//            }
-//        }
+        if(AppState.session.showDisclosureAlert){
+            progressBar.visibility = View.GONE
+            populateOnDisclosureARAlert()
+        }else {
+            if(checkAndRequestPermissions(this)){
+                //Fit SignIn Auth
+                fitSignIn()
+                initializeWebview()
+            }
+        }
 
 
-        AppState.session.isLoggedIn = true
-        startLampService()
+//        AppState.session.isLoggedIn = true
+//        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 
