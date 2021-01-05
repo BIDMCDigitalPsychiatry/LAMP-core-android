@@ -1,2 +1,3 @@
 include ':sensor-core'
+include ':lamp-core'
 include ':app'

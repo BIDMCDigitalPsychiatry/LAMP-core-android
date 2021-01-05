@@ -9,6 +9,7 @@ class SessionState {
         const val PREF_KEY_SERVER_ADDRESS= "serverAddress"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
         const val PREF_ANALYTICS_TIME_STAMP = "lastAnalyticsTimestamp"
+        const val PREF_SHOW_DISCLOSURE_ALERT = "show_disclosure_alert"
     }
 
     var isLoggedIn by Pref(
@@ -30,6 +31,11 @@ class SessionState {
     var crashValue by Pref(
         PREF_KEY_CRASH_VALUE,
         ""
+    )
+
+    var showDisclosureAlert by Pref(
+        PREF_SHOW_DISCLOSURE_ALERT,
+        true
     )
 
     var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,1L)

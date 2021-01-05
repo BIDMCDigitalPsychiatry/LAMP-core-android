@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mindlamp">
+    package="digital.lamp">
 
-    <uses-permission android:name="com.mindlamp.READ_CONTEXT_DATA" />
-    <uses-permission android:name="com.mindlamp.WRITE_CONTEXT_DATA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /><!-- needed for Android 28 P -->
 
     <!-- Support for Sync Adapters -->
-    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+<!--    <uses-permission android:name="android.permission.READ_SYNC_STATS" />-->
+<!--    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />-->
+<!--    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />-->
+<!--    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />-->
+<!--    <uses-permission android:name="android.permission.GET_ACCOUNTS" />-->
 
     <!-- Permissions to safeguard data collection quality -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -27,78 +24,48 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <application
-        android:networkSecurityConfig="@xml/aware_ssl_config"
         android:usesCleartextTraffic="true">
-
-        <!-- Activities -->
-
-        <activity
-            android:name="com.mindlamp.ui.PermissionsHandler"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:exported="true"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Translucent" />
-
-        <!-- LAMP account service -->
 
         <!-- Sensor services -->
         <service
-            android:name="com.mindlamp.Lamp"
+            android:name=".Lamp"
             android:exported="true" />
 
         <service
-            android:name="com.mindlamp.Locations"
+            android:name=".Locations"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Screen"
+            android:name=".Screen"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Accelerometer"
+            android:name=".Accelerometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.ActivityTransitions"
+            android:name=".ActivityTransitions"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Gyroscope"
+            android:name=".Gyroscope"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.WiFi"
+            android:name=".WiFi"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.WiFi$BackgroundService"
+            android:name=".WiFi$BackgroundService"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Rotation"
+            android:name=".Rotation"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Light"
+            android:name=".Light"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Magnetometer"
+            android:name=".Magnetometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.Barometer"
+            android:name=".Barometer"
             android:exported="true" />
         <service
-            android:name="com.mindlamp.LinearAccelerometer"
+            android:name=".LinearAccelerometer"
             android:exported="true" />
-        <service
-            android:name="com.mindlamp.utils.Lamp_TTS"
-            android:exported="true" />
-        <service
-            android:name="com.mindlamp.SignificantMotion"
-            android:exported="true" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider.storage"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
-
     </application>
-
 </manifest>

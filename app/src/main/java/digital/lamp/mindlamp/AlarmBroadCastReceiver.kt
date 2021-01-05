@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 
 /**
