@@ -15,8 +15,8 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import digital.lamp.Lamp
-import digital.lamp.apis.SensorEventAPI
+import digital.lamp.sensor.Lamp
+import digital.lamp.service.apis.SensorEventAPI
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
@@ -30,7 +30,7 @@ import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
-import digital.lamp.models.SensorEvent
+import digital.lamp.service.models.SensorEvent
 import kotlinx.coroutines.*
 
 
