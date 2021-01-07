@@ -1,6 +1,6 @@
 package digital.lamp.mindlamp.sensor
 
-import digital.lamp.models.SensorEvent
+import digital.lamp.service.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020

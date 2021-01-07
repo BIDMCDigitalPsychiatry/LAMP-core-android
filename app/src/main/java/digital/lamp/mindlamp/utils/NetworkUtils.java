@@ -15,15 +15,13 @@ import static android.content.Context.BATTERY_SERVICE;
 public class NetworkUtils {
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity == null) {
-            return false;
-        } else {
+        if (connectivity != null) {
             @SuppressLint("MissingPermission") NetworkInfo netInfo = connectivity.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
                 return true;
             }
-            return false;
         }
+        return false;
     }
 
     public static boolean isGPSEnabled (Context mContext){
