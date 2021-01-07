@@ -11,7 +11,7 @@ buildscript {
 
         compile_sdk = 30
         target_sdk = 30
-        minimum_sdk = 24
+        minimum_sdk = 26
         build_tools = "30.0.2"
         play_services_location = '17.0.0'
     }
