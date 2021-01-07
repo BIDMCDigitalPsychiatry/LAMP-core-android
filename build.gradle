@@ -16,7 +16,6 @@ buildscript {
         play_services_location = '17.0.0'
     }
 
-
     repositories {
         google()
         jcenter()
