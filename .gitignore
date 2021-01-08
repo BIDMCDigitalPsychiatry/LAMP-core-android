@@ -32,6 +32,7 @@ qa/
 .DS_Store
 app/.DS_Store
 app/proguard-rules.pro
+app/google-services.json
 # Local configuration file (sdk path, etc)
 local.properties
 
