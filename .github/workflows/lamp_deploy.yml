@@ -21,7 +21,8 @@ jobs:
       - name: Decode google-services.json
         env:
           FIREBASE_CONFIG: ${{ secrets.GOOGLE_SERVICE_JSON }}
-        run: echo $FIREBASE_CONFIG > app/google-services.json
+          run: echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > ./app/google-services.json
+
         
       - name: Bump version code
         uses: chkfung/android-version-actions@v1.1
