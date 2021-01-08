@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "254845406431",
+    "firebase_url": "https://api-6882780734960683553-445906.firebaseio.com",
+    "project_id": "api-6882780734960683553-445906",
+    "storage_bucket": "api-6882780734960683553-445906.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254845406431:android:a06b7343c664d87b9ced6a",
+        "android_client_info": {
+          "package_name": "digital.lamp.mindlamp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "254845406431-jnani6jp39g7406n4t8jps6s8tb3mtbm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv63bYdUQ5mlestqdzIDAkgmtC0q3B3IE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "254845406431-jnani6jp39g7406n4t8jps6s8tb3mtbm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
