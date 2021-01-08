@@ -20,8 +20,8 @@ jobs:
           
       - name: Decode google-services.json
         env:
-          FIREBASE_CONFIG: ${{ secrets.GOOGLE_SERVICE_JSON }}
-          run: echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > ./app/google-services.json
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+        run: echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > ./app/google-services.json
 
         
       - name: Bump version code
