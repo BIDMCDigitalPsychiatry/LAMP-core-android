@@ -135,3 +135,4 @@ dependencies {
     implementation project(path: ':lamp-core')
     implementation project(path: ':sensor-core')
 }
+apply plugin: 'com.google.gms.google-services'
