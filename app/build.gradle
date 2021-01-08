@@ -6,15 +6,6 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('key.jks')
-            storePassword 'v2lamp20*89'
-            keyAlias = 'key0'
-            keyPassword 'v2lamp20*89'
-        }
-    }
-
     compileSdkVersion compile_sdk
     buildToolsVersion build_tools
 
@@ -143,5 +134,4 @@ dependencies {
 
     implementation project(path: ':lamp-core')
     implementation project(path: ':sensor-core')
-
 }
