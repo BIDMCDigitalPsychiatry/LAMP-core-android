@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="digital.lamp.sensor">
+    package="digital.lamp.sensor_core">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -28,44 +28,44 @@
 
         <!-- Sensor services -->
         <service
-            android:name=".Lamp"
+            android:name="digital.lamp.sensor_core.Lamp"
             android:exported="true" />
 
         <service
-            android:name=".Locations"
+            android:name="digital.lamp.sensor_core.Locations"
             android:exported="true" />
         <service
-            android:name=".Screen"
+            android:name="digital.lamp.sensor_core.Screen"
             android:exported="true" />
         <service
-            android:name=".Accelerometer"
+            android:name="digital.lamp.sensor_core.Accelerometer"
             android:exported="true" />
         <service
-            android:name=".ActivityTransitions"
+            android:name="digital.lamp.sensor_core.ActivityTransitions"
             android:exported="true" />
         <service
-            android:name=".Gyroscope"
+            android:name="digital.lamp.sensor_core.Gyroscope"
             android:exported="true" />
         <service
-            android:name=".WiFi"
+            android:name="digital.lamp.sensor_core.WiFi"
             android:exported="true" />
         <service
-            android:name=".WiFi$BackgroundService"
+            android:name="digital.lamp.sensor_core.WiFi$BackgroundService"
             android:exported="true" />
         <service
-            android:name=".Rotation"
+            android:name="digital.lamp.sensor_core.Rotation"
             android:exported="true" />
         <service
-            android:name=".Light"
+            android:name="digital.lamp.sensor_core.Light"
             android:exported="true" />
         <service
-            android:name=".Magnetometer"
+            android:name="digital.lamp.sensor_core.Magnetometer"
             android:exported="true" />
         <service
-            android:name=".Barometer"
+            android:name="digital.lamp.sensor_core.Barometer"
             android:exported="true" />
         <service
-            android:name=".LinearAccelerometer"
+            android:name="digital.lamp.sensor_core.LinearAccelerometer"
             android:exported="true" />
     </application>
 </manifest>

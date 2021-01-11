@@ -5,15 +5,15 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import digital.lamp.service.apis.SensorEventAPI
+import digital.lamp.lamp_core.apis.SensorEventAPI
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.ActionData
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
-import digital.lamp.service.models.NotificationData
-import digital.lamp.service.models.SensorEvent
+import digital.lamp.lamp_core.models.NotificationData
+import digital.lamp.lamp_core.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
