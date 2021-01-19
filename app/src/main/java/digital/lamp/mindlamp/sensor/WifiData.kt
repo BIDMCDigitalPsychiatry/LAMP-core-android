@@ -2,11 +2,11 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.ContentValues
 import android.content.Context
-import digital.lamp.sensor.Lamp
-import digital.lamp.sensor.WiFi
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.lamp_kotlin.sensor_core.WiFi
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.service.models.SensorEvent
-import digital.lamp.service.models.DimensionData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020

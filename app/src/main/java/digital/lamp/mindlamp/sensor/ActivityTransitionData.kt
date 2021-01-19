@@ -1,11 +1,11 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import digital.lamp.sensor.ActivityTransitions
-import digital.lamp.sensor.Lamp
-import digital.lamp.service.models.ActivityData
-import digital.lamp.service.models.DimensionData
-import digital.lamp.service.models.SensorEvent
+import digital.lamp.lamp_kotlin.sensor_core.ActivityTransitions
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.lamp_kotlin.lamp_core.models.ActivityData
+import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 
 class ActivityTransitionData constructor(sensorListener: SensorListener, context: Context) {
 

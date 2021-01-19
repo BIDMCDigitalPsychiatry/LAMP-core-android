@@ -6,15 +6,6 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('key.jks')
-            storePassword 'v2lamp20*89'
-            keyAlias = 'key0'
-            keyPassword 'v2lamp20*89'
-        }
-    }
-
     compileSdkVersion compile_sdk
     buildToolsVersion build_tools
 
@@ -141,7 +132,12 @@ dependencies {
     implementation "com.google.android.gms:play-services-fitness:20.0.0"
     implementation "com.google.android.gms:play-services-auth:19.0.0"
 
-    implementation project(path: ':lamp-core')
-    implementation project(path: ':sensor-core')
+//    implementation project(path: ':lamp-core')
+//    implementation project(path: ':sensor-core')
+
+//    implementation 'com.github.amaljofy:Lamp-Package:-SNAPSHOT'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:-SNAPSHOT'
+
 
 }
+apply plugin: 'com.google.gms.google-services'
