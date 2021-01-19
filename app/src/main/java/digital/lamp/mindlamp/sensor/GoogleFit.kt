@@ -8,8 +8,8 @@ import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.lamp_core.models.DimensionData
-import digital.lamp.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList

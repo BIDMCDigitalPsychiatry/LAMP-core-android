@@ -1,11 +1,11 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import digital.lamp.sensor_core.Accelerometer
-import digital.lamp.sensor_core.Lamp
+import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.lamp_core.models.DimensionData
-import digital.lamp.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -13,6 +13,7 @@ import digital.lamp.lamp_core.models.SensorEvent
 class AccelerometerData constructor(sensorListener: SensorListener, context:Context) {
      init {
          try {
+
              //Accelerometer settings
              Lamp.startAccelerometer(context)//start sensor
              //Sensor Observer

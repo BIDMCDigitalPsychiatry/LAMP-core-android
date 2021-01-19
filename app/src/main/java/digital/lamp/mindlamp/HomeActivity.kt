@@ -29,8 +29,8 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import digital.lamp.sensor_core.Lamp
-import digital.lamp.lamp_core.apis.SensorEventAPI
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
@@ -42,8 +42,8 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
-import digital.lamp.lamp_core.models.SensorEvent
-import digital.lamp.lamp_core.models.TokenData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

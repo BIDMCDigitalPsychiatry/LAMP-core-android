@@ -1,6 +1,6 @@
 package digital.lamp.mindlamp.sensor
 
-import digital.lamp.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020

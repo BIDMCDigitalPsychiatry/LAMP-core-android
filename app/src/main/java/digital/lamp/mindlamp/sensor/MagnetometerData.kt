@@ -1,12 +1,12 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import digital.lamp.sensor_core.Lamp
-import digital.lamp.sensor_core.Magnetometer
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.lamp_kotlin.sensor_core.Magnetometer
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.lamp_core.models.DimensionData
-import digital.lamp.lamp_core.models.MagnetData
-import digital.lamp.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
+import digital.lamp.lamp_kotlin.lamp_core.models.MagnetData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020

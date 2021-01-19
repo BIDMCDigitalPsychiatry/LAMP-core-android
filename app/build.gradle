@@ -132,7 +132,12 @@ dependencies {
     implementation "com.google.android.gms:play-services-fitness:20.0.0"
     implementation "com.google.android.gms:play-services-auth:19.0.0"
 
-    implementation project(path: ':lamp-core')
-    implementation project(path: ':sensor-core')
+//    implementation project(path: ':lamp-core')
+//    implementation project(path: ':sensor-core')
+
+//    implementation 'com.github.amaljofy:Lamp-Package:-SNAPSHOT'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:-SNAPSHOT'
+
+
 }
 apply plugin: 'com.google.gms.google-services'
