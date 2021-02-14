@@ -7,6 +7,7 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.RotationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.mindlamp.utils.Sensors
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
@@ -14,6 +15,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 class RotationData constructor(sensorListener: SensorListener, context: Context){
     init {
         try {
+
             Lamp.startRotation(context)//start Sensor
             //Sensor Observer
             Rotation.setSensorObserver {
@@ -39,12 +41,12 @@ class RotationData constructor(sensorListener: SensorListener, context: Context)
                     null,
                     null,
                     null,
-                    null,null,null,null
+                    null,null,null,null,null,null
                 )
                 val sensorEventData =
                     SensorEvent(
                         data,
-                        "lamp.accelerometer.motion",System.currentTimeMillis().toDouble()
+                        Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
                     )
                 LampLog.e("Rotation : $x : $y : $z")
                 sensorListener.getRotationData(sensorEventData)

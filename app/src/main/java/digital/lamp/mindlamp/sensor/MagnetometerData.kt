@@ -7,6 +7,7 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.MagnetData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.mindlamp.utils.Sensors
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
@@ -39,12 +40,12 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
                     null,
                     null,
                     null,
-                    null,null,null,null
+                    null,null,null,null,null,null
                 )
                 val sensorEventData =
                     SensorEvent(
                         data,
-                        "lamp.accelerometer.motion",System.currentTimeMillis().toDouble()
+                        Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
                     )
                 LampLog.e("Magnetometer : $x : $y : $z")
                 sensorListener.getMagneticData(sensorEventData)

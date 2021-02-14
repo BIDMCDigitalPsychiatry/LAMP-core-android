@@ -6,6 +6,8 @@ import digital.lamp.lamp_kotlin.sensor_core.Screen
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
+import digital.lamp.mindlamp.utils.Sensors
 import java.lang.Exception
 
 
@@ -15,6 +17,7 @@ import java.lang.Exception
 class ScreenStateData constructor(sensorListener: SensorListener, context: Context){
    init {
        try {
+           SensorSpec
            Lamp.startScreen(context)//Start Screen Sensor
            //Sensor Observer
            Screen.sensorObserver = object : Screen.LAMPSensorObserver {
@@ -30,17 +33,17 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
+                       null,
                        2,
                        null,
                        null,
                        null,
-                       null,
-                       null,null,null,null
+                       null,null,null,null,null,null
                    )
                    val sensorEventData =
                        SensorEvent(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis().toDouble()
+                           Sensors.SCREEN_STATE.sensor_name,System.currentTimeMillis().toDouble()
                        )
 
                    LampLog.e("Screen State : Locked")
@@ -60,17 +63,17 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
+                       null,
                        0,
                        null,
                        null,
                        null,
-                       null,
-                       null,null,null,null
+                       null,null,null,null,null,null
                    )
                    val sensorEventRequest =
                        SensorEvent(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis().toDouble()
+                           Sensors.SCREEN_STATE.sensor_name,System.currentTimeMillis().toDouble()
                        )
 
                    LampLog.e("Screen State : Off")
@@ -90,17 +93,17 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
+                       null,
                        1,
                        null,
                        null,
                        null,
-                       null,
-                       null,null,null,null
+                       null,null,null,null,null,null
                    )
                    val sensorEventRequest =
                        SensorEvent(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis().toDouble()
+                           Sensors.SCREEN_STATE.sensor_name,System.currentTimeMillis().toDouble()
                        )
 
                    LampLog.e("Screen State : On")
@@ -120,17 +123,17 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
+                       null,
                        3,
                        null,
                        null,
                        null,
-                       null,
-                       null,null, null,null
+                       null,null, null,null,null,null
                    )
                    val sensorEventRequest =
                        SensorEvent(
                            data,
-                           "lamp.screen_state",System.currentTimeMillis().toDouble()
+                           Sensors.SCREEN_STATE.sensor_name,System.currentTimeMillis().toDouble()
                        )
                    sensorListener.getScreenState(sensorEventRequest)
                }
