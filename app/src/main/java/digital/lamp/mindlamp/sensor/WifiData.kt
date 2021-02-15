@@ -39,7 +39,7 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                             data.getAsString("bssid"),
                             data.getAsString("ssid"),
                             data.getAsInteger("rssi"),
-                            null,null,null,null,null,null
+                            null,null,null,null,null,null,null
                         )
                         val sensorEventData =
                             SensorEvent(

@@ -6,6 +6,7 @@ import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.lamp_core.models.ActivityData
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.mindlamp.utils.Sensors
 
 class ActivityTransitionData constructor(sensorListener: SensorListener, context: Context) {
 
@@ -47,12 +48,12 @@ class ActivityTransitionData constructor(sensorListener: SensorListener, context
                         null,
                         null,
                         null,
-                        null,null,null,null,null,activityData
+                        null,null,null,null,null, null,activityData
                     )
                 val sensorEventData =
                     SensorEvent(
                         dimensionData,
-                        "lamp.activity_recognition", System.currentTimeMillis().toDouble()
+                        Sensors.ACTIVITY_RECOGNITION.sensor_name, System.currentTimeMillis().toDouble()
                     )
                 sensorListener.getActivityData(sensorEventData)
             }

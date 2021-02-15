@@ -38,7 +38,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
-                       null,null,null,null,null,null
+                       null,null,null,null,null,null,null,
                    )
                    val sensorEventData =
                        SensorEvent(
@@ -68,7 +68,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
-                       null,null,null,null,null,null
+                       null,null,null,null,null,null,null
                    )
                    val sensorEventRequest =
                        SensorEvent(
@@ -98,7 +98,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
-                       null,null,null,null,null,null
+                       null,null,null,null,null,null,null
                    )
                    val sensorEventRequest =
                        SensorEvent(
@@ -128,7 +128,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                        null,
                        null,
                        null,
-                       null,null, null,null,null,null
+                       null,null, null,null,null,null,null
                    )
                    val sensorEventRequest =
                        SensorEvent(

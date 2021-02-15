@@ -130,7 +130,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                     LampLog.e(TAG, "Activity Segment : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getSleepData(dp.getValue(field))
                     oSensorSpecList.forEach {
-                        if(it.spec == Sensors.SEGMENT.sensor_name){
+                        if(it.spec == Sensors.SLEEP.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
@@ -396,7 +396,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null, null,
                 "Kg",
-                weight.asFloat(),null
+                weight.asFloat(),"weight",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -423,7 +423,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,
                 "meter",
-                height.asFloat(),null
+                height.asFloat(),"height",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -449,9 +449,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 null,
-                sleep.asInt(),null
+                sleep.asInt(),null,null
             )
-        return SensorEvent(dimensionData, Sensors.SEGMENT.sensor_name,System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.SLEEP.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //4
@@ -475,7 +475,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "kcal",
-                calories.asFloat(),null
+                calories.asFloat(),"calories",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -501,7 +501,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 steps.asInt(),
                 null,
-                null,null, null,null
+                null,null, null,"step_count_delta",null
             )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -527,7 +527,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "meter",
-                distanceDelta.asFloat(),null
+                distanceDelta.asFloat(),"distance_delta",null
             )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -553,7 +553,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,
                 null,
-                null,null,minute.asInt(),null
+                null,null,minute.asInt(),"active_minutes",null
             )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -579,7 +579,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "Kcal",
-                bmrCalorie.asFloat(),null
+                bmrCalorie.asFloat(),"calories_bmr",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -605,7 +605,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "bpm",
-                heart_rate.asFloat(),null
+                heart_rate.asFloat(),"heart_rate",null
             )
         return SensorEvent(dimensionData, Sensors.HEART_RATE.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -631,7 +631,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "Percentage",
-                body_fat_percentage.asFloat(),null
+                body_fat_percentage.asFloat(),"body_fat_percentage",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -657,7 +657,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "rpm",
-                cycling_wheel_rpm.asFloat(),null
+                cycling_wheel_rpm.asFloat(),"cycling_wheel_rpm",null
             )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -683,7 +683,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "count",
-                pedalingCumulative.asInt(),null
+                pedalingCumulative.asInt(),"cycling_wheel_cumulative",null
             )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -709,7 +709,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "meters per second",
-                speed.asFloat(),null
+                speed.asFloat(),"speed",null
             )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -735,7 +735,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "liters",
-                hydration.asFloat(),null
+                hydration.asFloat(),"hydration",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -761,7 +761,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "enum",
-                nutrition.asInt(),null
+                nutrition.asInt(),"nutrition",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -787,7 +787,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "mmol/L",
-                bloodGlucose.asFloat(),null
+                bloodGlucose.asFloat(),null,null
             )
         return SensorEvent(dimensionData, Sensors.BLOOD_GLUCOSE.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -813,7 +813,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,bpSystolic,bpDiastolic,
                 "mmHg",
-                null,null
+                null,null,null
             )
         return SensorEvent(dimensionData, Sensors.BLOOD_PRESSURE.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -839,7 +839,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null,null,null,
                 "percentage",
-                oxygenSaturation.asFloat(),null
+                oxygenSaturation.asFloat(),null,null
             )
         return SensorEvent(dimensionData, Sensors.OXYGEN_SATURATION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -865,12 +865,12 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null, null,null,
                 "celsius",
-                bodyTemperature.asFloat(),null
+                bodyTemperature.asFloat(),null,null
             )
         return SensorEvent(dimensionData, Sensors.BODY_TEMPERATURE.sensor_name,System.currentTimeMillis().toDouble())
     }
     //20
-    private fun getMenstruationData(mentruationData: Value): SensorEvent {
+    private fun getMenstruationData(menstruationData: Value): SensorEvent {
         val dimensionData =
             DimensionData(
                 null,
@@ -890,7 +890,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null, null,null,
                 "enum",
-                mentruationData.asInt(),null
+                menstruationData.asInt(),"menstruation",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -915,7 +915,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 null,
                 null, null,null,
                 "count",
-                vaginalSpotting.asInt(),null
+                vaginalSpotting.asInt(),"vaginal_spotting",null
             )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -940,7 +940,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
             null,
             null, null,null,
             "rpm",
-            cyclingPedalingCadence.asFloat(),null
+            cyclingPedalingCadence.asFloat(),"cycling_pedal_cadence",null
         )
     return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -965,7 +965,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
             null,
             null, null,null,
             "heart points",
-            heartMinute.asFloat(),null
+            heartMinute.asFloat(),"heart_minutes",null
         )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
@@ -990,7 +990,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
             null,
             null, null,null,
             "watts",
-            powerData.asFloat(),null
+            powerData.asFloat(),"power",null
         )
     return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())    }
 //25
@@ -1013,7 +1013,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
             null,
             null,null, null,null,
             "steps/minute",
-            count.asFloat(),null
+            count.asFloat(),"step_count_cadence",null
         )
     return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }

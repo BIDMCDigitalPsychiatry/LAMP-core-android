@@ -102,20 +102,20 @@ class HomeActivity : AppCompatActivity(){
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
 
-//        if(AppState.session.showDisclosureAlert){
-//            progressBar.visibility = View.GONE
-//            populateOnDisclosureARAlert()
-//        }else {
-//            if(checkAndRequestPermissions(this)){
-//                //Fit SignIn Auth
-//                fitSignIn()
-//                initializeWebview()
-//            }
-//        }
+        if(AppState.session.showDisclosureAlert){
+            progressBar.visibility = View.GONE
+            populateOnDisclosureARAlert()
+        }else {
+            if(checkAndRequestPermissions(this)){
+                //Fit SignIn Auth
+                fitSignIn()
+                initializeWebview()
+            }
+        }
 
 
-        AppState.session.isLoggedIn = true
-        startLampService()
+//        AppState.session.isLoggedIn = true
+//        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 

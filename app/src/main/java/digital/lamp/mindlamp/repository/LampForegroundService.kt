@@ -135,6 +135,7 @@ class LampForegroundService : Service(),
         oScope.launch(Dispatchers.IO) {
             sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
         }
+        LampLog.e(TAG,sensorSpecList.size.toString())
         var count = 0
         val timer = object : CountDownTimer(MILLISEC_FUTURE, TIME_INTERVAL) {
             override fun onTick(millisUntilFinished: Long) {
@@ -240,25 +241,26 @@ class LampForegroundService : Service(),
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
 
             val sensorSpecsList : ArrayList<SensorSpecs> = arrayListOf()
-            val basic = "Basic ${Utils.toBase64(
-                "U7832470994@lamp.com:U7832470994")}"
+//            val basic = "Basic ${Utils.toBase64(
+//                "U7832470994@lamp.com:U7832470994")}"
 
-            Thread {
-                // Do network action in this function
-                val state = SensorAPI(BuildConfig.HOST).sensorAll("U7832470994", basic)
+            val basic = "Basic ${Utils.toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                    "https://"
+                ).removePrefix("http://")
+            )}"
+
+            GlobalScope.launch(Dispatchers.IO) {
+                val state = SensorAPI(BuildConfig.HOST).sensorAll(AppState.session.userId, basic)
                 val oSensorSpec: SensorSpec = Gson().fromJson(state.toString(), SensorSpec::class.java)
                 oSensorSpec.data.forEach { sensor ->
                     val sensorSpecs = SensorSpecs(null,sensor.id,sensor.spec,sensor.name)
                     sensorSpecsList.add(sensorSpecs)
                 }
-
-                GlobalScope.launch(Dispatchers.IO) {
-                    oSensorDao.insertAllSensors(sensorSpecsList)
-                    LampLog.e(TAG, " Lamp Response -  ${oSensorDao.getSensorsList().size}")
-
-                }
-
-            }.start()
+                oSensorDao.deleteSensorList()
+                oSensorDao.insertAllSensors(sensorSpecsList)
+                LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
+            }
         }
     }
 
