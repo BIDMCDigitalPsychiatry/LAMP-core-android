@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import digital.lamp.mindlamp.utils.SingletonHolder
 
-@Database(entities = [Analytics::class, SensorSpecs::class], version = 1, exportSchema = false)
+@Database(entities = [Analytics::class, SensorSpecs::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun analyticsDao(): AnalyticsDao
     abstract fun sensorDao(): SensorDao
