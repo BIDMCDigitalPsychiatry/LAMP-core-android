@@ -15,22 +15,22 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
+import digital.lamp.lamp_kotlin.lamp_core.models.Sensor
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
-import digital.lamp.mindlamp.database.Analytics
-import digital.lamp.mindlamp.database.AnalyticsDao
-import digital.lamp.mindlamp.database.AppDatabase
-import digital.lamp.mindlamp.sensor.*
+import digital.lamp.mindlamp.database.*
 import digital.lamp.mindlamp.notification.LampNotificationManager
+import digital.lamp.mindlamp.sensor.*
+import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
-import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.AppConstants.toString
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.mindlamp.utils.NetworkUtils
-import digital.lamp.mindlamp.utils.Utils
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import kotlinx.coroutines.*
 
 
@@ -52,6 +52,7 @@ class LampForegroundService : Service(),
     private lateinit var alarmManager: AlarmManager
     private lateinit var alarmIntent: PendingIntent
     private lateinit var oAnalyticsDao: AnalyticsDao
+    private lateinit var oSensorDao: SensorDao
     private lateinit var oScope: CoroutineScope
     private lateinit var oGson: Gson
 
@@ -61,12 +62,16 @@ class LampForegroundService : Service(),
         firebaseAnalytics = Firebase.analytics
 
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
+        oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oScope = CoroutineScope(Dispatchers.IO)
         oGson = Gson()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+
+        invokeSensorSpecData()
+
         isAlarm = intent?.extras?.getBoolean("set_alarm")!!
         if(!isAlarm){
             val notification =
@@ -125,7 +130,12 @@ class LampForegroundService : Service(),
         )
     }
 
-    private fun collectSensorData() {
+    private fun  collectSensorData() {
+        var sensorSpecList = arrayListOf<SensorSpecs>()
+        oScope.launch(Dispatchers.IO) {
+            sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
+        }
+        LampLog.e(TAG,sensorSpecList.size.toString())
         var count = 0
         val timer = object : CountDownTimer(MILLISEC_FUTURE, TIME_INTERVAL) {
             override fun onTick(millisUntilFinished: Long) {
@@ -133,43 +143,77 @@ class LampForegroundService : Service(),
                 when (count) {
                     1 -> GoogleFit(
                         this@LampForegroundService,
-                        applicationContext
+                        applicationContext,sensorSpecList
                     )
-                    2 -> AccelerometerData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke Accelerometer Call
-                    3 -> RotationData(
-                        this@LampForegroundService,
-                        applicationContext
-                    ) //Invoke Rotation Call
-                    4 -> MagnetometerData(
-                        this@LampForegroundService,
-                        applicationContext
-                    ) //Invoke Magnet Call
-                    5 -> GyroscopeData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke Gyroscope Call
-                    6 -> LocationData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke Location
-                    7 -> WifiData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke WifiData
-                    8 -> ScreenStateData(
-                        this@LampForegroundService,
-                        applicationContext
-                    )//Invoke Activity Data
+                    2 -> {
+                        sensorSpecList.forEach {
+                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                                AccelerometerData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )}//Invoke Accelerometer Call
+                            }
+                        }
+                    3 -> {
+                        sensorSpecList.forEach {
+                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                                RotationData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )} //Invoke Rotation Call
+                            }
+                        }
+                    4 -> {
+                        sensorSpecList.forEach {
+                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                                MagnetometerData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )} //Invoke Magnet Call
+                            }
+                        }
+                    5 -> {
+                        sensorSpecList.forEach {
+                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                                GyroscopeData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )}//Invoke Gyroscope Call
+                            }
+                        }
+                    6 -> {
+                        sensorSpecList.forEach {
+                           if(it.spec == Sensors.GPS.sensor_name){
+                               LocationData(
+                                   this@LampForegroundService,
+                                   applicationContext
+                               ) }//Invoke Location
+                           }
+                        }
+                    7 -> {
+                        sensorSpecList.forEach {
+                            if(it.spec == Sensors.NEARBY_DEVICES.sensor_name){
+                                WifiData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )}//Invoke WifiData
+                            }
+                        }
+                    8 -> {
+                        sensorSpecList.forEach {
+                            if(it.spec == Sensors.NEARBY_DEVICES.sensor_name){
+                                ScreenStateData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )}//Invoke Activity Data
+                            }
+                        }
                     9 -> ActivityTransitionData(
                         this@LampForegroundService,
                         applicationContext
                     )
                 }
             }
-
             override fun onFinish() {
 //                if (!isAlarm) {
 //                    setAlarmManager()
@@ -182,6 +226,7 @@ class LampForegroundService : Service(),
         trackSingleEvent("Service_Started")
     }
 
+
     override fun onDestroy() {
         super.onDestroy()
         trackSingleEvent("Service_Stopped")
@@ -191,6 +236,33 @@ class LampForegroundService : Service(),
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+
+    private fun invokeSensorSpecData(){
+        if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
+
+            val sensorSpecsList : ArrayList<SensorSpecs> = arrayListOf()
+//            val basic = "Basic ${Utils.toBase64(
+//                "U7832470994@lamp.com:U7832470994")}"
+
+            val basic = "Basic ${Utils.toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                    "https://"
+                ).removePrefix("http://")
+            )}"
+
+            GlobalScope.launch(Dispatchers.IO) {
+                val state = SensorAPI(BuildConfig.HOST).sensorAll(AppState.session.userId, basic)
+                val oSensorSpec: SensorSpec = Gson().fromJson(state.toString(), SensorSpec::class.java)
+                oSensorSpec.data.forEach { sensor ->
+                    val sensorSpecs = SensorSpecs(null,sensor.id,sensor.spec,sensor.name)
+                    sensorSpecsList.add(sensorSpecs)
+                }
+                oSensorDao.deleteSensorList()
+                oSensorDao.insertAllSensors(sensorSpecsList)
+                LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
+            }
+        }
+    }
 
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>) {
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
@@ -216,6 +288,8 @@ class LampForegroundService : Service(),
             }
         }
     }
+
+
 
 
     override fun getAccelerometerData(sensorEventData: SensorEvent) {

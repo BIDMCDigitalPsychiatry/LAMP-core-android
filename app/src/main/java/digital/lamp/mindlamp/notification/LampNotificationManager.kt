@@ -55,8 +55,9 @@ object LampNotificationManager {
 
            //Notification with open App Button with value
             val notificationIntent = Intent(context, NotificationActivity::class.java)
+            val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
             notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
-            notificationIntent.putExtra("notification_id",remoteMessage.data["notificationId"]!!.toInt())
+            notificationIntent.putExtra("notification_id",notificationId)
             notificationIntent.putExtra("remote_message",remoteMessage.data.toString())
 
             val pendingIntent = PendingIntent.getActivity(
@@ -101,14 +102,15 @@ object LampNotificationManager {
                 )
                 manager.createNotificationChannel(channel)
             }
-            manager.notify(remoteMessage.data["notificationId"]!!.toInt(), notification.build())
+            manager.notify(notificationId!!, notification.build())
 
     }
 
     fun notificationWithoutAction(context: Context, remoteMessage: RemoteMessage){
+        val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
         val notificationIntent = Intent(context, NotificationActivity::class.java)
         notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
-        notificationIntent.putExtra("notification_id",remoteMessage.data["notificationId"]!!.toInt())
+        notificationIntent.putExtra("notification_id", notificationId)
         notificationIntent.putExtra("remote_message",remoteMessage.data.toString())
 
         val pendingIntent = PendingIntent.getActivity(
@@ -141,7 +143,7 @@ object LampNotificationManager {
             )
             manager.createNotificationChannel(channel)
         }
-        manager.notify(remoteMessage.data["notificationId"]!!.toInt(), notification.build())
+        manager.notify(notificationId!!, notification.build())
 
     }
 
@@ -179,6 +181,7 @@ object LampNotificationManager {
             )
             manager.createNotificationChannel(channel)
         }
-        manager.notify(remoteMessage.data["notificationId"]!!.toInt(), notification.build())
+        val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
+        manager.notify(notificationId!!, notification.build())
     }
 }

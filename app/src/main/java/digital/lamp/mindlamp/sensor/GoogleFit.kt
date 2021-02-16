@@ -10,11 +10,13 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.mindlamp.database.SensorSpecs
+import digital.lamp.mindlamp.utils.Sensors
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
+class GoogleFit constructor(sensorListener: SensorListener, context: Context, oSensorSpecList: ArrayList<SensorSpecs>) {
 
     companion object {
         private val TAG = GoogleFit::class.java.simpleName
@@ -66,7 +68,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 LampLog.e(TAG, "Success : ${dataReadResponse.dataSets.size}")
                 if (dataReadResponse.dataSets.isNotEmpty()) {
                     dataReadResponse.dataSets.forEach {
-                        dumpDataSet(it)
+                        dumpDataSet(it,oSensorSpecList)
                     }
                 }
                 sensorListener.getGoogleFitData(sensorEventDataList)
@@ -76,7 +78,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
             }
     }
 
-    private fun dumpDataSet(dataSet: DataSet) {
+    private fun dumpDataSet(dataSet: DataSet, oSensorSpecList: ArrayList<SensorSpecs>) {
         LampLog.e(TAG, "Data returned for Data type: ${dataSet.dataType.name}")
         for (dp in dataSet.dataPoints) {
             LampLog.e(TAG, "Type: ${dp.dataType.name}")
@@ -87,147 +89,247 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Weight : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getWeightData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.height" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Weight : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getHeightData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.active_minutes" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Active Minutes : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getActiveMinuteData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.calories.expended" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Calories Expended : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getCalorieData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.activity.segment" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Activity Segment : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getSleepData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.SLEEP.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.step_count.delta" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Step Count : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getStepsData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.distance.delta" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Distance : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getDistanceData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.calories.bmr" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "bmr : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getBmrData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.heart_rate.bpm" -> {
                     LampLog.e(TAG, "bpm")
                     val field = dp.dataType.fields[0]
                     val sensorEvenData: SensorEvent = getHeartRateData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.HEART_RATE.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.body.fat.percentage" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Body Fat Percentage : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getBodyFatPercentage(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.cycling.wheel_revolution.rpm" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Cycling Wheel rpm: " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getCyclingWheelRpm(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.cycling.wheel_revolution.cumulative" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Cycling Pedaling Cumulative: " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getCyclingPedalingCumulative(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.speed" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Speed : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getSpeedData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.hydration" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Hydration : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getHydrationData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.nutrition" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Nutrition : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getNutritionData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.blood_glucose" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Blood Glucose : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getBloodGlucose(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.BLOOD_GLUCOSE.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.blood_pressure" -> {
                     val field1 = dp.dataType.fields[0]
                     val field2 = dp.dataType.fields[1]
                     val sensorEvenData: SensorEvent = getBloodPressure(dp.getValue(field1).asFloat(),dp.getValue(field2).asFloat())
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.BLOOD_PRESSURE.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.oxygen_saturation" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Oxygen Saturation : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getOxygenSaturation(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.OXYGEN_SATURATION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.body.temperature" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Body Temperature: " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getBodyTemperature(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.BODY_TEMPERATURE.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.menstruation" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Menstruation Data: " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getMenstruationData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.vaginal_spotting" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Vaginal Spotting: " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getVaginalSpottingData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.NUTRITION.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.cycling.pedaling.cadence" -> {
                     val field = dp.dataType.fields[0]
                     val sensorEvenData: SensorEvent = getCyclingPedalingCadenceData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.heart_minutes" -> {
                     val field = dp.dataType.fields[0]
                     val sensorEvenData: SensorEvent = getHeartMinuteData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.power.sample" -> {
                     val field = dp.dataType.fields[0]
                     val sensorEvenData: SensorEvent = getPowerData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
                 "com.google.step_count.cadence" -> {
                     val field = dp.dataType.fields[0]
                     val sensorEvenData: SensorEvent = getStepCountCadenceData(dp.getValue(field))
-                    sensorEventDataList.add(sensorEvenData)
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.STEPS.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
                 }
             }
         }
@@ -290,11 +392,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null, null,
                 "Kg",
-                weight.asFloat(),null
+                weight.asFloat(),"weight",null
             )
-        return SensorEvent(dimensionData, "lamp.weight",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //2
@@ -315,11 +419,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,
                 "meter",
-                height.asFloat(),null
+                height.asFloat(),"height",null
             )
-        return SensorEvent(dimensionData, "lamp.height",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //3
@@ -339,11 +445,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 null,
-                sleep.asInt(),null
+                sleep.asInt(),null,null
             )
-        return SensorEvent(dimensionData, "lamp.sleep",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.SLEEP.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //4
@@ -363,11 +471,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "kcal",
-                calories.asFloat(),null
+                calories.asFloat(),"calories",null
             )
-        return SensorEvent(dimensionData, "lamp.calories",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //5
@@ -387,11 +497,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 steps.asInt(),
                 null,
-                null,null, null,null
+                null,null, null,"step_count_delta",null
             )
-        return SensorEvent(dimensionData, "lamp.steps",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //6
@@ -411,11 +523,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "meter",
-                distanceDelta.asFloat(),null
+                distanceDelta.asFloat(),"distance_delta",null
             )
-        return SensorEvent(dimensionData, "lamp.distance",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //7
@@ -437,9 +551,11 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
-                null,null,minute.asInt(),null
+                null,
+                null,
+                null,null,minute.asInt(),"active_minutes",null
             )
-        return SensorEvent(dimensionData, "lamp.active_minute",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //8
@@ -459,11 +575,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "Kcal",
-                bmrCalorie.asFloat(),null
+                bmrCalorie.asFloat(),"calories_bmr",null
             )
-        return SensorEvent(dimensionData, "lamp.calories_bmr",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //9
@@ -483,11 +601,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "bpm",
-                heart_rate.asFloat(),null
+                heart_rate.asFloat(),"heart_rate",null
             )
-        return SensorEvent(dimensionData, "lamp.heart_rate",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.HEART_RATE.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //10
@@ -507,11 +627,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "Percentage",
-                body_fat_percentage.asFloat(),null
+                body_fat_percentage.asFloat(),"body_fat_percentage",null
             )
-        return SensorEvent(dimensionData, "lamp.body_fat_percentage",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //11
@@ -531,11 +653,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "rpm",
-                cycling_wheel_rpm.asFloat(),null
+                cycling_wheel_rpm.asFloat(),"cycling_wheel_rpm",null
             )
-        return SensorEvent(dimensionData, "lamp.cycling_wheel_rpm",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //12
@@ -555,11 +679,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "count",
-                pedalingCumulative.asInt(),null
+                pedalingCumulative.asInt(),"cycling_wheel_cumulative",null
             )
-        return SensorEvent(dimensionData, "lamp.wheel_revolution_cumulative",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //13
@@ -579,11 +705,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "meters per second",
-                speed.asFloat(),null
+                speed.asFloat(),"speed",null
             )
-        return SensorEvent(dimensionData, "lamp.speed",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //14
@@ -603,11 +731,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "liters",
-                hydration.asFloat(),null
+                hydration.asFloat(),"hydration",null
             )
-        return SensorEvent(dimensionData, "lamp.hydration",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //15
@@ -627,11 +757,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "enum",
-                nutrition.asInt(),null
+                nutrition.asInt(),"nutrition",null
             )
-        return SensorEvent(dimensionData, "lamp.nutrition",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //16
@@ -651,11 +783,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "mmol/L",
-                bloodGlucose.asFloat(),null
+                bloodGlucose.asFloat(),null,null
             )
-        return SensorEvent(dimensionData, "lamp.blood_glucose",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.BLOOD_GLUCOSE.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //17
@@ -675,11 +809,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,bpSystolic,bpDiastolic,
                 "mmHg",
-                null,null
+                null,null,null
             )
-        return SensorEvent(dimensionData, "lamp.blood_pressure",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.BLOOD_PRESSURE.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //18
@@ -699,11 +835,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null,null,null,
                 "percentage",
-                oxygenSaturation.asFloat(),null
+                oxygenSaturation.asFloat(),null,null
             )
-        return SensorEvent(dimensionData, "lamp.oxygen_saturation",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.OXYGEN_SATURATION.sensor_name,System.currentTimeMillis().toDouble())
     }
 
     //19
@@ -723,14 +861,16 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null, null,null,
                 "celsius",
-                bodyTemperature.asFloat(),null
+                bodyTemperature.asFloat(),null,null
             )
-        return SensorEvent(dimensionData, "lamp.body_temperature",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.BODY_TEMPERATURE.sensor_name,System.currentTimeMillis().toDouble())
     }
     //20
-    private fun getMenstruationData(mentruationData: Value): SensorEvent {
+    private fun getMenstruationData(menstruationData: Value): SensorEvent {
         val dimensionData =
             DimensionData(
                 null,
@@ -746,11 +886,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null, null,null,
                 "enum",
-                mentruationData.asInt(),null
+                menstruationData.asInt(),"menstruation",null
             )
-        return SensorEvent(dimensionData, "lamp.type_menstruation",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
     //21
     private fun getVaginalSpottingData(vaginalSpotting: Value): SensorEvent {
@@ -769,11 +911,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null, null,null,
                 "count",
-                vaginalSpotting.asInt(),null
+                vaginalSpotting.asInt(),"vaginal_spotting",null
             )
-        return SensorEvent(dimensionData, "lamp.type_vaginal_spotting",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name,System.currentTimeMillis().toDouble())
     }
 //22
     private fun getCyclingPedalingCadenceData(cyclingPedalingCadence: Value): SensorEvent {
@@ -792,11 +936,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
             null,
             null,
             null,
+            null,
+            null,
             null, null,null,
             "rpm",
-            cyclingPedalingCadence.asFloat(),null
+            cyclingPedalingCadence.asFloat(),"cycling_pedal_cadence",null
         )
-    return SensorEvent(dimensionData, "lamp.cycling_pedaling_cadence",System.currentTimeMillis().toDouble())
+    return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 //23
     private fun getHeartMinuteData(heartMinute: Value): SensorEvent {
@@ -815,11 +961,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
             null,
             null,
             null,
+            null,
+            null,
             null, null,null,
             "heart points",
-            heartMinute.asFloat(),null
+            heartMinute.asFloat(),"heart_minutes",null
         )
-        return SensorEvent(dimensionData, "lamp.heart_minutes",System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 //24
     private fun getPowerData(powerData: Value): SensorEvent {
@@ -838,11 +986,13 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
             null,
             null,
             null,
+            null,
+            null,
             null, null,null,
             "watts",
-            powerData.asFloat(),null
+            powerData.asFloat(),"power",null
         )
-    return SensorEvent(dimensionData, "lamp.power",System.currentTimeMillis().toDouble())    }
+    return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())    }
 //25
     private fun getStepCountCadenceData(count: Value): SensorEvent {
     val dimensionData =
@@ -860,10 +1010,11 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context) {
             null,
             null,
             null,
-            null, null,null,
+            null,
+            null,null, null,null,
             "steps/minute",
-            count.asFloat(),null
+            count.asFloat(),"step_count_cadence",null
         )
-    return SensorEvent(dimensionData, "lamp.step_count_cadence",System.currentTimeMillis().toDouble())
+    return SensorEvent(dimensionData, Sensors.STEPS.sensor_name,System.currentTimeMillis().toDouble())
     }
 }

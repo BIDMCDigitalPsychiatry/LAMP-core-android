@@ -5,6 +5,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
@@ -14,6 +15,8 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.lamp_kotlin.lamp_core.models.NotificationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
+import digital.lamp.mindlamp.repository.LampForegroundService
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
@@ -52,7 +55,6 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
                     notificationData,
                     "lamp.analytics",System.currentTimeMillis().toDouble()
                 )
-
             invokeNotificationData(notificationEvent)
         }
     }
@@ -73,11 +75,15 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
                 "https://"
             ).removePrefix("http://")
         )}"
-        val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
-            AppState.session.userId,
-            notificationEventRequest,
-            basic
-        )
-        LampLog.e(TAG, " Notification Data Send -  $state")
+        Thread {
+            // Do network action in this function
+            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+                AppState.session.userId,
+                notificationEventRequest,
+                basic
+            )
+            LampLog.e(TAG, " Notification Data Send -  $state")
+        }.start()
+
     }
 }

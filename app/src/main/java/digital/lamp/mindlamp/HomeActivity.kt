@@ -44,7 +44,10 @@ import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
+import digital.lamp.mindlamp.database.AppDatabase
+import digital.lamp.mindlamp.database.SensorDao
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -54,6 +57,7 @@ import kotlinx.coroutines.launch
 
 class HomeActivity : AppCompatActivity(){
 
+    private lateinit var oSensorDao: SensorDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object{
@@ -96,6 +100,8 @@ class HomeActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
+        oSensorDao = AppDatabase.getInstance(this).sensorDao()
+
         if(AppState.session.showDisclosureAlert){
             progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
@@ -296,18 +302,23 @@ class HomeActivity : AppCompatActivity(){
                 "https://"
             ).removePrefix("http://")
         )}"
-        val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
-            AppState.session.userId,
-            sendTokenRequest,
-            basic
-        )
-        LampLog.e(TAG, " Lamp Core Response -  $state")
-        if(state.isNotEmpty()){
-            //Code for drop DB
-            AppState.session.clearData()
-        }
+
         Lamp.stopLAMP(this)
         stopLampService()
+
+        GlobalScope.launch(Dispatchers.IO) {
+            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+                AppState.session.userId,
+                sendTokenRequest,
+                basic
+            )
+            LampLog.e(TAG, " Logout Response -  $state")
+            if(state.isNotEmpty()){
+                //Code for drop DB
+                AppState.session.clearData()
+            }
+            oSensorDao.deleteSensorList()
+        }
     }
 
     private fun showSignedIn(oLoginResponse: LoginResponse) {
@@ -401,7 +412,7 @@ class HomeActivity : AppCompatActivity(){
                     sendTokenRequest,
                     basic
                 )
-                LampLog.e(TAG, " Lamp Core Response -  $state")
+                LampLog.e(TAG, " Token Send Response -  $state")
             }
             //Setting User Attributes for Firebase
             firebaseAnalytics.setUserProperty("user_fcm_token",token)
