@@ -16,5 +16,6 @@ enum class Sensors(val sensor_name: String) {
     BODY_TEMPERATURE("lamp.body_temperature"),
     HEART_RATE("lamp.heart_rate"),
     RESPIRATORY_RATE("lamp.respiratory_rate"),
-    ACTIVITY_RECOGNITION("lamp.activity_recognition")
+    ACTIVITY_RECOGNITION("lamp.activity_recognition"),
+    ACCELEROMETER("lamp.accelerometer")
 }
