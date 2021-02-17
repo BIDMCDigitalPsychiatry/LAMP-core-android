@@ -50,8 +50,16 @@ class AccelerometerData constructor(sensorListener: SensorListener, context:Cont
                          Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
                      )
 
+
+                 val sensorEventDataAccelerometer =
+                     SensorEvent(
+                         dimensionData,
+                         Sensors.ACCELEROMETER.sensor_name,System.currentTimeMillis().toDouble()
+                     )
+
                  LampLog.e("Accelerometer : $x : $y : $z")
                  sensorListener.getAccelerometerData(sensorEventData)
+                 sensorListener.getAccelerometerData(sensorEventDataAccelerometer)
              }
          }catch (ex:Exception){
              ex.printStackTrace()
