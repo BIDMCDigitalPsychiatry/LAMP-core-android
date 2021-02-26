@@ -17,19 +17,21 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
-import digital.lamp.lamp_kotlin.lamp_core.models.Sensor
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
+import digital.lamp.lamp_kotlin.lamp_core.models.*
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.*
+import digital.lamp.mindlamp.database.dao.AnalyticsDao
+import digital.lamp.mindlamp.database.dao.SensorDao
+import digital.lamp.mindlamp.database.entity.Analytics
+import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
+import digital.lamp.mindlamp.sensor.RotationData
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
-import digital.lamp.mindlamp.utils.AppConstants.toString
 import digital.lamp.mindlamp.utils.LampLog
 import kotlinx.coroutines.*
 
@@ -251,7 +253,7 @@ class LampForegroundService : Service(),
             )}"
 
             GlobalScope.launch(Dispatchers.IO) {
-                val state = SensorAPI(BuildConfig.HOST).sensorAll(AppState.session.userId, basic)
+                val state = SensorAPI(AppState.session.serverAddress).sensorAll(AppState.session.userId, basic)
                 val oSensorSpec: SensorSpec = Gson().fromJson(state.toString(), SensorSpec::class.java)
                 oSensorSpec.data.forEach { sensor ->
                     val sensorSpecs = SensorSpecs(null,sensor.id,sensor.spec,sensor.name)
@@ -274,7 +276,7 @@ class LampForegroundService : Service(),
                     "https://"
                 ).removePrefix("http://")
             )}"
-            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                 AppState.session.userId,
                 sensorEventDataList,
                 basic
@@ -287,6 +289,8 @@ class LampForegroundService : Service(),
                 }
             }
         }
+
+        Activity
     }
 
 

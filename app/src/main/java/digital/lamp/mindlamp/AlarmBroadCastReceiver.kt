@@ -15,6 +15,7 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 class AlarmBroadCastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action: String? = intent.action
+        val data = intent.data
         if(Intent.ACTION_BOOT_COMPLETED == action){
             LampLog.e("Receiver Triggered From Boot")
             //Start Service Directly

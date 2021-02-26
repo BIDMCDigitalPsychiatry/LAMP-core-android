@@ -10,7 +10,7 @@ import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
-import digital.lamp.mindlamp.database.SensorSpecs
+import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.utils.Sensors
 import java.util.*
 import java.util.concurrent.TimeUnit

@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -29,8 +30,10 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityAPI
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
+import digital.lamp.lamp_kotlin.lamp_core.models.ActivityResponse
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
@@ -44,8 +47,14 @@ import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.database.AppDatabase
-import digital.lamp.mindlamp.database.SensorDao
+import digital.lamp.mindlamp.database.dao.ActivityDao
+import digital.lamp.mindlamp.database.dao.SensorDao
+import digital.lamp.mindlamp.database.entity.ActivitySchedule
+import digital.lamp.mindlamp.database.helper.ScheduleConverter
+import digital.lamp.mindlamp.sheduleing.ActivityScheduleBroadcastReceiver
+import digital.lamp.mindlamp.utils.AppConstants
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -58,6 +67,7 @@ import kotlinx.coroutines.launch
 class HomeActivity : AppCompatActivity(){
 
     private lateinit var oSensorDao: SensorDao
+    private lateinit var oActivityDao: ActivityDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object{
@@ -101,20 +111,22 @@ class HomeActivity : AppCompatActivity(){
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
+        oActivityDao = AppDatabase.getInstance(this).activityDao()
 
-        if(AppState.session.showDisclosureAlert){
-            progressBar.visibility = View.GONE
-            populateOnDisclosureARAlert()
-        }else {
-            if(checkAndRequestPermissions(this)){
-                //Fit SignIn Auth
-                fitSignIn()
-                initializeWebview()
-            }
-        }
+//        if(AppState.session.showDisclosureAlert){
+//            progressBar.visibility = View.GONE
+//            populateOnDisclosureARAlert()
+//        }else {
+//            if(checkAndRequestPermissions(this)){
+//                //Fit SignIn Auth
+//                fitSignIn()
+//                initializeWebview()
+//            }
+//        }
 
 
-//        AppState.session.isLoggedIn = true
+        AppState.session.isLoggedIn = true
+        allocateActivitySchedules()
 //        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
@@ -158,7 +170,6 @@ class HomeActivity : AppCompatActivity(){
                 progressBar.visibility = View.GONE;
             }
         }
-
     }
 
     override fun onRequestPermissionsResult(
@@ -307,7 +318,7 @@ class HomeActivity : AppCompatActivity(){
         stopLampService()
 
         GlobalScope.launch(Dispatchers.IO) {
-            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                 AppState.session.userId,
                 sendTokenRequest,
                 basic
@@ -407,7 +418,7 @@ class HomeActivity : AppCompatActivity(){
             )}"
 
             GlobalScope.launch {
-                val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,
                     sendTokenRequest,
                     basic
@@ -446,6 +457,7 @@ class HomeActivity : AppCompatActivity(){
         val params = Bundle()
         firebaseAnalytics.logEvent(eventName, params)
     }
+
     private fun populateOnDisclosureARAlert() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()
@@ -467,5 +479,56 @@ class HomeActivity : AppCompatActivity(){
             setPositiveButton("OK", DialogInterface.OnClickListener(function = positiveButtonClick))
             show()
         }
+    }
+
+    private fun allocateActivitySchedules() {
+        if(AppState.session.isLoggedIn){
+
+            val basic = "Basic ${Utils.toBase64(
+                "U7832470994@lamp.com:U7832470994")}"
+
+            GlobalScope.launch (Dispatchers.IO){
+                val activityString = ActivityAPI("https://api-staging.lamp.digital/").activityAll("U7832470994",basic)
+                val activityResponse = Gson().fromJson(activityString.toString(), ActivityResponse::class.java)
+
+                val oActivityList = arrayListOf<ActivitySchedule>()
+                Log.e(TAG, " Response -  ${activityResponse.data.size}")
+
+                    activityResponse.data.forEach {
+                    it.schedule.let { data ->
+                        if(data?.size!! > 0){
+                            val activitySchedule = ActivitySchedule(null,1,it.spec,it.name,it.schedule)
+                            oActivityList.add(activitySchedule)
+                        }
+                    }
+                }
+
+                oActivityDao.insertAllActivity(oActivityList)
+
+                LampLog.e(TAG,"Hello : ${oActivityDao.getActivityList().size}")
+                val test = oActivityDao.getActivityList()[0].schedule
+                LampLog.e(TAG,"Hello sss: ${test?.size}")
+            }
+
+            setAlarmManager()
+        }
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun setAlarmManager() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmIntent = Intent(this, ActivityScheduleBroadcastReceiver::class.java).apply {
+            putExtra("id",123456)
+        }.let { intent ->
+            PendingIntent.getBroadcast(this,0, intent, 0)
+        }.apply {
+
+        }
+        alarmManager.cancel(alarmIntent)
+        alarmManager.setExact(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + AppConstants.ALARM_INTERVAL,
+            alarmIntent
+        )
     }
 }

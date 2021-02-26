@@ -1,6 +1,7 @@
-package digital.lamp.mindlamp.database
+package digital.lamp.mindlamp.database.dao
 
 import androidx.room.*
+import digital.lamp.mindlamp.database.entity.Analytics
 import java.util.ArrayList
 
 @Dao

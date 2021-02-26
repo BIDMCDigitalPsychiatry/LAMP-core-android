@@ -1,4 +1,4 @@
-package digital.lamp.mindlamp.database
+package digital.lamp.mindlamp.database.entity
 
 import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
