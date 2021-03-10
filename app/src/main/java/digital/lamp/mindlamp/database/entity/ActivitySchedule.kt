@@ -11,7 +11,7 @@ data class ActivitySchedule(
     @NonNull
     @PrimaryKey(autoGenerate = true)
     var identity:Int?,
-    val id: Int?,
+    val id: String?,
     val spec: String?,
     val name: String?,
     val schedule: ArrayList<DurationIntervalLegacy>?

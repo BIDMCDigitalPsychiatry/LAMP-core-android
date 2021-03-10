@@ -23,6 +23,8 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
                     putExtra("set_alarm", false)
+                    putExtra("set_activity_schedule",false)
+                    putExtra("notification_id",0)
 
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
@@ -33,12 +35,16 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
                     putExtra("set_alarm", true)
+                    putExtra("set_activity_schedule",false)
+                    putExtra("notification_id",0)
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
             } else if(AppState.session.isLoggedIn && !context.isServiceRunning(LampForegroundService::class.java)){
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")
                     putExtra("set_alarm", false)
+                    putExtra("set_activity_schedule",false)
+                    putExtra("notification_id",0)
                 }
                 ContextCompat.startForegroundService(context, serviceIntent)
             }

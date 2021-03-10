@@ -21,4 +21,6 @@ internal object AppConstants {
     const val BASE_URL_WEB = "https://dashboard.lamp.digital/#/"
     const val MAIN_PAGE_URL = "https://dashboard.lamp.digital/#/?a="
 
+    const val REPEAT_DAILY = 123456
+
 }

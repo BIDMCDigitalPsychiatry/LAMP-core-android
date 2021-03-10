@@ -34,6 +34,7 @@ import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityAPI
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.ActivityResponse
+import digital.lamp.lamp_kotlin.lamp_core.models.DurationIntervalLegacy
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
@@ -52,13 +53,14 @@ import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.ActivitySchedule
-import digital.lamp.mindlamp.database.helper.ScheduleConverter
 import digital.lamp.mindlamp.sheduleing.ActivityScheduleBroadcastReceiver
 import digital.lamp.mindlamp.utils.AppConstants
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -124,10 +126,9 @@ class HomeActivity : AppCompatActivity(){
 //            }
 //        }
 
-
         AppState.session.isLoggedIn = true
-        allocateActivitySchedules()
-//        startLampService()
+//        allocateActivitySchedules()
+        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 
@@ -248,6 +249,8 @@ class HomeActivity : AppCompatActivity(){
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
             putExtra("inputExtra", "Foreground Service Example in Android")
             putExtra("set_alarm", false)
+            putExtra("set_activity_schedule",false)
+            putExtra("notification_id",0)
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
@@ -485,11 +488,15 @@ class HomeActivity : AppCompatActivity(){
         if(AppState.session.isLoggedIn){
 
             val basic = "Basic ${Utils.toBase64(
-                "U7832470994@lamp.com:U7832470994")}"
+                "U3039047323@lamp.com:U3039047323")}"
 
             GlobalScope.launch (Dispatchers.IO){
-                val activityString = ActivityAPI("https://api-staging.lamp.digital/").activityAll("U7832470994",basic)
+
+                val activityString = ActivityAPI("https://lampv2.zcodemo.com:9093/").activityAll("U3039047323",basic)
                 val activityResponse = Gson().fromJson(activityString.toString(), ActivityResponse::class.java)
+
+                Log.e("KOK", " Lamp Core Response -  ${activityResponse.data[0].schedule?.get(0)?.notification_ids?.size.toString()}")
+
 
                 val oActivityList = arrayListOf<ActivitySchedule>()
                 Log.e(TAG, " Response -  ${activityResponse.data.size}")
@@ -497,38 +504,15 @@ class HomeActivity : AppCompatActivity(){
                     activityResponse.data.forEach {
                     it.schedule.let { data ->
                         if(data?.size!! > 0){
-                            val activitySchedule = ActivitySchedule(null,1,it.spec,it.name,it.schedule)
+                            val activitySchedule = ActivitySchedule(null,it.id,it.spec,it.name,it.schedule)
                             oActivityList.add(activitySchedule)
                         }
                     }
                 }
 
                 oActivityDao.insertAllActivity(oActivityList)
-
-                LampLog.e(TAG,"Hello : ${oActivityDao.getActivityList().size}")
-                val test = oActivityDao.getActivityList()[0].schedule
-                LampLog.e(TAG,"Hello sss: ${test?.size}")
             }
-
-            setAlarmManager()
         }
     }
 
-    @SuppressLint("ObsoleteSdkInt")
-    private fun setAlarmManager() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(this, ActivityScheduleBroadcastReceiver::class.java).apply {
-            putExtra("id",123456)
-        }.let { intent ->
-            PendingIntent.getBroadcast(this,0, intent, 0)
-        }.apply {
-
-        }
-        alarmManager.cancel(alarmIntent)
-        alarmManager.setExact(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + AppConstants.ALARM_INTERVAL,
-            alarmIntent
-        )
-    }
 }
