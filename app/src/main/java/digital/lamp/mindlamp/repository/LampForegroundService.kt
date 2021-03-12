@@ -10,20 +10,15 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.os.SystemClock
-import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.*
-import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
-import digital.lamp.mindlamp.BuildConfig
-import digital.lamp.mindlamp.HomeActivity
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.*
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -35,13 +30,15 @@ import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.sensor.RotationData
-import digital.lamp.mindlamp.sheduleing.ActivityScheduleBroadcastReceiver
+import digital.lamp.mindlamp.sheduleing.ActivityReceiver
+import digital.lamp.mindlamp.sheduleing.ActivityRepeatReceiver
+import digital.lamp.mindlamp.sheduleing.RepeatInterval
+import digital.lamp.mindlamp.sheduleing.ScheduleConstants
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
-import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.AppConstants.DAY_INTERVAL
 import kotlinx.coroutines.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
@@ -54,8 +51,8 @@ class LampForegroundService : Service(),
 
     companion object {
         private val TAG = LampForegroundService::class.java.simpleName
-        private val TIME_INTERVAL : Long = 3000
-        private val MILLISEC_FUTURE : Long = 60000
+        private const val TIME_INTERVAL : Long = 3000
+        private const val MILLISEC_FUTURE : Long = 60000
     }
 
     private var isAlarm: Boolean = false
@@ -100,12 +97,12 @@ class LampForegroundService : Service(),
             setAlarmManagerForEvery24Hours()
         }
         else if(!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_DAILY){
-            LampLog.e(TAG,"Call Activity Schedule for every 24 hours")
+            LampLog.e(TAG, "Call Activity Schedule for every 24 hours")
             invokeActivitySchedules()
         }
         else if(!isAlarm && isActivitySchedule && localNotificationId != 0){
-            LampLog.e(TAG,"Call for showing up the local notification")
-            invokeLocalNotification()
+            LampLog.e(TAG, "Call for showing up the local notification")
+            invokeLocalNotification(localNotificationId)
         }
         else {
             //This will execute every 10 min if logged in
@@ -144,10 +141,10 @@ class LampForegroundService : Service(),
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManager() {
         alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java).let { intent ->
+        alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java).
+        let { intent ->
             PendingIntent.getBroadcast(this, 0, intent, 0)
         }
-        alarmManager.cancel(alarmIntent)
         alarmManager.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + ALARM_INTERVAL,
@@ -161,7 +158,7 @@ class LampForegroundService : Service(),
         oScope.launch(Dispatchers.IO) {
             sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
         }
-        LampLog.e(TAG,sensorSpecList.size.toString())
+        LampLog.e(TAG, sensorSpecList.size.toString())
         var count = 0
         val timer = object : CountDownTimer(MILLISEC_FUTURE, TIME_INTERVAL) {
             override fun onTick(millisUntilFinished: Long) {
@@ -169,71 +166,78 @@ class LampForegroundService : Service(),
                 when (count) {
                     1 -> GoogleFit(
                         this@LampForegroundService,
-                        applicationContext,sensorSpecList
+                        applicationContext, sensorSpecList
                     )
                     2 -> {
                         sensorSpecList.forEach {
-                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 AccelerometerData(
                                     this@LampForegroundService,
                                     applicationContext
-                                )}//Invoke Accelerometer Call
-                            }
+                                )
+                            }//Invoke Accelerometer Call
                         }
+                    }
                     3 -> {
                         sensorSpecList.forEach {
-                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 RotationData(
                                     this@LampForegroundService,
                                     applicationContext
-                                )} //Invoke Rotation Call
-                            }
+                                )
+                            } //Invoke Rotation Call
                         }
+                    }
                     4 -> {
                         sensorSpecList.forEach {
-                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 MagnetometerData(
                                     this@LampForegroundService,
                                     applicationContext
-                                )} //Invoke Magnet Call
-                            }
+                                )
+                            } //Invoke Magnet Call
                         }
+                    }
                     5 -> {
                         sensorSpecList.forEach {
-                            if(it.spec == Sensors.DEVICE_MOTION.sensor_name){
+                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 GyroscopeData(
                                     this@LampForegroundService,
                                     applicationContext
-                                )}//Invoke Gyroscope Call
-                            }
+                                )
+                            }//Invoke Gyroscope Call
                         }
+                    }
                     6 -> {
                         sensorSpecList.forEach {
-                           if(it.spec == Sensors.GPS.sensor_name){
-                               LocationData(
-                                   this@LampForegroundService,
-                                   applicationContext
-                               ) }//Invoke Location
-                           }
+                            if (it.spec == Sensors.GPS.sensor_name) {
+                                LocationData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )
+                            }//Invoke Location
                         }
+                    }
                     7 -> {
                         sensorSpecList.forEach {
-                            if(it.spec == Sensors.NEARBY_DEVICES.sensor_name){
+                            if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
                                 WifiData(
                                     this@LampForegroundService,
                                     applicationContext
-                                )}//Invoke WifiData
-                            }
+                                )
+                            }//Invoke WifiData
                         }
+                    }
                     8 -> {
                         sensorSpecList.forEach {
-                            if(it.spec == Sensors.NEARBY_DEVICES.sensor_name){
+                            if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
                                 ScreenStateData(
                                     this@LampForegroundService,
                                     applicationContext
-                                )}//Invoke Activity Data
-                            }
+                                )
+                            }//Invoke Activity Data
                         }
+                    }
                     9 -> ActivityTransitionData(
                         this@LampForegroundService,
                         applicationContext
@@ -264,6 +268,7 @@ class LampForegroundService : Service(),
     }
 
 
+    //Method to perform the Sensor Spec or custom sensor data,
     private fun invokeSensorSpecData(){
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
             val sensorSpecsList : ArrayList<SensorSpecs> = arrayListOf()
@@ -274,10 +279,16 @@ class LampForegroundService : Service(),
             )}"
 
             GlobalScope.launch(Dispatchers.IO) {
-                val state = SensorAPI(AppState.session.serverAddress).sensorAll(AppState.session.userId, basic)
-                val oSensorSpec: SensorSpec = Gson().fromJson(state.toString(), SensorSpec::class.java)
+                val state = SensorAPI(AppState.session.serverAddress).sensorAll(
+                    AppState.session.userId,
+                    basic
+                )
+                val oSensorSpec: SensorSpec = Gson().fromJson(
+                    state.toString(),
+                    SensorSpec::class.java
+                )
                 oSensorSpec.data.forEach { sensor ->
-                    val sensorSpecs = SensorSpecs(null,sensor.id,sensor.spec,sensor.name)
+                    val sensorSpecs = SensorSpecs(null, sensor.id, sensor.spec, sensor.name)
                     sensorSpecsList.add(sensorSpecs)
                 }
                 oSensorDao.deleteSensorList()
@@ -287,6 +298,7 @@ class LampForegroundService : Service(),
         }
     }
 
+    //Method to perform Sensor Data Webservice after fetching the details from DB
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>) {
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
             DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
@@ -312,6 +324,7 @@ class LampForegroundService : Service(),
         }
     }
 
+    //Method to perform Activity API store details to Activity Table and Schedule Activity Alarm Manager
     private fun invokeActivitySchedules(){
         if(NetworkUtils.isNetworkAvailable(this)){
             DebugLogs.writeToFile("Invoke Activity Schedules")
@@ -323,51 +336,203 @@ class LampForegroundService : Service(),
 
 
             val basic = "Basic ${Utils.toBase64(
-                "U3039047323@lamp.com:U3039047323")}"
+                "U3039047323@lamp.com:U3039047323"
+            )}"
 
             oScope.launch {
 
-                val activityString = ActivityAPI("https://lampv2.zcodemo.com:9093/").activityAll("U3039047323",basic)
-                val activityResponse = Gson().fromJson(activityString.toString(), ActivityResponse::class.java)
+                val activityString = ActivityAPI("https://lampv2.zcodemo.com:9093/").activityAll(
+                    "U3039047323",
+                    basic
+                )
+                val activityResponse = Gson().fromJson(
+                    activityString.toString(),
+                    ActivityResponse::class.java
+                )
 
-                LampLog.e(TAG, " Lamp Core Response -  ${activityResponse.data[0].schedule?.get(0)?.notification_ids?.size.toString()}")
+                LampLog.e(
+                    TAG, "Activity Notification Response :-  ${
+                        activityResponse.data[0].schedule?.get(
+                            0
+                        )?.notification_ids?.size.toString()
+                    }"
+                )
 
 
                 val oActivityList = arrayListOf<ActivitySchedule>()
                 LampLog.e(TAG, " Response Activity Data-  ${activityResponse.data.size}")
                 activityResponse.data.forEach {
                     it.schedule.let { oScheduleDataList ->
+                        //Update Schedule details to the Activity DB
                         if(oScheduleDataList?.size!! > 0){
-                            val activitySchedule = ActivitySchedule(null,it.id,it.spec,it.name,it.schedule)
+                            val activitySchedule = ActivitySchedule(
+                                null,
+                                it.id,
+                                it.spec,
+                                it.name,
+                                it.schedule
+                            )
                             oActivityList.add(activitySchedule)
+                            //For scheduling the alarm manager for local notification.
+                            oScheduleDataList.forEach { durationIntervalLegacy ->
+                                when(durationIntervalLegacy.repeat_interval){
+                                    RepeatInterval.CUSTOM.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && null != durationIntervalLegacy.custom_time && durationIntervalLegacy.notification_ids?.size!! > 0 && durationIntervalLegacy.custom_time?.size!! > 0) {
+                                            if (durationIntervalLegacy.notification_ids?.size == durationIntervalLegacy.custom_time?.size) {
+                                                durationIntervalLegacy.notification_ids?.forEachIndexed { index, notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerCustom(
+                                                        index,
+                                                        nId,
+                                                        durationIntervalLegacy.custom_time?.get(index).toString()
+                                                    )
+                                                    LampLog.e(TAG, "Custom Alarm Manager : $index :  ${durationIntervalLegacy.custom_time?.get(index)} :: $nId")
+                                                }
+                                            }
+                                        }
+                                    }
+                                    RepeatInterval.HOURLY.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerHourly(nId,durationIntervalLegacy.time.toString())
+                                                    LampLog.e(
+                                                        TAG,
+                                                        "HOURLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                    )
+                                                }
+                                        }
+                                    }
+                                    RepeatInterval.EVERY_3H.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+                                                setAlarmManagerEvery3Hourly(nId,durationIntervalLegacy.time.toString())
+                                                LampLog.e(
+                                                    TAG,
+                                                    "EVERY_3H :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                )
+                                            }
+                                        }
+                                    }
+                                    RepeatInterval.EVERY_6H.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+                                                setAlarmManagerEvery6Hourly(nId,durationIntervalLegacy.time.toString())
+                                                LampLog.e(
+                                                    TAG,
+                                                    "EVERY_6H :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                )
+                                            }
+                                        }
+                                    }
+                                    RepeatInterval.EVERY_12H.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+                                                setAlarmManagerEvery12Hourly(nId,durationIntervalLegacy.time.toString())
+                                                LampLog.e(
+                                                    TAG,
+                                                    "EVERY_12H :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                )
+                                            }
+                                        }
+                                    }
+                                    RepeatInterval.DAILY.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+                                                setAlarmManagerCustom(0,nId,durationIntervalLegacy.time.toString())
+                                                LampLog.e(
+                                                    TAG,
+                                                    "DAILY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                )
+                                            }
+                                        }
+                                    }
+                                    RepeatInterval.BIWEEKLY.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            LampLog.e(
+                                                TAG,
+                                                "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size} and ${durationIntervalLegacy.custom_time?.size}"
+                                            )
+                                        }
+                                    }
+                                    RepeatInterval.WEEKLY.tag -> {
+                                        durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                            val nId = Utils.getMyIntValue(notificationId)
+                                            setAlarmManagerCustom(0,nId,durationIntervalLegacy.time.toString())
+                                            LampLog.e(
+                                                TAG,
+                                                "WEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                            )
+                                        }
+                                    }
+                                    RepeatInterval.BIMONTHLY.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0 && durationIntervalLegacy.custom_time?.size!! > 0) {
+                                            LampLog.e(
+                                                TAG,
+                                                "BIMONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                            )
+                                        }
+                                    }
+                                    RepeatInterval.MONTHLY.tag -> {
+                                        durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                            val nId = Utils.getMyIntValue(notificationId)
+                                            setAlarmManagerCustom(0,nId,durationIntervalLegacy.time.toString())
+                                            LampLog.e(
+                                                TAG,
+                                                "MONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                            )
+                                        }
+                                    }
+                                    RepeatInterval.NONE.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            LampLog.e(
+                                                TAG,
+                                                "NONE :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-//
                 oActivityDao.deleteActivityList()
                 oActivityDao.insertAllActivity(oActivityList)
 
-                LampLog.e(TAG,"Activity DB Size : ${oActivityDao.getActivityList().size.toString()}")
+                LampLog.e(TAG, "Activity DB Size : ${oActivityDao.getActivityList().size.toString()}")
             }
         }
     }
 
-    private fun invokeLocalNotification(){
+    //Method to fetch details of notification from Activity DB from notification id and show local notification if offline.
+    private fun invokeLocalNotification(localNotificationId: Int) {
         oScope.launch {
             val activityList = oActivityDao.getActivityList()
-            LampLog.e(TAG,"Hello Amal ${activityList.size}")
+            activityList.forEach { activitySchedule ->
+                activitySchedule.schedule?.forEach { durationIntervalLegacy ->
+                    durationIntervalLegacy.notification_ids?.forEach {
+                        if(Utils.getMyIntValue(it) == localNotificationId){
+                            LampLog.e(TAG,"Activity Name :: - ${activitySchedule.name} ---- $localNotificationId" )
+                            LampNotificationManager.showActivityNotification(this@LampForegroundService,activitySchedule,localNotificationId)
+                        }
+                    }
+                }
+            }
         }
     }
 
+    //Method to schedule Alarm Manager for evey 24 hours.
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerForEvery24Hours() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(this, ActivityScheduleBroadcastReceiver::class.java).apply {
-            putExtra("id",AppConstants.REPEAT_DAILY)
+        val alarmIntent = Intent(this, ActivityRepeatReceiver::class.java).apply {
+            putExtra("id", AppConstants.REPEAT_DAILY)
         }.let { intent ->
-            PendingIntent.getBroadcast(this,0, intent, 0)
-        }.apply {
-
+            PendingIntent.getBroadcast(this, 0, intent, 0)
         }
         // Set the alarm to start at approximately 12:00 p.m.
         val calendar: Calendar = Calendar.getInstance().apply {
@@ -467,4 +632,106 @@ class LampForegroundService : Service(),
         firebaseAnalytics.logEvent(eventName, params)
     }
 
+    @SuppressLint("ObsoleteSdkInt")
+    private fun setAlarmManagerCustom(oIndex: Int, oNotificationId: Int?, oCustomTime: String) {
+        val randomInt = (1..100).shuffled().first()
+        val elapsedTimeMs = Utils.getMilliFromDate(oCustomTime)
+//        if(elapsedTimeMs > System.currentTimeMillisrentTimeMillis() && elapsedTimeMs < System.currentTimeMillis() + DAY_INTERVAL) {
+            val almManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val almIntent = Intent(this, ActivityReceiver::class.java).apply {
+                putExtra("id", oNotificationId)
+            }.let { intent ->
+                PendingIntent.getBroadcast(this, randomInt + oIndex, intent, 0)
+            }
+            almManager.setExact(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + ALARM_INTERVAL,
+                almIntent
+            )
+//        }
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun setAlarmManagerHourly(oNotificationId: Int?, oTime: String) {
+        val randomInt = (1..100).shuffled().first()
+        val elapsedTimeMs = Utils.getMilliFromDate(oTime)
+        if(elapsedTimeMs > System.currentTimeMillis() && elapsedTimeMs < System.currentTimeMillis() + DAY_INTERVAL) {
+            val almManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val almIntent = Intent(this, ActivityReceiver::class.java).apply {
+                putExtra("id", oNotificationId)
+            }
+                .let { intent ->
+                    PendingIntent.getBroadcast(this, randomInt, intent, 0)
+                }
+            almManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                Utils.getMilliFromDate(oTime),
+                AlarmManager.INTERVAL_HOUR,
+                almIntent
+            )
+        }
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun setAlarmManagerEvery3Hourly(oNotificationId: Int?, oTime: String) {
+        val randomInt = (1..100).shuffled().first()
+        val elapsedTimeMs = Utils.getMilliFromDate(oTime)
+        if(elapsedTimeMs > System.currentTimeMillis() && elapsedTimeMs < System.currentTimeMillis() + DAY_INTERVAL) {
+            val almManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val almIntent = Intent(this, ActivityReceiver::class.java).apply {
+                putExtra("id", oNotificationId)
+            }
+                .let { intent ->
+                    PendingIntent.getBroadcast(this, randomInt, intent, 0)
+                }
+            almManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                Utils.getMilliFromDate(oTime),
+                ScheduleConstants.EVERY_3H,
+                almIntent
+            )
+        }
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun setAlarmManagerEvery6Hourly(oNotificationId: Int?, oTime: String) {
+        val randomInt = (1..100).shuffled().first()
+        val elapsedTimeMs = Utils.getMilliFromDate(oTime)
+        if(elapsedTimeMs > System.currentTimeMillis() && elapsedTimeMs < System.currentTimeMillis() + DAY_INTERVAL) {
+            val almManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val almIntent = Intent(this, ActivityReceiver::class.java).apply {
+                putExtra("id", oNotificationId)
+            }
+                .let { intent ->
+                    PendingIntent.getBroadcast(this, randomInt, intent, 0)
+                }
+            almManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                Utils.getMilliFromDate(oTime),
+                ScheduleConstants.EVERY_6H,
+                almIntent
+            )
+        }
+    }
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun setAlarmManagerEvery12Hourly(oNotificationId: Int?, oTime: String) {
+        val randomInt = (1..100).shuffled().first()
+        val elapsedTimeMs = Utils.getMilliFromDate(oTime)
+        if(elapsedTimeMs > System.currentTimeMillis() && elapsedTimeMs < System.currentTimeMillis() + DAY_INTERVAL) {
+            val almManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val almIntent = Intent(this, ActivityReceiver::class.java).apply {
+                putExtra("id", oNotificationId)
+            }
+                .let { intent ->
+                    PendingIntent.getBroadcast(this, randomInt, intent, 0)
+                }
+            almManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                Utils.getMilliFromDate(oTime),
+                ScheduleConstants.EVERY_12H,
+                almIntent
+            )
+        }
+    }
 }

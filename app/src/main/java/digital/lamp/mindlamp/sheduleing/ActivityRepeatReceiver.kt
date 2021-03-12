@@ -13,9 +13,9 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 /**
  * Created by ZCO Engineering Dept. on 24,February,2021
  */
-class ActivityScheduleBroadcastReceiver : BroadcastReceiver() {
+class ActivityRepeatReceiver : BroadcastReceiver() {
     companion object{
-        private val TAG = ActivityScheduleBroadcastReceiver::class.java.simpleName
+        private val TAG = ActivityRepeatReceiver::class.java.simpleName
     }
     override fun onReceive(context: Context, intent: Intent) {
 

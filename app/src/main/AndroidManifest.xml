@@ -76,7 +76,7 @@
         </receiver>
 
         <receiver
-            android:name="digital.lamp.mindlamp.sheduleing.ActivityScheduleBroadcastReceiver"
+            android:name="digital.lamp.mindlamp.sheduleing.ActivityRepeatReceiver"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="true">
@@ -84,6 +84,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="digital.lamp.mindlamp.sheduleing.ActivityReceiver"
+            android:exported="false">
         </receiver>
 
         <service

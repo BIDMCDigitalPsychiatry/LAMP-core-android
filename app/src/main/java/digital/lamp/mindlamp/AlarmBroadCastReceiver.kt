@@ -15,7 +15,8 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 class AlarmBroadCastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action: String? = intent.action
-        val data = intent.data
+        val id = intent.getIntExtra("id",0)
+
         if(Intent.ACTION_BOOT_COMPLETED == action){
             LampLog.e("Receiver Triggered From Boot")
             //Start Service Directly
@@ -30,7 +31,7 @@ class AlarmBroadCastReceiver : BroadcastReceiver() {
                 ContextCompat.startForegroundService(context, serviceIntent)
             }
         }else{
-            LampLog.e("Receiver Triggered ")
+            LampLog.e("Receiver Triggered :: $id ")
             if(AppState.session.isLoggedIn && context.isServiceRunning(LampForegroundService::class.java)) {
                 val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                     putExtra("inputExtra", "Foreground Service Example in Android")

@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -34,7 +33,6 @@ import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityAPI
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.ActivityResponse
-import digital.lamp.lamp_kotlin.lamp_core.models.DurationIntervalLegacy
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
@@ -48,13 +46,10 @@ import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
-import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.ActivitySchedule
-import digital.lamp.mindlamp.sheduleing.ActivityScheduleBroadcastReceiver
-import digital.lamp.mindlamp.utils.AppConstants
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
