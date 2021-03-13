@@ -38,6 +38,7 @@ import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
 import digital.lamp.mindlamp.utils.AppConstants.DAY_INTERVAL
 import kotlinx.coroutines.*
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -384,30 +385,44 @@ class LampForegroundService : Service(),
                                                     setAlarmManagerCustom(
                                                         index,
                                                         nId,
-                                                        durationIntervalLegacy.custom_time?.get(index).toString()
+                                                        durationIntervalLegacy.custom_time?.get(
+                                                            index
+                                                        ).toString()
                                                     )
-                                                    LampLog.e(TAG, "Custom Alarm Manager : $index :  ${durationIntervalLegacy.custom_time?.get(index)} :: $nId")
+                                                    LampLog.e(
+                                                        TAG, "Custom Alarm Manager : $index :  ${
+                                                            durationIntervalLegacy.custom_time?.get(
+                                                                index
+                                                            )
+                                                        } :: $nId"
+                                                    )
                                                 }
                                             }
                                         }
                                     }
                                     RepeatInterval.HOURLY.tag -> {
                                         if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
-                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
-                                                    val nId = Utils.getMyIntValue(notificationId)
-                                                    setAlarmManagerHourly(nId,durationIntervalLegacy.time.toString())
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "HOURLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
-                                                }
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+                                                setAlarmManagerHourly(
+                                                    nId,
+                                                    durationIntervalLegacy.time.toString()
+                                                )
+                                                LampLog.e(
+                                                    TAG,
+                                                    "HOURLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                )
+                                            }
                                         }
                                     }
                                     RepeatInterval.EVERY_3H.tag -> {
                                         if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                             durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                 val nId = Utils.getMyIntValue(notificationId)
-                                                setAlarmManagerEvery3Hourly(nId,durationIntervalLegacy.time.toString())
+                                                setAlarmManagerEvery3Hourly(
+                                                    nId,
+                                                    durationIntervalLegacy.time.toString()
+                                                )
                                                 LampLog.e(
                                                     TAG,
                                                     "EVERY_3H :- ${durationIntervalLegacy.notification_ids?.size}}"
@@ -419,7 +434,10 @@ class LampForegroundService : Service(),
                                         if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                             durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                 val nId = Utils.getMyIntValue(notificationId)
-                                                setAlarmManagerEvery6Hourly(nId,durationIntervalLegacy.time.toString())
+                                                setAlarmManagerEvery6Hourly(
+                                                    nId,
+                                                    durationIntervalLegacy.time.toString()
+                                                )
                                                 LampLog.e(
                                                     TAG,
                                                     "EVERY_6H :- ${durationIntervalLegacy.notification_ids?.size}}"
@@ -431,7 +449,10 @@ class LampForegroundService : Service(),
                                         if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                             durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                 val nId = Utils.getMyIntValue(notificationId)
-                                                setAlarmManagerEvery12Hourly(nId,durationIntervalLegacy.time.toString())
+                                                setAlarmManagerEvery12Hourly(
+                                                    nId,
+                                                    durationIntervalLegacy.time.toString()
+                                                )
                                                 LampLog.e(
                                                     TAG,
                                                     "EVERY_12H :- ${durationIntervalLegacy.notification_ids?.size}}"
@@ -439,61 +460,127 @@ class LampForegroundService : Service(),
                                             }
                                         }
                                     }
+
                                     RepeatInterval.DAILY.tag -> {
-                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
-                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
-                                                val nId = Utils.getMyIntValue(notificationId)
-                                                setAlarmManagerCustom(0,nId,durationIntervalLegacy.time.toString())
-                                                LampLog.e(
-                                                    TAG,
-                                                    "DAILY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                )
+                                        val elapsedTimeMs = Utils.getMilliFromDate(durationIntervalLegacy.time.toString())
+                                        val calendar = Calendar.getInstance()
+                                        calendar.timeInMillis = elapsedTimeMs
+                                        val dateNumber = calendar.get(Calendar.DATE)
+
+                                        val currentTime = LocalDateTime.now()
+                                        if (dateNumber == currentTime.dayOfMonth) {
+                                            if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerCustom(
+                                                        0,
+                                                        nId,
+                                                        durationIntervalLegacy.time.toString()
+                                                    )
+                                                    LampLog.e(TAG, "DAILY :- ${durationIntervalLegacy.notification_ids?.size}}")
+                                                }
                                             }
                                         }
                                     }
                                     RepeatInterval.BIWEEKLY.tag -> {
-                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
-                                            LampLog.e(
-                                                TAG,
-                                                "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size} and ${durationIntervalLegacy.custom_time?.size}"
-                                            )
+                                        val elapsedTimeMs = Utils.getMilliFromDate(durationIntervalLegacy.time.toString())
+                                        val calendar = Calendar.getInstance()
+                                        calendar.timeInMillis = elapsedTimeMs
+                                        val dateNumber = calendar.get(Calendar.DATE)
+
+                                        val currentTime = LocalDateTime.now()
+                                        if (dateNumber == currentTime.dayOfMonth && (currentTime.dayOfWeek.toString() == "TUESDAY" || currentTime.dayOfWeek.toString() == "THURSDAY")) {
+                                            if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerCustom(
+                                                        0,
+                                                        nId,
+                                                        durationIntervalLegacy.time.toString()
+                                                    )
+                                                    LampLog.e(
+                                                        TAG,
+                                                        "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                     RepeatInterval.WEEKLY.tag -> {
-                                        durationIntervalLegacy.notification_ids?.forEach { notificationId ->
-                                            val nId = Utils.getMyIntValue(notificationId)
-                                            setAlarmManagerCustom(0,nId,durationIntervalLegacy.time.toString())
-                                            LampLog.e(
-                                                TAG,
-                                                "WEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                            )
+                                        val elapsedTimeMs = Utils.getMilliFromDate(durationIntervalLegacy.time.toString())
+                                        val calendar = Calendar.getInstance()
+                                        calendar.timeInMillis = elapsedTimeMs
+                                        val dateNumber = calendar.get(Calendar.DATE)
+
+                                        val currentTime = LocalDateTime.now()
+                                        if (dateNumber == currentTime.dayOfMonth) {
+                                            if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerCustom(
+                                                        0,
+                                                        nId,
+                                                        durationIntervalLegacy.time.toString()
+                                                    )
+                                                    LampLog.e(TAG, "WEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}")
+                                                }
+                                            }
                                         }
                                     }
                                     RepeatInterval.BIMONTHLY.tag -> {
-                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0 && durationIntervalLegacy.custom_time?.size!! > 0) {
-                                            LampLog.e(
-                                                TAG,
-                                                "BIMONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                            )
+                                        val elapsedTimeMs = Utils.getMilliFromDate(durationIntervalLegacy.time.toString())
+                                        val calendar = Calendar.getInstance()
+                                        calendar.timeInMillis = elapsedTimeMs
+                                        val dateNumber = calendar.get(Calendar.DATE)
+
+                                        val currentTime = LocalDateTime.now()
+                                        if (dateNumber == currentTime.dayOfMonth && (dateNumber == 10 || dateNumber == 20)) {
+                                            if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerCustom(
+                                                        0,
+                                                        nId,
+                                                        durationIntervalLegacy.time.toString()
+                                                    )
+                                                    LampLog.e(TAG, "BIMONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}")
+                                                }
+                                            }
                                         }
                                     }
                                     RepeatInterval.MONTHLY.tag -> {
-                                        durationIntervalLegacy.notification_ids?.forEach { notificationId ->
-                                            val nId = Utils.getMyIntValue(notificationId)
-                                            setAlarmManagerCustom(0,nId,durationIntervalLegacy.time.toString())
-                                            LampLog.e(
-                                                TAG,
-                                                "MONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                            )
+                                        val elapsedTimeMs = Utils.getMilliFromDate(durationIntervalLegacy.time.toString())
+                                        val calendar = Calendar.getInstance()
+                                        calendar.timeInMillis = elapsedTimeMs
+                                        val dateNumber = calendar.get(Calendar.DATE)
+
+                                        val currentTime = LocalDateTime.now()
+                                        if (dateNumber == currentTime.dayOfMonth) {
+                                            if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                                durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                    val nId = Utils.getMyIntValue(notificationId)
+                                                    setAlarmManagerCustom(
+                                                        0,
+                                                        nId,
+                                                        durationIntervalLegacy.time.toString()
+                                                    )
+                                                    LampLog.e(TAG, "MONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}")
+                                                }
+                                            }
                                         }
                                     }
                                     RepeatInterval.NONE.tag -> {
                                         if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
-                                            LampLog.e(
-                                                TAG,
-                                                "NONE :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                            )
-                                        }
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+                                                setAlarmManagerCustom(
+                                                    0,
+                                                          nId,
+                                                        durationIntervalLegacy.time.toString()
+                                                    )
+                                                    LampLog.e(TAG, "NONE :- ${durationIntervalLegacy.notification_ids?.size}}")
+                                                }
+                                            }
                                     }
                                 }
                             }
@@ -503,7 +590,10 @@ class LampForegroundService : Service(),
                 oActivityDao.deleteActivityList()
                 oActivityDao.insertAllActivity(oActivityList)
 
-                LampLog.e(TAG, "Activity DB Size : ${oActivityDao.getActivityList().size.toString()}")
+                LampLog.e(
+                    TAG,
+                    "Activity DB Size : ${oActivityDao.getActivityList().size.toString()}"
+                )
             }
         }
     }
@@ -516,8 +606,15 @@ class LampForegroundService : Service(),
                 activitySchedule.schedule?.forEach { durationIntervalLegacy ->
                     durationIntervalLegacy.notification_ids?.forEach {
                         if(Utils.getMyIntValue(it) == localNotificationId){
-                            LampLog.e(TAG,"Activity Name :: - ${activitySchedule.name} ---- $localNotificationId" )
-                            LampNotificationManager.showActivityNotification(this@LampForegroundService,activitySchedule,localNotificationId)
+                            LampLog.e(
+                                TAG,
+                                "Activity Name :: - ${activitySchedule.name} ---- $localNotificationId"
+                            )
+                            LampNotificationManager.showActivityNotification(
+                                this@LampForegroundService,
+                                activitySchedule,
+                                localNotificationId
+                            )
                         }
                     }
                 }
@@ -636,6 +733,11 @@ class LampForegroundService : Service(),
     private fun setAlarmManagerCustom(oIndex: Int, oNotificationId: Int?, oCustomTime: String) {
         val randomInt = (1..100).shuffled().first()
         val elapsedTimeMs = Utils.getMilliFromDate(oCustomTime)
+
+
+        val currentTime = LocalDateTime.now()
+        LampLog.e(TAG,"AMAL JOFY --- :: ${currentTime.dayOfWeek}")
+
 //        if(elapsedTimeMs > System.currentTimeMillisrentTimeMillis() && elapsedTimeMs < System.currentTimeMillis() + DAY_INTERVAL) {
             val almManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val almIntent = Intent(this, ActivityReceiver::class.java).apply {
