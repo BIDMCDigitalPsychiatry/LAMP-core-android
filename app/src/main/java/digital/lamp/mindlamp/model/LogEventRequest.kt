@@ -13,5 +13,5 @@ data class LogEventRequest(
     val user_agent: String,
     val device_type: String
 ) {
-    constructor() : this("", AppState.session.userId,BuildConfig.VERSION_NAME+","+Build.VERSION.INCREMENTAL+","+Build.MANUFACTURER+","+Build.MODEL,"Android")
+    constructor() : this("", AppState.session.userId,"NativeCore "+BuildConfig.VERSION_NAME+";"+Build.MANUFACTURER+";"+Build.MODEL,"Android")
 }
