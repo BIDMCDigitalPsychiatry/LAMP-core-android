@@ -17,4 +17,7 @@ interface AnalyticsDao {
 
     @Query("DELETE from analytics_table WHERE analytics_date_ms <= :timestamp")
     suspend fun deleteAnalyticsList(timestamp: Long)
+
+    @Query("DELETE from analytics_table")
+    suspend fun dropAnalyticsList()
 }

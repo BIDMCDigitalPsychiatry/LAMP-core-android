@@ -13,7 +13,7 @@ internal object AppConstants {
     const val NOTIFICATION_ACTIVITY = "lamp_activity"
     const val NOTIFICATION_ID = 101
     const val INITIAL_TRIGGER = 120000L //30 seconds
-    const val ALARM_INTERVAL = 10000L //10 Minutes
+    const val ALARM_INTERVAL = 300000L //10 Minutes
     const val DAY_INTERVAL = 86400000L //24 Hours
 
     const val REQUEST_ID_MULTIPLE_PERMISSIONS = 1

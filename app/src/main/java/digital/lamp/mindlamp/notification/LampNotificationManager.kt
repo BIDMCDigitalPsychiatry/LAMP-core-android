@@ -195,7 +195,7 @@ object LampNotificationManager {
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
             .setContentTitle(oActivitySchedule.name)
-            .setContentText(oActivitySchedule.spec+" : "+oActivitySchedule.id)
+            .setContentText(oActivitySchedule.spec+" -- "+localNotificationId)
             .setSmallIcon(R.drawable.ic_stat_noti_icon)
             .setLargeIcon(
                 BitmapFactory.decodeResource(

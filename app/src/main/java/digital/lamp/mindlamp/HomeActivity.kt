@@ -48,6 +48,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
+import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.ActivitySchedule
 import kotlinx.android.synthetic.main.activity_home.*
@@ -65,6 +66,7 @@ class HomeActivity : AppCompatActivity(){
 
     private lateinit var oSensorDao: SensorDao
     private lateinit var oActivityDao: ActivityDao
+    private lateinit var oAnalyticsDao: AnalyticsDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object{
@@ -109,21 +111,22 @@ class HomeActivity : AppCompatActivity(){
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oActivityDao = AppDatabase.getInstance(this).activityDao()
+        oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
 
-//        if(AppState.session.showDisclosureAlert){
-//            progressBar.visibility = View.GONE
-//            populateOnDisclosureARAlert()
-//        }else {
-//            if(checkAndRequestPermissions(this)){
-//                //Fit SignIn Auth
-//                fitSignIn()
-//                initializeWebview()
-//            }
-//        }
+        if(AppState.session.showDisclosureAlert){
+            progressBar.visibility = View.GONE
+            populateOnDisclosureARAlert()
+        }else {
+            if(checkAndRequestPermissions(this)){
+                //Fit SignIn Auth
+                fitSignIn()
+                initializeWebview()
+            }
+        }
 
-        AppState.session.isLoggedIn = true
+//        AppState.session.isLoggedIn = true
 //        allocateActivitySchedules()
-        startLampService()
+//        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 
@@ -327,6 +330,8 @@ class HomeActivity : AppCompatActivity(){
                 AppState.session.clearData()
             }
             oSensorDao.deleteSensorList()
+            oActivityDao.deleteActivityList()
+            oAnalyticsDao.dropAnalyticsList()
         }
     }
 
@@ -478,36 +483,4 @@ class HomeActivity : AppCompatActivity(){
             show()
         }
     }
-
-    private fun allocateActivitySchedules() {
-        if(AppState.session.isLoggedIn){
-
-            val basic = "Basic ${Utils.toBase64(
-                "U3039047323@lamp.com:U3039047323")}"
-
-            GlobalScope.launch (Dispatchers.IO){
-
-                val activityString = ActivityAPI("https://lampv2.zcodemo.com:9093/").activityAll("U3039047323",basic)
-                val activityResponse = Gson().fromJson(activityString.toString(), ActivityResponse::class.java)
-
-                Log.e("KOK", " Lamp Core Response -  ${activityResponse.data[0].schedule?.get(0)?.notification_ids?.size.toString()}")
-
-
-                val oActivityList = arrayListOf<ActivitySchedule>()
-                Log.e(TAG, " Response -  ${activityResponse.data.size}")
-
-                    activityResponse.data.forEach {
-                    it.schedule.let { data ->
-                        if(data?.size!! > 0){
-                            val activitySchedule = ActivitySchedule(null,it.id,it.spec,it.name,it.schedule)
-                            oActivityList.add(activitySchedule)
-                        }
-                    }
-                }
-
-                oActivityDao.insertAllActivity(oActivityList)
-            }
-        }
-    }
-
 }
