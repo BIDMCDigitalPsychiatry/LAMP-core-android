@@ -14,7 +14,9 @@ import digital.lamp.mindlamp.NotificationActivity
 import digital.lamp.mindlamp.HomeActivity
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.NotificationActionActivity
+import digital.lamp.mindlamp.database.entity.ActivitySchedule
 import digital.lamp.mindlamp.model.ActionData
+import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_ACTIVITY
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_CHANNEL
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_OPEN
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITHOUT_ACTION
@@ -164,7 +166,7 @@ object LampNotificationManager {
                 .setLargeIcon(
                     BitmapFactory.decodeResource(
                         context.resources,
-                        R.mipmap.ic_launcher
+                        R.mipmap.ic_launcher_round
                     )
                 )
                 .setAutoCancel(true)
@@ -183,5 +185,37 @@ object LampNotificationManager {
         }
         val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
         manager.notify(notificationId!!, notification.build())
+    }
+
+    fun showActivityNotification(
+        context: Context,
+        oActivitySchedule: ActivitySchedule,
+        localNotificationId: Int
+    ) {
+
+        val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
+            .setContentTitle(oActivitySchedule.name)
+            .setContentText(oActivitySchedule.spec+" -- "+localNotificationId)
+            .setSmallIcon(R.drawable.ic_stat_noti_icon)
+            .setLargeIcon(
+                BitmapFactory.decodeResource(
+                    context.resources,
+                    R.mipmap.ic_launcher_round
+                )
+            )
+            .setVibrate(longArrayOf(0L))
+            .setAutoCancel(true)
+
+        val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val activityChannel = NotificationChannel(
+                NOTIFICATION_ACTIVITY,
+                oActivitySchedule.id,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            manager.createNotificationChannel(activityChannel)
+        }
+        manager.notify(localNotificationId, notification.build())
     }
 }

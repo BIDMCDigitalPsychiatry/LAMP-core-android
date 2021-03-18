@@ -22,12 +22,21 @@ jobs:
         env:
           FIREBASE_CONFIG: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
-        
+
+      - name: Receive Github Tag
+        id: tag
+        run: echo "::set-output name=TAG_NUMBER::$(git describe --tags `git rev-list --tags --max-count=1`)"
+
+      - name: Get commit count
+          id: commits
+          run: echo "::set-output name=COMMIT_COUNT::$(git rev-list --count master)"
+
       - name: Bump version code
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: app/build.gradle
-          versionCode: ${{github.run_number}}
+          versionCode: ${{steps.commits.outputs.COMMIT_COUNT}}
+          versionName: ${{steps.tag.outputs.TAG_NUMBER}}
  
       - name: Grant rights
         run: chmod +x build.gradle

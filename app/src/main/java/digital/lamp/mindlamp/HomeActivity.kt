@@ -29,8 +29,10 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityAPI
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
+import digital.lamp.lamp_kotlin.lamp_core.models.ActivityResponse
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
@@ -45,11 +47,16 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.mindlamp.database.AppDatabase
-import digital.lamp.mindlamp.database.SensorDao
+import digital.lamp.mindlamp.database.dao.ActivityDao
+import digital.lamp.mindlamp.database.dao.AnalyticsDao
+import digital.lamp.mindlamp.database.dao.SensorDao
+import digital.lamp.mindlamp.database.entity.ActivitySchedule
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -58,6 +65,8 @@ import kotlinx.coroutines.launch
 class HomeActivity : AppCompatActivity(){
 
     private lateinit var oSensorDao: SensorDao
+    private lateinit var oActivityDao: ActivityDao
+    private lateinit var oAnalyticsDao: AnalyticsDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     companion object{
@@ -101,6 +110,8 @@ class HomeActivity : AppCompatActivity(){
         setContentView(R.layout.activity_home)
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
+        oActivityDao = AppDatabase.getInstance(this).activityDao()
+        oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
 
         if(AppState.session.showDisclosureAlert){
             progressBar.visibility = View.GONE
@@ -113,8 +124,8 @@ class HomeActivity : AppCompatActivity(){
             }
         }
 
-
 //        AppState.session.isLoggedIn = true
+//        allocateActivitySchedules()
 //        startLampService()
 //        throw RuntimeException("Test Crash") // Force a crash
     }
@@ -158,7 +169,6 @@ class HomeActivity : AppCompatActivity(){
                 progressBar.visibility = View.GONE;
             }
         }
-
     }
 
     override fun onRequestPermissionsResult(
@@ -237,6 +247,8 @@ class HomeActivity : AppCompatActivity(){
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
             putExtra("inputExtra", "Foreground Service Example in Android")
             putExtra("set_alarm", false)
+            putExtra("set_activity_schedule",false)
+            putExtra("notification_id",0)
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
@@ -307,7 +319,7 @@ class HomeActivity : AppCompatActivity(){
         stopLampService()
 
         GlobalScope.launch(Dispatchers.IO) {
-            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                 AppState.session.userId,
                 sendTokenRequest,
                 basic
@@ -318,6 +330,8 @@ class HomeActivity : AppCompatActivity(){
                 AppState.session.clearData()
             }
             oSensorDao.deleteSensorList()
+            oActivityDao.deleteActivityList()
+            oAnalyticsDao.dropAnalyticsList()
         }
     }
 
@@ -407,7 +421,7 @@ class HomeActivity : AppCompatActivity(){
             )}"
 
             GlobalScope.launch {
-                val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,
                     sendTokenRequest,
                     basic
@@ -446,6 +460,7 @@ class HomeActivity : AppCompatActivity(){
         val params = Bundle()
         firebaseAnalytics.logEvent(eventName, params)
     }
+
     private fun populateOnDisclosureARAlert() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()

@@ -1,6 +1,7 @@
-package digital.lamp.mindlamp.database
+package digital.lamp.mindlamp.database.dao
 
 import androidx.room.*
+import digital.lamp.mindlamp.database.entity.Analytics
 import java.util.ArrayList
 
 @Dao
@@ -16,4 +17,7 @@ interface AnalyticsDao {
 
     @Query("DELETE from analytics_table WHERE analytics_date_ms <= :timestamp")
     suspend fun deleteAnalyticsList(timestamp: Long)
+
+    @Query("DELETE from analytics_table")
+    suspend fun dropAnalyticsList()
 }

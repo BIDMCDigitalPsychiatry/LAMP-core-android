@@ -77,7 +77,7 @@ class LampFirebaseMessagingService: FirebaseMessagingService() {
         )}"
         Thread {
             // Do network action in this function
-            val state = SensorEventAPI(BuildConfig.HOST).sensorEventCreate(
+            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                 AppState.session.userId,
                 notificationEventRequest,
                 basic
