@@ -28,8 +28,8 @@ jobs:
         run: echo "::set-output name=TAG_NUMBER::$(git describe --tags `git rev-list --tags --max-count=1`)"
 
       - name: Get commit count
-          id: commits
-          run: echo "::set-output name=COMMIT_COUNT::$(git rev-list --count master)"
+        id: commits
+        run: echo "::set-output name=COMMIT_COUNT::$(git rev-list --count master)"
 
       - name: Bump version code
         uses: chkfung/android-version-actions@v1.1
