@@ -103,7 +103,7 @@ class LampForegroundService : Service(),
         }
         else if(!isAlarm && isActivitySchedule && localNotificationId != 0){
             LampLog.e(TAG, "Call for showing up the local notification")
-            if(Utils.isOnline(this)) {
+            if(!Utils.isOnline(this)) {
                 invokeLocalNotification(localNotificationId)
             }
         }
@@ -638,10 +638,10 @@ class LampForegroundService : Service(),
 //            set(Calendar.HOUR_OF_DAY, 12)
 //        }
 
-        alarmManager.setInexactRepeating(
+        alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            SystemClock.elapsedRealtime() + DAY_INTERVAL,
-            ALARM_INTERVAL,
+            SystemClock.elapsedRealtime() + 30 * 1000,
+             AlarmManager.INTERVAL_DAY,
             alarmIntent
         )
     }
@@ -767,7 +767,7 @@ class LampForegroundService : Service(),
                 }
             almManager.setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                Utils.getMilliFromDate(oTime),
+                elapsedTimeMs,
                 AlarmManager.INTERVAL_HOUR,
                 almIntent
             )
