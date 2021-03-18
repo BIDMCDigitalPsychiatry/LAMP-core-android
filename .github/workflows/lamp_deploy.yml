@@ -2,7 +2,7 @@ name: Deploy LampV2 CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ beta-mobile ]
 
 jobs:
   build:
