@@ -94,6 +94,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.height" -> {
                     val field = dp.dataType.fields[0]
@@ -103,6 +106,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.NUTRITION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.active_minutes" -> {
@@ -114,6 +120,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.calories.expended" -> {
                     val field = dp.dataType.fields[0]
@@ -123,6 +132,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.NUTRITION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.activity.segment" -> {
@@ -134,6 +146,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.step_count.delta" -> {
                     val field = dp.dataType.fields[0]
@@ -143,6 +158,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.STEPS.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.distance.delta" -> {
@@ -154,6 +172,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.calories.bmr" -> {
                     val field = dp.dataType.fields[0]
@@ -163,6 +184,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.NUTRITION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.heart_rate.bpm" -> {
@@ -174,6 +198,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.body.fat.percentage" -> {
                     val field = dp.dataType.fields[0]
@@ -183,6 +210,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.NUTRITION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.cycling.wheel_revolution.rpm" -> {
@@ -194,6 +224,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.cycling.wheel_revolution.cumulative" -> {
                     val field = dp.dataType.fields[0]
@@ -203,6 +236,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.STEPS.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.speed" -> {
@@ -214,6 +250,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.hydration" -> {
                     val field = dp.dataType.fields[0]
@@ -223,6 +262,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.NUTRITION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.nutrition" -> {
@@ -234,6 +276,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.blood_glucose" -> {
                     val field = dp.dataType.fields[0]
@@ -243,6 +288,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.BLOOD_GLUCOSE.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.blood_pressure" -> {
@@ -254,6 +302,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.oxygen_saturation" -> {
                     val field = dp.dataType.fields[0]
@@ -263,6 +314,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.OXYGEN_SATURATION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.body.temperature" -> {
@@ -274,6 +328,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.menstruation" -> {
                     val field = dp.dataType.fields[0]
@@ -283,6 +340,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.NUTRITION.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.vaginal_spotting" -> {
@@ -294,6 +354,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.cycling.pedaling.cadence" -> {
                     val field = dp.dataType.fields[0]
@@ -302,6 +365,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.STEPS.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
                 "com.google.heart_minutes" -> {
@@ -312,6 +378,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.power.sample" -> {
                     val field = dp.dataType.fields[0]
@@ -321,6 +390,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
+                    }
                 }
                 "com.google.step_count.cadence" -> {
                     val field = dp.dataType.fields[0]
@@ -329,6 +401,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         if(it.spec == Sensors.STEPS.sensor_name){
                             sensorEventDataList.add(sensorEvenData)
                         }
+                    }
+                    if(oSensorSpecList.isEmpty()){
+                        sensorEventDataList.add(sensorEvenData)
                     }
                 }
             }
