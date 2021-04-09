@@ -172,78 +172,158 @@ class LampForegroundService : Service(),
                         applicationContext, sensorSpecList
                     )
                     2 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                AccelerometerData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            }//Invoke Accelerometer Call
+                        var accelerometerDataRequired =false
+                        if(sensorSpecList.isEmpty()){
+                            accelerometerDataRequired = true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    accelerometerDataRequired = true
+                                }
+                            }
+                        }
+                        //Invoke Accelerometer Call
+                        if(accelerometerDataRequired) {
+                            AccelerometerData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
                         }
                     }
                     3 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                RotationData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            } //Invoke Rotation Call
+                        var rotationDataRequird = false
+                        if(sensorSpecList.isEmpty()){
+                            rotationDataRequird =true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    rotationDataRequird = true
+
+                                } //Invoke Rotation Call
+                            }
+                        }
+                        if(rotationDataRequird){
+                            RotationData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
                         }
                     }
                     4 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                MagnetometerData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            } //Invoke Magnet Call
+                        var magnetometerDataRequired =false
+                        if(sensorSpecList.isEmpty()){
+                            magnetometerDataRequired =true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    magnetometerDataRequired =true
+
+                                }
+                            }
                         }
+                        if(magnetometerDataRequired){
+                            //Invoke Magnet Call
+                            MagnetometerData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
+                        }
+
                     }
                     5 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                GyroscopeData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            }//Invoke Gyroscope Call
+                        var gyroscopeDataRequired = false
+                        if(sensorSpecList.isEmpty()){
+                            gyroscopeDataRequired= true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    gyroscopeDataRequired =true
+
+                                }//Invoke Gyroscope Call
+                            }
                         }
+                        if(gyroscopeDataRequired){
+                            GyroscopeData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
+                        }
+
                     }
                     6 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.GPS.sensor_name) {
-                                LocationData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            }//Invoke Location
+                        var locationDateRequired = false
+                        if(sensorSpecList.isEmpty()){
+                            locationDateRequired =true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.GPS.sensor_name) {
+                                    locationDateRequired =true
+
+                                }
+                            }
                         }
+                        if(locationDateRequired){
+                            //Invoke Location
+                            LocationData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
+                        }
+
                     }
                     7 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
-                                WifiData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            }//Invoke WifiData
+                        var wifiDataRequired= false
+                        if(sensorSpecList.isEmpty()){
+                            wifiDataRequired = true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
+                                    wifiDataRequired = true
+
+                                }
+                            }
                         }
+                        if(wifiDataRequired){
+                            //Invoke WifiData
+                            WifiData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
+                        }
+
                     }
                     8 -> {
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
-                                ScreenStateData(
-                                    this@LampForegroundService,
-                                    applicationContext
-                                )
-                            }//Invoke Activity Data
+                        var screenStateDataRequired =false
+                        if(sensorSpecList.isEmpty()){
+                            screenStateDataRequired =true
+
+                        }else {
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
+                                    screenStateDataRequired =true
+
+                                }
+                            }
                         }
+                        if(screenStateDataRequired){
+                            //Invoke screen state Data
+                            ScreenStateData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
+                        }
+
                     }
                     9 -> ActivityTransitionData(
                         this@LampForegroundService,
-                        applicationContext
+                        applicationContext,
+                        sensorSpecList
                     )
                 }
             }

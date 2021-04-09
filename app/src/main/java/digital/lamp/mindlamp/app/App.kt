@@ -1,6 +1,7 @@
 package digital.lamp.mindlamp.app
 
 import android.app.Application
+import android.content.Context
 import android.util.DebugUtils
 import android.util.Log
 import digital.lamp.mindlamp.appstate.AppState
@@ -20,7 +21,9 @@ class App: Application() {
         app = this
 
         // Initializing Shared pref
-        Pref.init(this,
+        val directBootContext: Context = this.createDeviceProtectedStorageContext()
+
+        Pref.init(directBootContext,
             AppKeys.APP_PREF_NAME
         )
         // Setup handler for uncaught exceptions.
