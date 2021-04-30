@@ -520,7 +520,6 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
         val now = Date()
         calendar.time = now
         val endTime = calendar.timeInMillis
-//        calendar.add(Calendar.DAY_OF_WEEK, -1)
         val startTime: Long = AppState.session.lastAnalyticsTimestamp
 
 
