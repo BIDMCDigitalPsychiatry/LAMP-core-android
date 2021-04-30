@@ -30,6 +30,7 @@ import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.sensor.RotationData
+import digital.lamp.mindlamp.sensor.ScreenStateData
 import digital.lamp.mindlamp.sheduleing.ActivityReceiver
 import digital.lamp.mindlamp.sheduleing.ActivityRepeatReceiver
 import digital.lamp.mindlamp.sheduleing.RepeatInterval
@@ -305,7 +306,7 @@ class LampForegroundService : Service(),
 
                         }else {
                             sensorSpecList.forEach {
-                                if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
+                                if (it.spec == Sensors.SCREEN_STATE.sensor_name) {
                                     screenStateDataRequired =true
 
                                 }

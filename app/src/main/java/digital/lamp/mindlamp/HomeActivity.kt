@@ -102,6 +102,7 @@ class HomeActivity : AppCompatActivity(){
             .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
             .build()
     }
 

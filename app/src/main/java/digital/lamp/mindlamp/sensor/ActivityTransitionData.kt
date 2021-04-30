@@ -78,7 +78,9 @@ class ActivityTransitionData constructor(
                             null,
                             null,
                             null,
-                            null, null, null, null, null, null, activityData
+                            null,
+                            null, null, null,
+                            null, null, null, activityData,null,null
                         )
                     val sensorEventData =
                         SensorEvent(
