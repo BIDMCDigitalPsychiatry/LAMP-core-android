@@ -43,7 +43,8 @@ object Utils {
 
     @SuppressLint("SimpleDateFormat")
     fun getMilliFromDate(dateString: String): Long {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+      //  2021-04-28 15:09:23.377
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
         try {
             val mDate = sdf.parse(dateString)!!
             return mDate.time
