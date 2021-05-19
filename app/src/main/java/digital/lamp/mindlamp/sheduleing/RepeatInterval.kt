@@ -8,6 +8,7 @@ enum class RepeatInterval(val tag: String) {
     CUSTOM("custom"),
     DAILY("daily"),
     BIWEEKLY("biweekly"), //TUESDAY AND THURSDAY
+    TRIWEEKLY("triweekly"), //MONDAY, WEDNESDAY AND FRIDAY
     WEEKLY("weekly"), // WEEK OF THE TIME
     BIMONTHLY("bimonthly"), //10 AND 20
     MONTHLY("monthly"),

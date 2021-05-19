@@ -18,7 +18,6 @@ class NotificationActionActivity : AppCompatActivity() {
 
         val surveyUrl = intent.getStringExtra("survey_path")
         val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
-        val remoteMessage = intent.getStringExtra("remote_message")
 
         val oSurveyUrl = BuildConfig.BASE_URL_WEB+surveyUrl+"?a="+Utils.toBase64(AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
 

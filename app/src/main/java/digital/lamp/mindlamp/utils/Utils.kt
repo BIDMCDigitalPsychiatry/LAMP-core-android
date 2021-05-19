@@ -43,11 +43,15 @@ object Utils {
 
     @SuppressLint("SimpleDateFormat")
     fun getMilliFromDate(dateString: String): Long {
-      //  2021-04-28 15:09:23.377
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+
         try {
             val mDate = sdf.parse(dateString)!!
-            return mDate.time
+            sdf.timeZone = TimeZone.getDefault()
+            val formattedDate: String = sdf.format(mDate)
+            val localTime = sdf.parse(formattedDate)!!
+            return localTime.time
         } catch (e: ParseException) {
             e.printStackTrace()
         }
