@@ -14,6 +14,7 @@ import digital.lamp.mindlamp.NotificationActivity
 import digital.lamp.mindlamp.HomeActivity
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.NotificationActionActivity
+import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.entity.ActivitySchedule
 import digital.lamp.mindlamp.model.ActionData
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_ACTIVITY
@@ -21,6 +22,7 @@ import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_CHANNEL
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_OPEN
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITHOUT_ACTION
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITH_ACTION
+import digital.lamp.mindlamp.utils.LampLog
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -192,11 +194,19 @@ object LampNotificationManager {
         oActivitySchedule: ActivitySchedule,
         localNotificationId: Int
     ) {
+        val actionIntent = Intent(context, NotificationActionActivity::class.java)
+        actionIntent.putExtra("survey_path", "participant/${AppState.session.userId}/activity/${oActivitySchedule.id}")
+        actionIntent.putExtra("notification_id",localNotificationId)
+        val actionPendingIntent = PendingIntent.getActivity(
+                context,
+                0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
             .setContentTitle(oActivitySchedule.name)
-            .setContentText(oActivitySchedule.spec+" -- "+localNotificationId)
+            .setContentText(String.format(context.getString(R.string.local_notification_text),oActivitySchedule.name))
             .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                .addAction(R.drawable.ic_stat_noti_icon, context.getString(R.string.notification_action), actionPendingIntent)
             .setLargeIcon(
                 BitmapFactory.decodeResource(
                     context.resources,
