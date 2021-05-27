@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 
@@ -24,6 +26,22 @@ public class NetworkUtils {
         return false;
     }
 
+    public static boolean isWifiNetworkAvailable(Context context){
+        WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
+
+            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+
+            if( wifiInfo.getNetworkId() == -1 ){
+                return false; // Not connected to an access point
+            }
+            return true; // Connected to an access point
+        }
+        else {
+            return false; // Wi-Fi adapter is OFF
+        }
+    }
     public static boolean isGPSEnabled (Context mContext){
         LocationManager locationManager = (LocationManager)
                 mContext.getSystemService(Context.LOCATION_SERVICE);

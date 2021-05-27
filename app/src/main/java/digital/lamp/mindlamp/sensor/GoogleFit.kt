@@ -2,6 +2,7 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -90,20 +91,44 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                     LampLog.e(TAG, "Problem in reading data : $exception")
                 }
 
+        Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptions))
+                .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
+                .addOnSuccessListener { result ->
+                    val dataSource = result.dataSource
+                    val source = dataSource.appPackageName
+                    val totalSteps =
+                            result.dataPoints.firstOrNull()?.getValue(Field.FIELD_STEPS)
+                    totalSteps?.let {
+                    val sensorEvenData: SensorEvent =  getStepsData(it,source)
+                        oSensorSpecList.forEach {
+                            if (it.spec == Sensors.STEPS.sensor_name) {
+                                sensorEventDataList.add(sensorEvenData)
+                            }
+                        }
+                        if (oSensorSpecList.isEmpty()) {
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
+
+                }
+                .addOnFailureListener { e ->
+                    Log.i(TAG, "There was a problem getting steps.", e)
+                }
         readSleepSessions(context, oSensorSpecList)
 
     }
+
 
     /**
      * Reads sleep sessions from the Fit API, including any sleep {@code DataSet}s.
      */
     private fun readSleepSessions(context: Context,oSensorSpecList: ArrayList<SensorSpecs>) {
 
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        val calendar = Calendar.getInstance()
         val now = Date()
         calendar.time = now
         val endTime = calendar.timeInMillis
-        val startTime: Long = AppState.session.lastAnalyticsTimestamp
+        val startTime: Long = AppState.session.lastSleepDataTimestamp
 
 
         //Set fitnessOptions
@@ -119,6 +144,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 // includeSleepSessions also sets the behaviour to *exclude* activity sessions.
                 .includeSleepSessions()
                 .readSessionsFromAllApps()
+                .enableServerQueries()
                 .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
                 .build()
 
@@ -135,9 +161,12 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
      * @param response Response from the Sessions client.
      */
     private fun dumpSleepSessions(response: SessionReadResponse,oSensorSpecList: ArrayList<SensorSpecs>) {
-
-        for (session in response.sessions) {
-            dumpSleepSession(session, response.getDataSet(session),oSensorSpecList)
+        if(response.sessions.isNotEmpty()) {
+            val endTimeList = response.sessions.map { it.getEndTime(TimeUnit.MILLISECONDS) }
+            AppState.session.lastSleepDataTimestamp = Collections.max(endTimeList)
+            for (session in response.sessions) {
+                dumpSleepSession(session, response.getDataSet(session), oSensorSpecList)
+            }
         }
     }
 
@@ -166,7 +195,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
             if(dataSet.dataPoints.isEmpty()){
                 val sensorEvenData: SensorEvent = getSleepData(null,source,null,calculateSessionDuration(session))
                 oSensorSpecList.forEach {
-                    if (it.spec == Sensors.NUTRITION.sensor_name) {
+                    if (it.spec == Sensors.SLEEP.sensor_name) {
                         sensorEventDataList.add(sensorEvenData)
                     }
                 }
@@ -182,7 +211,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
 
                     val sensorEvenData: SensorEvent = getSleepData(sleepStageOrdinal,source,sleepStage,durationMillis)
                     oSensorSpecList.forEach {
-                        if (it.spec == Sensors.NUTRITION.sensor_name) {
+                        if (it.spec == Sensors.SLEEP.sensor_name) {
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
@@ -255,7 +284,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                     }
                 }
 
-                "com.google.step_count.delta" -> {
+                /*"com.google.step_count.delta" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Step Count : " + dp.getValue(field))
                     val sensorEvenData: SensorEvent = getStepsData(dp.getValue(field),source)
@@ -267,7 +296,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                     if (oSensorSpecList.isEmpty()) {
                         sensorEventDataList.add(sensorEvenData)
                     }
-                }
+                }*/
                 "com.google.distance.delta" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Distance : " + dp.getValue(field))

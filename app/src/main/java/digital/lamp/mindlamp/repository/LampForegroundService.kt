@@ -112,7 +112,7 @@ class LampForegroundService : Service(),
             invokeLocalNotification(localNotificationId)
             //  }
         } else {
-            //This will execute every 10 min if logged in
+            //This will execute every 3 min if logged in
             val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
             sensorEventDataList.clear()
 
@@ -151,7 +151,7 @@ class LampForegroundService : Service(),
         alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java).let { intent ->
             PendingIntent.getBroadcast(this, 0, intent, 0)
         }
-        alarmManager.setInexactRepeating(
+        alarmManager.setRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + ALARM_INTERVAL,
                 ALARM_INTERVAL,
@@ -160,6 +160,8 @@ class LampForegroundService : Service(),
     }
 
     private fun collectSensorData() {
+        if(!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(this))
+            return
         var sensorSpecList = arrayListOf<SensorSpecs>()
         oScope.launch(Dispatchers.IO) {
             sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
@@ -176,6 +178,7 @@ class LampForegroundService : Service(),
                     )
                     2 -> {
                         var accelerometerDataRequired = false
+                        var frequency:Double?=null
                         if (sensorSpecList.isEmpty()) {
                             accelerometerDataRequired = true
 
@@ -183,6 +186,10 @@ class LampForegroundService : Service(),
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     accelerometerDataRequired = true
+                                    it.frequency?.let {
+                                        if (it!= 0.0 && it <= 1)
+                                            frequency = it
+                                    }
                                 }
                             }
                         }
@@ -190,12 +197,13 @@ class LampForegroundService : Service(),
                         if (accelerometerDataRequired) {
                             AccelerometerData(
                                     this@LampForegroundService,
-                                    applicationContext
-                            )
+                                    applicationContext,
+                                frequency)
                         }
                     }
                     3 -> {
                         var rotationDataRequird = false
+                        var frequency:Double?=null
                         if (sensorSpecList.isEmpty()) {
                             rotationDataRequird = true
 
@@ -203,19 +211,23 @@ class LampForegroundService : Service(),
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     rotationDataRequird = true
-
+                                    it.frequency?.let {
+                                        if (it!= 0.0 && it <= 1)
+                                            frequency = it
+                                    }
                                 } //Invoke Rotation Call
                             }
                         }
                         if (rotationDataRequird) {
                             RotationData(
                                     this@LampForegroundService,
-                                    applicationContext
+                                    applicationContext, frequency
                             )
                         }
                     }
                     4 -> {
                         var magnetometerDataRequired = false
+                        var frequency:Double?=null
                         if (sensorSpecList.isEmpty()) {
                             magnetometerDataRequired = true
 
@@ -223,7 +235,10 @@ class LampForegroundService : Service(),
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     magnetometerDataRequired = true
-
+                                    it.frequency?.let {
+                                        if (it!= 0.0 && it <= 1)
+                                            frequency = it
+                                    }
                                 }
                             }
                         }
@@ -231,13 +246,14 @@ class LampForegroundService : Service(),
                             //Invoke Magnet Call
                             MagnetometerData(
                                     this@LampForegroundService,
-                                    applicationContext
+                                    applicationContext,frequency
                             )
                         }
 
                     }
                     5 -> {
                         var gyroscopeDataRequired = false
+                        var frequency:Double?=null
                         if (sensorSpecList.isEmpty()) {
                             gyroscopeDataRequired = true
 
@@ -246,19 +262,24 @@ class LampForegroundService : Service(),
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     gyroscopeDataRequired = true
 
+                                    it.frequency?.let {
+                                        if (it!= 0.0 && it <= 1)
+                                            frequency = it
+                                    }
                                 }//Invoke Gyroscope Call
                             }
                         }
                         if (gyroscopeDataRequired) {
                             GyroscopeData(
                                     this@LampForegroundService,
-                                    applicationContext
+                                    applicationContext,frequency
                             )
                         }
 
                     }
                     6 -> {
                         var locationDateRequired = false
+                        var frequency:Double?=null
                         if (sensorSpecList.isEmpty()) {
                             locationDateRequired = true
 
@@ -266,7 +287,10 @@ class LampForegroundService : Service(),
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.GPS.sensor_name) {
                                     locationDateRequired = true
-
+                                    it.frequency?.let {
+                                        if (it!= 0.0 && it <= 1)
+                                            frequency = it
+                                    }
                                 }
                             }
                         }
@@ -274,7 +298,7 @@ class LampForegroundService : Service(),
                             //Invoke Location
                             LocationData(
                                     this@LampForegroundService,
-                                    applicationContext
+                                    applicationContext,1.0
                             )
                         }
 
@@ -376,8 +400,11 @@ class LampForegroundService : Service(),
                         state.toString(),
                         SensorSpec::class.java
                 )
+                if(oSensorSpec.data.isNotEmpty()){
+                    AppState.session.isCellularUploadAllowed = oSensorSpec.data.find {  it.settings==null || it.settings?.cellular_upload ==null || it.settings?.cellular_upload ==true }!=null
+                }
                 oSensorSpec.data.forEach { sensor ->
-                    val sensorSpecs = SensorSpecs(null, sensor.id, sensor.spec, sensor.name)
+                    val sensorSpecs = SensorSpecs(null, sensor.id, sensor.spec, sensor.name,sensor.settings?.frequency,sensor.settings?.cellular_upload)
                     sensorSpecsList.add(sensorSpecs)
                 }
                 oSensorDao.deleteSensorList()
