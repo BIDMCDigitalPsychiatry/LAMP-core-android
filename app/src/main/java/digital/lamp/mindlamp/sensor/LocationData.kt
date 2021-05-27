@@ -10,6 +10,7 @@ import java.lang.Exception
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
+import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.entity.SensorSpecs
@@ -21,11 +22,12 @@ import digital.lamp.mindlamp.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class LocationData constructor(sensorListener: SensorListener, context: Context){
+class LocationData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
     companion object {
         private val TAG = LocationData::class.java.simpleName
     }
@@ -33,6 +35,10 @@ class LocationData constructor(sensorListener: SensorListener, context: Context)
        try {
            //Location Settings
            Lamp.startLocations(context)
+           frequency?.let {
+               val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
+               Locations.setInterval(interval)
+           }
            //Location Observer
            Locations.setSensorObserver{ data ->
                 LampLog.e(data.toString())

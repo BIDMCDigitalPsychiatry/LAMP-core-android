@@ -7,16 +7,22 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.RotationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
 import digital.lamp.mindlamp.utils.Sensors
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class RotationData constructor(sensorListener: SensorListener, context: Context){
+class RotationData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
     init {
         try {
 
             Lamp.startRotation(context)//start Sensor
+            frequency?.let {
+                val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
+                Rotation.setInterval(interval)
+            }
             //Sensor Observer
             Rotation.setSensorObserver {
                 val x = it.getAsDouble(Rotation.VALUES_0)

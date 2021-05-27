@@ -14,7 +14,7 @@ import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.database.helper.ScheduleConverter
 import digital.lamp.mindlamp.utils.SingletonHolder
 
-@Database(entities = [Analytics::class, SensorSpecs::class, ActivitySchedule::class], version = 3, exportSchema = false)
+@Database(entities = [Analytics::class, SensorSpecs::class, ActivitySchedule::class], version = 4, exportSchema = false)
 @TypeConverters(ScheduleConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun analyticsDao(): AnalyticsDao
