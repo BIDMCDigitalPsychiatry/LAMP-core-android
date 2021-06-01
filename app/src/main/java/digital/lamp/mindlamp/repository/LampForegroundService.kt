@@ -160,8 +160,6 @@ class LampForegroundService : Service(),
     }
 
     private fun collectSensorData() {
-        if(!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(this))
-            return
         var sensorSpecList = arrayListOf<SensorSpecs>()
         oScope.launch(Dispatchers.IO) {
             sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
@@ -298,7 +296,7 @@ class LampForegroundService : Service(),
                             //Invoke Location
                             LocationData(
                                     this@LampForegroundService,
-                                    applicationContext,1.0
+                                    applicationContext,frequency
                             )
                         }
 
@@ -416,6 +414,8 @@ class LampForegroundService : Service(),
 
     //Method to perform Sensor Data Webservice after fetching the details from DB
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>) {
+        if(!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(this))
+            return
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
             DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             trackSingleEvent("API_Send_${sensorEventDataList.size}")
