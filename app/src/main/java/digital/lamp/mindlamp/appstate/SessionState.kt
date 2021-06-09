@@ -12,6 +12,7 @@ class SessionState {
         const val PREF_SHOW_DISCLOSURE_ALERT = "show_disclosure_alert"
         const val PREF_KEY_ALLOWED_CELLULAR_UPLOAD ="allowed_cellular_upload"
         const val PREF_LAST_SLEEP_DATA_TIME_STAMP = "last_sleep_data_timestamp"
+        const val PREF_LAST_STEP_DATA_TIME_STAMP = "last_step_data_timestamp"
     }
 
     var isLoggedIn by Pref(
@@ -42,6 +43,7 @@ class SessionState {
 
     var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,1L)
     var lastSleepDataTimestamp by Pref(PREF_LAST_SLEEP_DATA_TIME_STAMP,1L)
+    var lastStepDataTimestamp by Pref(PREF_LAST_STEP_DATA_TIME_STAMP,1L)
 
     fun clearData() {
         isLoggedIn = false
