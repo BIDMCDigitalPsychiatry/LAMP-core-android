@@ -151,7 +151,7 @@ class LampForegroundService : Service(),
         alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java).let { intent ->
             PendingIntent.getBroadcast(this, 0, intent, 0)
         }
-        alarmManager.setRepeating(
+        alarmManager.setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + ALARM_INTERVAL,
                 ALARM_INTERVAL,

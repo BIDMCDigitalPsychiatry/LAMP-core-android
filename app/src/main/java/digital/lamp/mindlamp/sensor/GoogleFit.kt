@@ -4,17 +4,23 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
+import com.google.android.gms.fitness.data.DataType.TYPE_STEP_COUNT_DELTA
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
+import com.google.android.gms.fitness.result.DataReadResponse
 import com.google.android.gms.fitness.result.SessionReadResponse
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import digital.lamp.lamp_kotlin.lamp_core.models.BloodPressureData
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.entity.SensorSpecs
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Sensors
 import java.text.DateFormat
@@ -91,7 +97,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                     LampLog.e(TAG, "Problem in reading data : $exception")
                 }
 
-        Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptions))
+       /* Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptions))
                 .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
                 .addOnSuccessListener { result ->
                     val dataSource = result.dataSource
@@ -113,9 +119,64 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                 }
                 .addOnFailureListener { e ->
                     Log.i(TAG, "There was a problem getting steps.", e)
-                }
+                }*/
+
+        readStepCount(context, oSensorSpecList)
+
         readSleepSessions(context, oSensorSpecList)
 
+    }
+
+    private fun readStepCount(context: Context, oSensorSpecList: ArrayList<SensorSpecs>) {
+        val fitnessOptionsStep: GoogleSignInOptionsExtension = FitnessOptions.builder()
+                .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ).build()
+
+        val startTime: Long = AppState.session.lastStepDataTimestamp
+        val endTime = Calendar.getInstance().timeInMillis
+        Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptionsStep))
+                .readData(
+                        DataReadRequest.Builder()
+                                .read(TYPE_STEP_COUNT_DELTA)
+                                .setTimeRange(
+                                        startTime,
+                                        endTime,
+                                        TimeUnit.MILLISECONDS
+                                )
+                                .build()
+                ).addOnSuccessListener { result ->
+                    LampLog.e(TAG, "Success : ${result.dataSets.size}")
+                    if (result.dataSets.isNotEmpty()) {
+                        result.dataSets.forEach {
+                            val dataPoints = it.dataPoints
+                            if (dataPoints.size > 0) {
+                                val endTimeList = it.dataPoints.map { it.getEndTime(TimeUnit.MILLISECONDS) }
+                                AppState.session.lastStepDataTimestamp = Collections.max(endTimeList)
+                                for (i in 0 until dataPoints.size) {
+                                    val dataSource = dataPoints[i].originalDataSource
+                                    var source = dataSource.appPackageName
+                                    if(source ==null ){
+                                        source = dataPoints[i].dataSource.appPackageName
+                                    }
+                                    val steps = dataPoints[i].getValue(Field.FIELD_STEPS)
+                                    steps?.let { steps ->
+                                        val sensorEvenData: SensorEvent = getStepsData(steps, source)
+                                        oSensorSpecList.forEach {
+                                            if (it.spec == Sensors.STEPS.sensor_name) {
+                                                sensorEventDataList.add(sensorEvenData)
+                                            }
+                                        }
+                                        if (oSensorSpecList.isEmpty()) {
+                                            sensorEventDataList.add(sensorEvenData)
+                                        }
+                                    }
+                                    Log.e(TAG, " Steps : $steps")
+                                    DebugLogs.writeToFile("Step Count : $steps")
+                                }
+
+                            }
+                        }
+                    }
+                }
     }
 
 
