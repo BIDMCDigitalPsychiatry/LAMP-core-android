@@ -137,7 +137,7 @@ class LampForegroundService : Service(),
                 invokeAddSensorData(sensorEventDataList)
             }
 
-            //Fetch google fit data in 10 min interval
+            //Fetch google fit data in 3 min interval
             Lamp.stopLAMP(this)
             collectSensorData()
         }
@@ -790,7 +790,7 @@ class LampForegroundService : Service(),
     override fun getAccelerometerData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -798,7 +798,7 @@ class LampForegroundService : Service(),
     override fun getRotationData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -806,7 +806,7 @@ class LampForegroundService : Service(),
     override fun getMagneticData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -814,7 +814,7 @@ class LampForegroundService : Service(),
     override fun getGyroscopeData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -822,7 +822,7 @@ class LampForegroundService : Service(),
     override fun getLocationData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -830,7 +830,7 @@ class LampForegroundService : Service(),
     override fun getWifiData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -838,7 +838,7 @@ class LampForegroundService : Service(),
     override fun getScreenState(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -846,7 +846,7 @@ class LampForegroundService : Service(),
     override fun getActivityData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
-        oScope.async {
+        GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
@@ -854,7 +854,7 @@ class LampForegroundService : Service(),
     override fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>) {
         LampLog.e("Google Fit : ${oGson.toJson(sensorEventData)}")
         val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
-        oScope.async {
+        GlobalScope.async {
             sensorEventData.forEach {
                 val oAnalytics = Analytics()
                 oAnalytics.analyticsData = oGson.toJson(it)
@@ -862,6 +862,7 @@ class LampForegroundService : Service(),
             }
             //Insert it into Analytics DB
             oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
+            LampLog.e("Google Fit : ${oGson.toJson(sensorEventData)}")
         }
     }
 
