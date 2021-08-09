@@ -1,11 +1,9 @@
-package com.example.alarmmanager
+package digital.lamp.mindlamp.sheduleing
 
 import android.content.Context
 import androidx.work.*
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.notification.LampNotificationManager
-import digital.lamp.mindlamp.sheduleing.RepeatInterval
-import digital.lamp.mindlamp.sheduleing.ScheduleConstants
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.WORK_MANAGER_TAG
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils

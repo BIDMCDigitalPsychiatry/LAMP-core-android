@@ -7,10 +7,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.*
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import com.example.alarmmanager.OneTimeScheduleWorker
+import androidx.work.*
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -33,9 +30,7 @@ import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.sensor.RotationData
-import digital.lamp.mindlamp.sheduleing.ActivityRepeatReceiver
-import digital.lamp.mindlamp.sheduleing.RepeatInterval
-import digital.lamp.mindlamp.sheduleing.ScheduleConstants
+import digital.lamp.mindlamp.sheduleing.*
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.WORK_MANAGER_TAG
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
@@ -113,29 +108,8 @@ class LampForegroundService : Service(),
             //  }
         } else {
             //This will execute every 3 min if logged in
-            val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
-            sensorEventDataList.clear()
-
-            val gson = GsonBuilder()
-                    .create()
-            GlobalScope.launch(Dispatchers.IO) {
-                val list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                list.forEach {
-                    sensorEventDataList.add(
-                            gson.fromJson(
-                                    it.analyticsData,
-                                    SensorEvent::class.java
-                            )
-                    )
-                }
-                list.let {
-                    if (it.isNotEmpty()) {
-                        AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
-                    }
-                }
-                LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
-                invokeAddSensorData(sensorEventDataList)
-            }
+            LampLog.e("Sensor : Trigger")
+            syncAnalyticsData()
 
             //Fetch google fit data in 3 min interval
             Lamp.stopLAMP(this)
@@ -143,6 +117,71 @@ class LampForegroundService : Service(),
         }
 
         return START_STICKY
+    }
+
+    private fun syncAnalyticsData() {
+        val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
+        sensorEventDataList.clear()
+
+        val gson = GsonBuilder()
+                .create()
+    /*    GlobalScope.launch(Dispatchers.IO) {
+            val endTime = AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+            val list = oAnalyticsDao.getAnalyticsList(endTime)
+            list.forEach {
+                sensorEventDataList.add(
+                        gson.fromJson(
+                                it.analyticsData,
+                                SensorEvent::class.java
+                        )
+                )
+            }
+            list.let {
+                if (it.isNotEmpty()) {
+                    AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+                }
+            }
+            LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
+            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
+            if (sensorEventDataList.isNotEmpty())
+                invokeAddSensorData(sensorEventDataList)
+        }*/
+        GlobalScope.launch(Dispatchers.IO) {
+            val list: List<Analytics>
+            LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
+            list = if (AppState.session.lastAnalyticsTimestamp == 1L)
+                oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+            else {
+                val endTime = AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+                LampLog.e("Sensor : END TIME $endTime")
+                oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
+
+            }
+            list.forEach {
+                sensorEventDataList.add(
+                        gson.fromJson(
+                                it.analyticsData,
+                                SensorEvent::class.java
+                        )
+                )
+            }
+            list.let {
+                if (it.isNotEmpty()) {
+                    AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+                }
+            }
+            LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
+            //   DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
+            if (sensorEventDataList.isNotEmpty())
+                invokeAddSensorData(sensorEventDataList)
+            else {
+                val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                if (dbList.isNotEmpty()) {
+                    AppState.session.lastAnalyticsTimestamp = AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+                    syncAnalyticsData()
+                }
+            }
+        }
     }
 
     @SuppressLint("ObsoleteSdkInt")
@@ -176,16 +215,19 @@ class LampForegroundService : Service(),
                     )
                     2 -> {
                         var accelerometerDataRequired = false
-                        var frequency:Double?=null
+                        var sensorSpec =""
+                        var frequency: Double? = null
                         if (sensorSpecList.isEmpty()) {
                             accelerometerDataRequired = true
 
                         } else {
                             sensorSpecList.forEach {
-                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
+                                        it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     accelerometerDataRequired = true
+                                    sensorSpec = it.spec!!
                                     it.frequency?.let {
-                                        if (it!= 0.0 && it <= 1)
+                                        if (it != 0.0 && it <= 1)
                                             frequency = it
                                     }
                                 }
@@ -196,12 +238,12 @@ class LampForegroundService : Service(),
                             AccelerometerData(
                                     this@LampForegroundService,
                                     applicationContext,
-                                frequency)
+                                    frequency,sensorSpec)
                         }
                     }
                     3 -> {
                         var rotationDataRequird = false
-                        var frequency:Double?=null
+                        var frequency: Double? = null
                         if (sensorSpecList.isEmpty()) {
                             rotationDataRequird = true
 
@@ -210,7 +252,7 @@ class LampForegroundService : Service(),
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     rotationDataRequird = true
                                     it.frequency?.let {
-                                        if (it!= 0.0 && it <= 1)
+                                        if (it != 0.0 && it <= 1)
                                             frequency = it
                                     }
                                 } //Invoke Rotation Call
@@ -225,7 +267,7 @@ class LampForegroundService : Service(),
                     }
                     4 -> {
                         var magnetometerDataRequired = false
-                        var frequency:Double?=null
+                        var frequency: Double? = null
                         if (sensorSpecList.isEmpty()) {
                             magnetometerDataRequired = true
 
@@ -234,7 +276,7 @@ class LampForegroundService : Service(),
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     magnetometerDataRequired = true
                                     it.frequency?.let {
-                                        if (it!= 0.0 && it <= 1)
+                                        if (it != 0.0 && it <= 1)
                                             frequency = it
                                     }
                                 }
@@ -244,14 +286,14 @@ class LampForegroundService : Service(),
                             //Invoke Magnet Call
                             MagnetometerData(
                                     this@LampForegroundService,
-                                    applicationContext,frequency
+                                    applicationContext, frequency
                             )
                         }
 
                     }
                     5 -> {
                         var gyroscopeDataRequired = false
-                        var frequency:Double?=null
+                        var frequency: Double? = null
                         if (sensorSpecList.isEmpty()) {
                             gyroscopeDataRequired = true
 
@@ -261,7 +303,7 @@ class LampForegroundService : Service(),
                                     gyroscopeDataRequired = true
 
                                     it.frequency?.let {
-                                        if (it!= 0.0 && it <= 1)
+                                        if (it != 0.0 && it <= 1)
                                             frequency = it
                                     }
                                 }//Invoke Gyroscope Call
@@ -270,14 +312,14 @@ class LampForegroundService : Service(),
                         if (gyroscopeDataRequired) {
                             GyroscopeData(
                                     this@LampForegroundService,
-                                    applicationContext,frequency
+                                    applicationContext, frequency
                             )
                         }
 
                     }
                     6 -> {
                         var locationDateRequired = false
-                        var frequency:Double?=null
+                        var frequency: Double? = null
                         if (sensorSpecList.isEmpty()) {
                             locationDateRequired = true
 
@@ -286,7 +328,7 @@ class LampForegroundService : Service(),
                                 if (it.spec == Sensors.GPS.sensor_name) {
                                     locationDateRequired = true
                                     it.frequency?.let {
-                                        if (it!= 0.0 && it <= 1)
+                                        if (it != 0.0 && it <= 1)
                                             frequency = it
                                     }
                                 }
@@ -296,7 +338,7 @@ class LampForegroundService : Service(),
                             //Invoke Location
                             LocationData(
                                     this@LampForegroundService,
-                                    applicationContext,frequency
+                                    applicationContext, frequency
                             )
                         }
 
@@ -398,11 +440,11 @@ class LampForegroundService : Service(),
                         state.toString(),
                         SensorSpec::class.java
                 )
-                if(oSensorSpec.data.isNotEmpty()){
-                    AppState.session.isCellularUploadAllowed = oSensorSpec.data.find {  it.settings==null || it.settings?.cellular_upload ==null || it.settings?.cellular_upload ==true }!=null
+                if (oSensorSpec.data.isNotEmpty()) {
+                    AppState.session.isCellularUploadAllowed = oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
                 }
                 oSensorSpec.data.forEach { sensor ->
-                    val sensorSpecs = SensorSpecs(null, sensor.id, sensor.spec, sensor.name,sensor.settings?.frequency,sensor.settings?.cellular_upload)
+                    val sensorSpecs = SensorSpecs(null, sensor.id, sensor.spec, sensor.name, sensor.settings?.frequency, sensor.settings?.cellular_upload)
                     sensorSpecsList.add(sensorSpecs)
                 }
                 oSensorDao.deleteSensorList()
@@ -414,7 +456,7 @@ class LampForegroundService : Service(),
 
     //Method to perform Sensor Data Webservice after fetching the details from DB
     private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>) {
-        if(!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(this))
+        if (!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(this))
             return
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
             DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
@@ -437,6 +479,8 @@ class LampForegroundService : Service(),
                 //Code for drop DB
                 GlobalScope.launch(Dispatchers.IO) {
                     oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    LampLog.e("Sensor : invokeAddSensorData")
+                    syncAnalyticsData()
                 }
             }
         }
@@ -791,7 +835,7 @@ class LampForegroundService : Service(),
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         GlobalScope.async {
-            oAnalyticsDao.insertAnalytics(oAnalytics)
+           val id =  oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
 
@@ -881,7 +925,7 @@ class LampForegroundService : Service(),
         } else {
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = elapsedTimeMs
-            calendar.add(Calendar.DAY_OF_MONTH,1)
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
             val nextNotificationTime = calendar.timeInMillis
             delay = nextNotificationTime - System.currentTimeMillis()
         }
@@ -934,6 +978,7 @@ class LampForegroundService : Service(),
             WorkManager.getInstance(this).enqueue(work)
         }
     }
+
     private fun setLocalNotification(
             oNotificationId: Int?,
             oTime: String,

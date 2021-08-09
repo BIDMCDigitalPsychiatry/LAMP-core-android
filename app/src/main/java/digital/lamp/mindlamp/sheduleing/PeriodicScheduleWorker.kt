@@ -1,21 +1,10 @@
-package com.example.alarmmanager
+package digital.lamp.mindlamp.sheduleing
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
-import android.graphics.BitmapFactory
-import android.os.Build
-import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
-import androidx.work.ListenableWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
-import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.notification.LampNotificationManager
-import digital.lamp.mindlamp.sheduleing.ScheduleConstants
-import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
 
@@ -38,7 +27,7 @@ class PeriodicScheduleWorker(
                     if(Utils.getMyIntValue(it) == notificationId){
                         LampLog.e("BROADCASTRECEIVER","invokeLocalNotification 3")
                         LampLog.e(
-                            OneTimeScheduleWorker.TAG,
+                                OneTimeScheduleWorker.TAG,
                             "Activity Name :: - ${activitySchedule.name} ---- $notificationId"
                         )
                         LampNotificationManager.showActivityNotification(
