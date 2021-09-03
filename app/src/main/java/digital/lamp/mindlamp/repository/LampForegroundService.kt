@@ -107,7 +107,7 @@ class LampForegroundService : Service(),
             invokeLocalNotification(localNotificationId)
             //  }
         } else {
-            //This will execute every 3 min if logged in
+            //This will execute every 10 min if logged in
             LampLog.e("Sensor : Trigger")
             syncAnalyticsData()
 
@@ -215,7 +215,7 @@ class LampForegroundService : Service(),
                     )
                     2 -> {
                         var accelerometerDataRequired = false
-                        var sensorSpec =""
+                        var sensorSpec = ""
                         var frequency: Double? = null
                         if (sensorSpecList.isEmpty()) {
                             accelerometerDataRequired = true
@@ -238,7 +238,7 @@ class LampForegroundService : Service(),
                             AccelerometerData(
                                     this@LampForegroundService,
                                     applicationContext,
-                                    frequency,sensorSpec)
+                                    frequency, sensorSpec)
                         }
                     }
                     3 -> {

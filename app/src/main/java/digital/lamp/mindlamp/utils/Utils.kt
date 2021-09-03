@@ -1,13 +1,23 @@
 package digital.lamp.mindlamp.utils
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Environment
+import android.os.PowerManager
+import android.os.StatFs
 import android.util.Base64
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
+import digital.lamp.mindlamp.R
+import java.io.File
 import java.io.UnsupportedEncodingException
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -87,4 +97,91 @@ object Utils {
         }
         return false
     }
+
+    fun permissionStatus(context: Context){
+       /* val info: PackageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
+        val requestedPermissions = info.requestedPermissions //This array contains the requested permissions.
+        val permissions = info.permissions
+        Log.e("PermissionStatus ", "permissions " + permissions.size)*/
+
+        val granted: MutableList<String> = ArrayList()
+        try {
+            val pi: PackageInfo = context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.GET_PERMISSIONS
+            )
+            for (i in pi.requestedPermissions.indices) {
+                if ((pi.requestedPermissionsFlags[i] and PackageInfo.REQUESTED_PERMISSION_GRANTED) == PackageInfo.REQUESTED_PERMISSION_GRANTED){
+                    granted.add(pi.requestedPermissions[i])
+                }
+            }
+        } catch (e: java.lang.Exception) {
+        }
+    }
+
+    fun getLocationAuthorizationStatus(context: Context):String{
+        var status =""
+        val backgroundLocationPermissionApproved =
+        ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        )
+        val fineLocationPermissionApproved =
+                ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
+        if(backgroundLocationPermissionApproved == PackageManager.PERMISSION_GRANTED)
+            status = context.getString(R.string.location_status_background_allowed)
+        else if(fineLocationPermissionApproved == PackageManager.PERMISSION_GRANTED)
+            status = context.getString(R.string.location_status_allowed)
+        return status
+    }
+
+    fun isDeviceIsInPowerSaveMode(context: Context):Boolean {
+        val powerManager: PowerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isPowerSaveMode
+    }
+
+
+    fun getAvailableInternalMemorySize(): String? {
+        val path: File = Environment.getDataDirectory()
+        val stat = StatFs(path.getPath())
+        val blockSize = stat.blockSizeLong
+        val availableBlocks = stat.availableBlocksLong
+        return formatSize(availableBlocks * blockSize)
+    }
+
+    fun getTotalInternalMemorySize(): String? {
+        val path: File = Environment.getDataDirectory()
+        val stat = StatFs(path.getPath())
+        val blockSize = stat.blockSizeLong
+        val totalBlocks = stat.blockCountLong
+        return formatSize(totalBlocks * blockSize)
+    }
+
+
+
+    private fun formatSize(size: Long): String? {
+        var size = size
+        var suffix: String? = null
+        if (size >= 1024) {
+            suffix = "KB"
+            size /= 1024
+            if (size >= 1024) {
+                suffix = "MB"
+                size /= 1024
+            }
+        }
+        val resultBuffer = StringBuilder(java.lang.Long.toString(size))
+        var commaOffset = resultBuffer.length - 3
+        while (commaOffset > 0) {
+            resultBuffer.insert(commaOffset, ',')
+            commaOffset -= 3
+        }
+        if (suffix != null) resultBuffer.append(suffix)
+        return resultBuffer.toString()
+    }
+
+
 }

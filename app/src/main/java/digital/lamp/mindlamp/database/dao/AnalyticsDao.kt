@@ -18,6 +18,9 @@ interface AnalyticsDao {
     @Query("SELECT * from analytics_table WHERE analytics_date_ms BETWEEN :timestamp and :endTime ORDER BY analytics_date_ms DESC")
     suspend fun getAnalyticsList(timestamp: Long, endTime:Long): List<Analytics>
 
+    @Query("SELECT COUNT(*) FROM analytics_table WHERE analytics_date_ms > :timestamp ORDER BY analytics_date_ms DESC")
+    suspend fun getNumberOfRecordsToSync(timestamp: Long): Int
+
     @Query("DELETE from analytics_table WHERE analytics_date_ms <= :timestamp")
     suspend fun deleteAnalyticsList(timestamp: Long)
 

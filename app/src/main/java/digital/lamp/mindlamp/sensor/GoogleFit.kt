@@ -344,7 +344,16 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         sensorEventDataList.add(sensorEvenData)
                     }
                 }
-
+               /* "com.google.activity.segment" -> {
+                    val field = dp.dataType.fields[0]
+                    LampLog.e(TAG, "Activity Segment : " + dp.getValue(field))
+                    val sensorEvenData: SensorEvent = getSleepData(dp.getValue(field))
+                    oSensorSpecList.forEach {
+                        if(it.spec == Sensors.SLEEP.sensor_name){
+                            sensorEventDataList.add(sensorEvenData)
+                        }
+                    }
+                }*/
                 /*"com.google.step_count.delta" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Step Count : " + dp.getValue(field))
