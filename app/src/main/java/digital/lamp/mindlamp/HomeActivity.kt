@@ -184,6 +184,7 @@ class HomeActivity : AppCompatActivity(){
                 // Initialize the map with both permissions
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED
                 perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
+                perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] = PackageManager.PERMISSION_GRANTED
 
                 if (grantResults.isNotEmpty()) {
                     for (i in permissions.indices)
@@ -191,6 +192,8 @@ class HomeActivity : AppCompatActivity(){
                     // Check for both permissions
                     if (perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
                         && perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
+                            && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED
+
                     ) {
                         //Fit SignIn Auth
                         fitSignIn()
@@ -205,7 +208,10 @@ class HomeActivity : AppCompatActivity(){
                             || ActivityCompat.shouldShowRequestPermissionRationale(
                                 this,
                                 Manifest.permission.ACTIVITY_RECOGNITION
-                            )
+                            ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                                        this,
+                                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                                )
                         ) {
                             // case 4 User has denied permission but not permanently
                             showDialogOK("Service Permissions are required for this app",
