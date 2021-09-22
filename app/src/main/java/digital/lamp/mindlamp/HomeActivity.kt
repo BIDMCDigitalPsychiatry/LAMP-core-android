@@ -13,9 +13,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -29,11 +27,15 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityAPI
-import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
-import digital.lamp.lamp_kotlin.lamp_core.models.ActivityResponse
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.database.AppDatabase
+import digital.lamp.mindlamp.database.dao.ActivityDao
+import digital.lamp.mindlamp.database.dao.AnalyticsDao
+import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
@@ -44,13 +46,6 @@ import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
-import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
-import digital.lamp.mindlamp.database.AppDatabase
-import digital.lamp.mindlamp.database.dao.ActivityDao
-import digital.lamp.mindlamp.database.dao.AnalyticsDao
-import digital.lamp.mindlamp.database.dao.SensorDao
-import digital.lamp.mindlamp.database.entity.ActivitySchedule
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -58,18 +53,19 @@ import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.collections.HashMap
 
+
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 
-class HomeActivity : AppCompatActivity(){
+class HomeActivity : AppCompatActivity() {
 
     private lateinit var oSensorDao: SensorDao
     private lateinit var oActivityDao: ActivityDao
     private lateinit var oAnalyticsDao: AnalyticsDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
-    companion object{
+    companion object {
         private val TAG = HomeActivity::class.java.simpleName
         private const val REQUEST_OAUTH_REQUEST_CODE = 1010
 
@@ -77,33 +73,33 @@ class HomeActivity : AppCompatActivity(){
 
     private val fitnessOptions: FitnessOptions by lazy {
         FitnessOptions.builder()
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
-            .build()
+                .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,11 +110,11 @@ class HomeActivity : AppCompatActivity(){
         oActivityDao = AppDatabase.getInstance(this).activityDao()
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
 
-        if(AppState.session.showDisclosureAlert){
+        if (AppState.session.showDisclosureAlert) {
             progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
-        }else {
-            if(checkAndRequestPermissions(this)){
+        } else {
+            if (checkAndRequestPermissions(this)) {
                 //Fit SignIn Auth
                 fitSignIn()
                 initializeWebview()
@@ -145,20 +141,20 @@ class HomeActivity : AppCompatActivity(){
         webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
 
         var url = ""
-        if(AppState.session.isLoggedIn){
-             url = BuildConfig.MAIN_PAGE_URL+ Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
-                    .removePrefix(
-                        "http://"
-                    )
+        if (AppState.session.isLoggedIn) {
+            url = BuildConfig.MAIN_PAGE_URL + Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
+                            .removePrefix(
+                                    "http://"
+                            )
             )
             webView.loadUrl(url)
 
             //Start Foreground service for retrieving data
-            if(!this.isServiceRunning(LampForegroundService::class.java)){
+            if (!this.isServiceRunning(LampForegroundService::class.java)) {
                 startLampService()
             }
-        }else{
+        } else {
 
             url = BuildConfig.BASE_URL_WEB
             webView.loadUrl(url)
@@ -169,13 +165,30 @@ class HomeActivity : AppCompatActivity(){
                 Log.e(TAG, " : $url")
                 progressBar.visibility = View.GONE;
             }
+
+            override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
+                return if (url == null || url.startsWith("http://") || url.startsWith("https://")) false else try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    view.context.startActivity(intent)
+                    true
+                } catch (e: java.lang.Exception) {
+                    Log.i(TAG, "shouldOverrideUrlLoading Exception:$e")
+                    true
+                }
+            }
+
+        }
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                request.grant(request.resources)
+            }
         }
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -191,7 +204,7 @@ class HomeActivity : AppCompatActivity(){
                         perms[permissions[i]] = grantResults[i]
                     // Check for both permissions
                     if (perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
-                        && perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
+                            && perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
                             && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED
 
                     ) {
@@ -202,29 +215,29 @@ class HomeActivity : AppCompatActivity(){
                     } else {
                         //Now further we check if used denied permanently or not
                         if (ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                            || ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.ACTIVITY_RECOGNITION
-                            ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                                        this,
+                                        Manifest.permission.ACCESS_FINE_LOCATION
+                                )
+                                || ActivityCompat.shouldShowRequestPermissionRationale(
+                                        this,
+                                        Manifest.permission.ACTIVITY_RECOGNITION
+                                ) || ActivityCompat.shouldShowRequestPermissionRationale(
                                         this,
                                         Manifest.permission.ACCESS_BACKGROUND_LOCATION
                                 )
                         ) {
                             // case 4 User has denied permission but not permanently
                             showDialogOK("Service Permissions are required for this app",
-                                DialogInterface.OnClickListener { _, which ->
-                                    when (which) {
-                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
-                                            this
-                                        )
-                                        DialogInterface.BUTTON_NEGATIVE ->
-                                            // proceed with logic by disabling the related features or quit the app.
-                                            finish()
-                                    }
-                                })
+                                    DialogInterface.OnClickListener { _, which ->
+                                        when (which) {
+                                            DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
+                                                    this
+                                            )
+                                            DialogInterface.BUTTON_NEGATIVE ->
+                                                // proceed with logic by disabling the related features or quit the app.
+                                                finish()
+                                        }
+                                    })
                         } else {
                             // case 5. Permission denied permanently.
                             // You can open Permission setting's page from here now.
@@ -242,11 +255,11 @@ class HomeActivity : AppCompatActivity(){
 
     private fun showDialogOK(message: String, okListener: DialogInterface.OnClickListener) {
         AlertDialog.Builder(this)
-            .setMessage(message)
-            .setPositiveButton("OK", okListener)
-            .setNegativeButton("Cancel", okListener)
-            .create()
-            .show()
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", okListener)
+                .create()
+                .show()
     }
 
 
@@ -254,8 +267,8 @@ class HomeActivity : AppCompatActivity(){
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
             putExtra("inputExtra", "Foreground Service Example in Android")
             putExtra("set_alarm", false)
-            putExtra("set_activity_schedule",false)
-            putExtra("notification_id",0)
+            putExtra("set_activity_schedule", false)
+            putExtra("notification_id", 0)
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
@@ -279,13 +292,13 @@ class HomeActivity : AppCompatActivity(){
             Log.e(TAG, " : $jsonString")
             try {
                 val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
-                if(!AppState.session.isLoggedIn && !loginResponse.deleteCache) {
+                if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
                     homeActivity.onAuthenticationStateChanged(
-                        AuthenticationState.StoredCredentials(
-                            loginResponse
-                        )
+                            AuthenticationState.StoredCredentials(
+                                    loginResponse
+                            )
                     )
-                }else if(loginResponse.deleteCache){
+                } else if (loginResponse.deleteCache) {
                     homeActivity.onAuthenticationStateChanged(AuthenticationState.SignedOut)
                 }
             } catch (ex: Exception) {
@@ -311,31 +324,39 @@ class HomeActivity : AppCompatActivity(){
         tokenData.action = "logout"
         tokenData.device_type = "Android"
         val sendTokenRequest = SensorEvent(
-            tokenData,
-            "lamp.analytics",
-            System.currentTimeMillis().toDouble()
+                tokenData,
+                "lamp.analytics",
+                System.currentTimeMillis().toDouble()
         )
 
-        val basic = "Basic ${Utils.toBase64(
-            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                "https://"
-            ).removePrefix("http://")
-        )}"
+        val basic = "Basic ${
+            Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                            "https://"
+                    ).removePrefix("http://")
+            )
+        }"
 
         Lamp.stopLAMP(this)
         stopLampService()
 
         GlobalScope.launch(Dispatchers.IO) {
-            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                AppState.session.userId,
-                sendTokenRequest,
-                basic
-            )
-            LampLog.e(TAG, " Logout Response -  $state")
-            if(state.isNotEmpty()){
-                //Code for drop DB
+            try {
+                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                        AppState.session.userId,
+                        sendTokenRequest,
+                        basic
+                )
+                if (state.isNotEmpty()) {
+                    //Code for drop DB
+                    AppState.session.clearData()
+                    LampLog.e(TAG, " Logout Response -  $state")
+                }
+            } catch (e: Exception) {
                 AppState.session.clearData()
             }
+
+
             oSensorDao.deleteSensorList()
             oActivityDao.deleteActivityList()
             oAnalyticsDao.dropAnalyticsList()
@@ -347,15 +368,14 @@ class HomeActivity : AppCompatActivity(){
         AppState.session.isLoggedIn = true
         AppState.session.token = oLoginResponse.authorizationToken
         AppState.session.userId = oLoginResponse.identityObject.id
-        if(!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
-                "http://"
-            )){
-            AppState.session.serverAddress = "https://"+oLoginResponse.serverAddress
-        }
-        else AppState.session.serverAddress = oLoginResponse.serverAddress
+        if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
+                        "http://"
+                )) {
+            AppState.session.serverAddress = "https://" + oLoginResponse.serverAddress
+        } else AppState.session.serverAddress = oLoginResponse.serverAddress
 
         //Start Foreground service for retrieving data
-        if(!this.isServiceRunning(LampForegroundService::class.java)){
+        if (!this.isServiceRunning(LampForegroundService::class.java)) {
             startLampService()
         }
 
@@ -363,7 +383,7 @@ class HomeActivity : AppCompatActivity(){
         retrieveCurrentToken()
 
         //Setting User Attributes for Firebase
-        firebaseAnalytics.setUserProperty("user_token",oLoginResponse.authorizationToken)
+        firebaseAnalytics.setUserProperty("user_token", oLoginResponse.authorizationToken)
     }
 
     private fun fitSignIn() {
@@ -371,10 +391,10 @@ class HomeActivity : AppCompatActivity(){
             accessGoogleFit()
         } else {
             GoogleSignIn.requestPermissions(
-                this,
-                REQUEST_OAUTH_REQUEST_CODE,
-                getGoogleAccount(),
-                fitnessOptions
+                    this,
+                    REQUEST_OAUTH_REQUEST_CODE,
+                    getGoogleAccount(),
+                    fitnessOptions
             )
         }
     }
@@ -395,7 +415,7 @@ class HomeActivity : AppCompatActivity(){
     }
 
     private fun accessGoogleFit() {
-        LampLog.e(TAG,"Google Fit Connected")
+        LampLog.e(TAG, "Google Fit Connected")
         trackSingleEvent("Fit_Success")
         DebugLogs.writeToFile("Google Fit Connected")
 //        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
@@ -416,27 +436,29 @@ class HomeActivity : AppCompatActivity(){
             tokenData.device_token = token.toString()
             tokenData.device_type = "Android"
             val sendTokenRequest = SensorEvent(
-                tokenData,
-                "lamp.analytics",
-                System.currentTimeMillis().toDouble()
+                    tokenData,
+                    "lamp.analytics",
+                    System.currentTimeMillis().toDouble()
             )
 
-            val basic = "Basic ${Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                    "https://"
-                ).removePrefix("http://")
-            )}"
+            val basic = "Basic ${
+                Utils.toBase64(
+                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                "https://"
+                        ).removePrefix("http://")
+                )
+            }"
 
             GlobalScope.launch {
                 val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    sendTokenRequest,
-                    basic
+                        AppState.session.userId,
+                        sendTokenRequest,
+                        basic
                 )
                 LampLog.e(TAG, " Token Send Response -  $state")
             }
             //Setting User Attributes for Firebase
-            firebaseAnalytics.setUserProperty("user_fcm_token",token)
+            firebaseAnalytics.setUserProperty("user_fcm_token", token)
         }
     }
 
@@ -447,14 +469,14 @@ class HomeActivity : AppCompatActivity(){
             Request code was: $requestCode
             Result code was: $resultCode
         """.trimIndent()
-        LampLog.e(TAG,message)
+        LampLog.e(TAG, message)
         DebugLogs.writeToFile(message)
         trackSingleEvent("Fit_ERROR")
     }
 
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
-        getGoogleAccount(),
-        fitnessOptions
+            getGoogleAccount(),
+            fitnessOptions
     )
 
     /**
@@ -472,7 +494,7 @@ class HomeActivity : AppCompatActivity(){
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()
             AppState.session.showDisclosureAlert = false
-            if(checkAndRequestPermissions(this)){
+            if (checkAndRequestPermissions(this)) {
                 //Fit SignIn Auth
                 fitSignIn()
                 initializeWebview()
@@ -488,6 +510,14 @@ class HomeActivity : AppCompatActivity(){
             setCancelable(false)
             setPositiveButton("OK", DialogInterface.OnClickListener(function = positiveButtonClick))
             show()
+        }
+    }
+
+    override fun onBackPressed() {
+        if (webView.copyBackForwardList().getCurrentIndex() > 0) {
+            webView.goBack()
+        } else {
+            super.onBackPressed() // finishes activity
         }
     }
 }

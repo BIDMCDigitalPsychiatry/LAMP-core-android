@@ -22,7 +22,13 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-feature android:name="android.hardware.wifi" />
-
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MICROPHONE" />
+    <uses-feature android:name="android.hardware.audio.low_latency" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-feature android:name="android.hardware.audio.pro" />
+    <uses-feature android:name="android.hardware.microphone"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
         android:name="digital.lamp.mindlamp.app.App"
         android:allowBackup="true"
