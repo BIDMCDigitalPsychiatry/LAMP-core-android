@@ -15,6 +15,9 @@ interface AnalyticsDao {
     @Query("SELECT * from analytics_table WHERE analytics_date_ms > :timestamp ORDER BY analytics_date_ms DESC")
     suspend fun getAnalyticsList(timestamp: Long): List<Analytics>
 
+    @Query("SELECT * from analytics_table WHERE analytics_date_ms > :timestamp ORDER BY analytics_date_ms ASC LIMIT 1")
+    suspend fun getFirstAnalyticsRecord(timestamp: Long): Analytics?
+
     @Query("SELECT * from analytics_table WHERE analytics_date_ms BETWEEN :timestamp and :endTime ORDER BY analytics_date_ms DESC")
     suspend fun getAnalyticsList(timestamp: Long, endTime:Long): List<Analytics>
 

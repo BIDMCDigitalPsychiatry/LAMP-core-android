@@ -149,14 +149,16 @@ class LampForegroundService : Service(),
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
             LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
-            list = if (AppState.session.lastAnalyticsTimestamp == 1L)
-                oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-            else {
+             if (AppState.session.lastAnalyticsTimestamp == 1L) {
+                val analytics = oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
+                AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond?:1L
+            }
+            LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
                 val endTime = AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
                 LampLog.e("Sensor : END TIME $endTime")
-                oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
+            list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
 
-            }
+
             list.forEach {
                 sensorEventDataList.add(
                         gson.fromJson(

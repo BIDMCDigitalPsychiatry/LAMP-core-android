@@ -1,6 +1,7 @@
 package digital.lamp.mindlamp.utils
 
 import android.Manifest
+import android.Manifest.permission_group.MICROPHONE
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
@@ -24,6 +25,9 @@ object PermissionCheck {
         //Android 10
         val activityRecognitionPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION)
 
+        val audioRecordPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+        val modifyAudioSettingsPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.MODIFY_AUDIO_SETTINGS)
+        val writeStorage = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         val listPermissionsNeeded = ArrayList<String>()
 
         if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
@@ -51,6 +55,16 @@ object PermissionCheck {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && activityRecognitionPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+
+        if(audioRecordPermission!=PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO)
+        }
+        if(modifyAudioSettingsPermission!=PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.MODIFY_AUDIO_SETTINGS)
+        }
+        if(writeStorage!=PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
 
         if (listPermissionsNeeded.isNotEmpty()) {
