@@ -1,6 +1,8 @@
 package digital.lamp.mindlamp
 
 import android.annotation.SuppressLint
+import android.app.NotificationManager
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
@@ -19,9 +21,12 @@ class NotificationActionActivity : AppCompatActivity() {
         val surveyUrl = intent.getStringExtra("survey_path")
         val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
 
-        val oSurveyUrl = BuildConfig.BASE_URL_WEB+surveyUrl+"?a="+Utils.toBase64(AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
+        val oSurveyUrl = BuildConfig.BASE_URL_WEB.dropLast(1)+surveyUrl+"?a="+Utils.toBase64(AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
 
         DebugLogs.writeToFile("URL : $oSurveyUrl")
+
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.cancel(notificationId)
 
         webviewOverview.clearCache(true)
         webviewOverview.clearHistory()
@@ -30,5 +35,9 @@ class NotificationActionActivity : AppCompatActivity() {
         webviewOverview.loadUrl(oSurveyUrl);
 
         NotificationManagerCompat.from(this).cancel(notificationId)
+
+        btnBack.setOnClickListener {
+            onBackPressed()
+        }
     }
 }
