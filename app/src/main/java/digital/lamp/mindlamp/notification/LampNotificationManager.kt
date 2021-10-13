@@ -205,7 +205,7 @@ object LampNotificationManager {
         val timeOut = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((5).toLong())
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
-                .setContentText("Local notification "+String.format(context.getString(R.string.local_notification_text), oActivitySchedule.name))
+                .setContentText(String.format(context.getString(R.string.local_notification_text), oActivitySchedule.name))
                 .setSmallIcon(R.drawable.ic_stat_noti_icon)
                 .addAction(R.drawable.ic_stat_noti_icon, context.getString(R.string.notification_action), actionPendingIntent)
                 .setLargeIcon(
