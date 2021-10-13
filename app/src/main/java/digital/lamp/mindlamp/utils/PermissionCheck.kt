@@ -1,7 +1,6 @@
 package digital.lamp.mindlamp.utils
 
 import android.Manifest
-import android.Manifest.permission_group.MICROPHONE
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
@@ -18,7 +17,7 @@ object PermissionCheck {
         val cameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
         val contactPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
         val permissionLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        val permissionBackgroundLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        //val permissionBackgroundLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         val readStorage = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
         val readSyncSettingPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_SETTINGS)
         val readSyncStatPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_STATS)
@@ -36,14 +35,14 @@ object PermissionCheck {
         if (contactPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_CONTACTS)
         }
-        if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
+     /*   if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        }*/
+       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         if (permissionBackgroundLocation != PackageManager.PERMISSION_GRANTED) {
                 listPermissionsNeeded.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             }
-        }
+        }*/
         if (readStorage != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
@@ -72,5 +71,9 @@ object PermissionCheck {
             return false
         }
         return true
+    }
+
+     fun checkSinglePermission(permission: String,context: Activity): Boolean {
+        return ActivityCompat.checkSelfPermission(context, permission) === PackageManager.PERMISSION_GRANTED
     }
 }

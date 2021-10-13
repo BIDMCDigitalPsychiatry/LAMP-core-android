@@ -32,4 +32,8 @@
     <string name="location_status_background_allowed">Allow all the time</string>
     <string name="location_status_allowed">Allow only while using the app</string>
     <string name="location_status_denied">Denied</string>
+
+    <string name="location_permission">Location Permission Needed</string>
+    <string name="settings">Settings</string>
+    <string name="ok">OK</string>
 </resources>
