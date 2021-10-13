@@ -83,7 +83,8 @@ android {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.prodBaseUrl
             buildConfigField 'String', 'HOST_LOG', project.prodLogUrl
-            buildConfigField 'boolean', 'DO_LOG', 'true'
+            buildConfigField 'boolean', 'DO_LOG', 'false' +
+                    ''
             buildConfigField 'String', 'BASE_URL_WEB', project.prodBaseUrlWeb
             buildConfigField 'String', 'MAIN_PAGE_URL', project.prodMainPageUrlWeb
 
