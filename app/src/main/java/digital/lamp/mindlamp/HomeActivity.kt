@@ -2,6 +2,7 @@ package digital.lamp.mindlamp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -9,6 +10,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -43,7 +45,9 @@ import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.PermissionCheck
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
+import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.android.synthetic.main.activity_home.*
@@ -68,6 +72,13 @@ class HomeActivity : AppCompatActivity() {
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
         private const val REQUEST_OAUTH_REQUEST_CODE = 1010
+        private const val REQUEST_LOCATION_REQUEST_CODE = 1011
+        private const val REQUEST_PERMISSION_SETTING = 1012
+        private const val REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE = 1013
+        var permList = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        var backgroundPermission = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        var locationPermission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
 
     }
 
@@ -114,10 +125,16 @@ class HomeActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
-            if (checkAndRequestPermissions(this)) {
-                //Fit SignIn Auth
-                fitSignIn()
-                initializeWebview()
+             if (checkAndRequestPermissions(this)) {
+                 if(checkLocationPermission()) {
+                     DebugLogs.writeToFile("onCreate checkLocationPermission TRUE")
+                     //Fit SignIn Auth
+                     fitSignIn()
+                     initializeWebview()
+                 }else{
+                     DebugLogs.writeToFile("onCreate checkLocationPermission FALSE")
+                     requestLocationPermission()
+                 }
             }
         }
 
@@ -127,6 +144,115 @@ class HomeActivity : AppCompatActivity() {
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 
+   private fun checkLocationPermission(): Boolean {
+       val locationPermission = doHaveAllLocationPermissions()
+        return locationPermission
+    }
+
+    private fun doHaveAllLocationPermissions(): Boolean {
+        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)
+        } else {
+            checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) &&
+                    checkSinglePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION, this)
+        }
+    }
+
+   private fun requestLocationPermission() {
+       DebugLogs.writeToFile("requestLocationPermission")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                var rationale = false
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    DebugLogs.writeToFile("requestLocationPermission 1")
+                   // rationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
+                }
+               /* if (rationale) {
+                    //Never ask again is not checked
+                    requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
+                } else {
+                    //User checked never ask again
+                    showRationaleDialog()
+                }*/
+            }
+
+    }
+
+    fun showRationaleDialog() {
+        android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.location_permission)
+                .setMessage(R.string.app_disclosure)
+                .setPositiveButton(R.string.settings, DialogInterface.OnClickListener { dialog, which ->
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    val uri = Uri.fromParts("package", getPackageName(), null)
+                    intent.data = uri
+                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING)
+                })
+                .setNegativeButton(R.string.ok, DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() })
+                .create()
+                .show()
+    }
+    private fun requestPermissionAsPerVersion(locationRequestCode: Int) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            checkLocationPermissionAPI28(locationRequestCode)
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            checkLocationPermissionAPI29(locationRequestCode)
+        } else if (Build.VERSION.SDK_INT >= 30) {
+            DebugLogs.writeToFile("requestPermissionAsPerVersion")
+            checkBackgroundLocationPermissionAPI30()
+        }
+    }
+
+    @TargetApi(28)
+    fun checkLocationPermissionAPI28(locationRequestCode: Int) {
+        if (!PermissionCheck.checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) )
+               {
+            val permList = arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+            )
+            requestPermissions(permList, locationRequestCode)
+        }
+    }
+    @TargetApi(29)
+    private fun checkLocationPermissionAPI29(locationRequestCode: Int) {
+        if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) &&
+
+                checkSinglePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION, this)) {
+            return
+        }
+        requestPermissions(permList, locationRequestCode)
+    }
+
+    @TargetApi(30)
+    private fun checkBackgroundLocationPermissionAPI30() {
+        DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30")
+                if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
+                        if (checkSinglePermission(
+                                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                                this
+                            )
+                        ) {
+                            DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 true")
+                            return
+                        }
+                    requestPermissions(backgroundPermission, REQUEST_LOCATION_REQUEST_CODE)
+                        /*DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 false")
+                        val rationale =
+                            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        if (rationale) {
+                            DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale true")
+                            //Never ask again is not checked
+                            //  requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
+                            showRationaleDialog()
+                        } else {
+                            DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale false")
+                            //User checked never ask again
+                            //showRationaleDialog()
+                        }*/
+                    }else {
+                    requestPermissions(locationPermission, REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE)
+                }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
@@ -135,6 +261,7 @@ class HomeActivity : AppCompatActivity() {
         WebView.setWebContentsDebuggingEnabled(true)
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
+        webView.settings.allowFileAccess = true
         progressBar.visibility = View.VISIBLE;
 
         webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
@@ -195,36 +322,42 @@ class HomeActivity : AppCompatActivity() {
             REQUEST_ID_MULTIPLE_PERMISSIONS -> {
                 val perms = HashMap<String, Int>()
                 // Initialize the map with both permissions
-                perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
-                perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] = PackageManager.PERMISSION_GRANTED
+               /* perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED*/
+               perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
+                /* perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] = PackageManager.PERMISSION_GRANTED*/
 
                 if (grantResults.isNotEmpty()) {
                     for (i in permissions.indices)
                         perms[permissions[i]] = grantResults[i]
                     // Check for both permissions
-                    if (perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
-                            && perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
-                            && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED
+                    if (/*perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
+                            && */perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
+                           /* && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED*/
 
                     ) {
-                        //Fit SignIn Auth
-                        fitSignIn()
-                        initializeWebview()
+                        if(checkLocationPermission()) {
+                            DebugLogs.writeToFile("onRequestPermissionsResult checkLocationPermission True")
+                            //Fit SignIn Auth
+                            fitSignIn()
+                            initializeWebview()
+                        }else {
+                            DebugLogs.writeToFile("onRequestPermissionsResult checkLocationPermission false")
+                            requestLocationPermission()
+                        }
                         //else any one or both the permissions are not granted
                     } else {
                         //Now further we check if used denied permanently or not
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        if (/*ActivityCompat.shouldShowRequestPermissionRationale(
                                         this,
                                         Manifest.permission.ACCESS_FINE_LOCATION
                                 )
-                                || ActivityCompat.shouldShowRequestPermissionRationale(
+                                ||*/ ActivityCompat.shouldShowRequestPermissionRationale(
                                         this,
                                         Manifest.permission.ACTIVITY_RECOGNITION
-                                ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                                ) /*|| ActivityCompat.shouldShowRequestPermissionRationale(
                                         this,
                                         Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                                )
+                                )*/
                         ) {
                             // case 4 User has denied permission but not permanently
                             showDialogOK("Service Permissions are required for this app",
@@ -249,6 +382,16 @@ class HomeActivity : AppCompatActivity() {
                         }
                     }
                 }
+            }
+            REQUEST_LOCATION_REQUEST_CODE->{
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    DebugLogs.writeToFile("Location permission granted")
+                    fitSignIn()
+                    initializeWebview()
+                }
+            }
+            REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE->{
+                checkBackgroundLocationPermissionAPI30()
             }
         }
     }

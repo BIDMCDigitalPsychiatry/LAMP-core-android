@@ -13,8 +13,8 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion minimum_sdk
         targetSdkVersion target_sdk
-        versionCode 35
-        versionName "1.2"
+        versionCode 211
+        versionName "2021.10.06"
         buildConfigField 'boolean', 'DO_LOG', 'true'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk.abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
@@ -83,7 +83,7 @@ android {
             dimension "tier"
             buildConfigField 'String', 'HOST', project.prodBaseUrl
             buildConfigField 'String', 'HOST_LOG', project.prodLogUrl
-            buildConfigField 'boolean', 'DO_LOG', 'false'
+            buildConfigField 'boolean', 'DO_LOG', 'true'
             buildConfigField 'String', 'BASE_URL_WEB', project.prodBaseUrlWeb
             buildConfigField 'String', 'MAIN_PAGE_URL', project.prodMainPageUrlWeb
 

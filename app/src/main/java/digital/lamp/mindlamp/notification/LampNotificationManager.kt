@@ -22,6 +22,7 @@ import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_CHANNEL
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_OPEN
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITHOUT_ACTION
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITH_ACTION
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -201,9 +202,10 @@ object LampNotificationManager {
                 0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val timeOut = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((5).toLong())
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
-                .setContentText(String.format(context.getString(R.string.local_notification_text), oActivitySchedule.name))
+                .setContentText("Local notification "+String.format(context.getString(R.string.local_notification_text), oActivitySchedule.name))
                 .setSmallIcon(R.drawable.ic_stat_noti_icon)
                 .addAction(R.drawable.ic_stat_noti_icon, context.getString(R.string.notification_action), actionPendingIntent)
                 .setLargeIcon(
@@ -215,7 +217,9 @@ object LampNotificationManager {
                 .setVibrate(longArrayOf(0L))
                 .setAutoCancel(true)
                 .setContentIntent(actionPendingIntent)
+           // .setTimeoutAfter(timeOut)
                 .setOngoing(true)
+
 
 
         val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
