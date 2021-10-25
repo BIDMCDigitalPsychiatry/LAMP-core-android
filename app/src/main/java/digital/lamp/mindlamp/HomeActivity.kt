@@ -127,12 +127,10 @@ class HomeActivity : AppCompatActivity() {
         } else {
              if (checkAndRequestPermissions(this)) {
                  if(checkLocationPermission()) {
-                     DebugLogs.writeToFile("onCreate checkLocationPermission TRUE")
                      //Fit SignIn Auth
                      fitSignIn()
                      initializeWebview()
                  }else{
-                     DebugLogs.writeToFile("onCreate checkLocationPermission FALSE")
                      requestLocationPermission()
                  }
             }
@@ -159,11 +157,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
    private fun requestLocationPermission() {
-       DebugLogs.writeToFile("requestLocationPermission")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 var rationale = false
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    DebugLogs.writeToFile("requestLocationPermission 1")
                    // rationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                     requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
                 }
@@ -198,7 +194,6 @@ class HomeActivity : AppCompatActivity() {
         } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
             checkLocationPermissionAPI29(locationRequestCode)
         } else if (Build.VERSION.SDK_INT >= 30) {
-            DebugLogs.writeToFile("requestPermissionAsPerVersion")
             checkBackgroundLocationPermissionAPI30()
         }
     }
@@ -225,14 +220,12 @@ class HomeActivity : AppCompatActivity() {
 
     @TargetApi(30)
     private fun checkBackgroundLocationPermissionAPI30() {
-        DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30")
                 if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
                         if (checkSinglePermission(
                                 Manifest.permission.ACCESS_BACKGROUND_LOCATION,
                                 this
                             )
                         ) {
-                            DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 true")
                             return
                         }
                     requestPermissions(backgroundPermission, REQUEST_LOCATION_REQUEST_CODE)
@@ -336,12 +329,10 @@ class HomeActivity : AppCompatActivity() {
 
                     ) {
                         if(checkLocationPermission()) {
-                            DebugLogs.writeToFile("onRequestPermissionsResult checkLocationPermission True")
                             //Fit SignIn Auth
                             fitSignIn()
                             initializeWebview()
                         }else {
-                            DebugLogs.writeToFile("onRequestPermissionsResult checkLocationPermission false")
                             requestLocationPermission()
                         }
                         //else any one or both the permissions are not granted
@@ -385,7 +376,6 @@ class HomeActivity : AppCompatActivity() {
             }
             REQUEST_LOCATION_REQUEST_CODE->{
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    DebugLogs.writeToFile("Location permission granted")
                     fitSignIn()
                     initializeWebview()
                 }
