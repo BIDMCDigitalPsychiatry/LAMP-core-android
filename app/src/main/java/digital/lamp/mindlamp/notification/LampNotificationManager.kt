@@ -33,9 +33,9 @@ object LampNotificationManager {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
-                    NOTIFICATION_CHANNEL,
-                    message,
-                    NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_CHANNEL,
+                message,
+                NotificationManager.IMPORTANCE_DEFAULT
             )
             serviceChannel.setSound(null, null)
             val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -52,9 +52,9 @@ object LampNotificationManager {
     }
 
     fun notificationWithActionButton(
-            context: Context,
-            remoteMessage: RemoteMessage,
-            actionList: List<ActionData>
+        context: Context,
+        remoteMessage: RemoteMessage,
+        actionList: List<ActionData>
     ) {
 
         //Notification with open App Button with value
@@ -65,8 +65,8 @@ object LampNotificationManager {
         notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
 
         val pendingIntent = PendingIntent.getActivity(
-                context,
-                0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            context,
+            0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val actionIntent = Intent(context, NotificationActionActivity::class.java)
@@ -75,8 +75,8 @@ object LampNotificationManager {
         actionIntent.putExtra("remote_message", remoteMessage.data.toString())
 
         val actionPendingIntent = PendingIntent.getActivity(
-                context,
-                0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            context,
+            0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification =
@@ -85,14 +85,18 @@ object LampNotificationManager {
                         .setContentText(remoteMessage.data["message"])
                         .setSmallIcon(R.drawable.ic_stat_noti_icon)
                         .setLargeIcon(
-                                BitmapFactory.decodeResource(
-                                        context.resources,
-                                        R.mipmap.ic_launcher_round
-                                )
+                            BitmapFactory.decodeResource(
+                                context.resources,
+                                R.mipmap.ic_launcher_round
+                            )
                         )
                         .setAutoCancel(true)
                         .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
-                        .addAction(R.drawable.ic_stat_noti_icon, actionList[0].name, actionPendingIntent)
+                        .addAction(
+                            R.drawable.ic_stat_noti_icon,
+                            actionList[0].name,
+                            actionPendingIntent
+                        )
                         .setContentIntent(actionPendingIntent)
                         .setOngoing(true)
 
@@ -100,9 +104,9 @@ object LampNotificationManager {
                 context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                    NOTIFICATION_SURVEY_WITH_ACTION,
-                    context.getString(R.string.channel_description),
-                    NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_SURVEY_WITH_ACTION,
+                context.getString(R.string.channel_description),
+                NotificationManager.IMPORTANCE_DEFAULT
             )
             manager.createNotificationChannel(channel)
         }
@@ -118,8 +122,8 @@ object LampNotificationManager {
         notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
 
         val pendingIntent = PendingIntent.getActivity(
-                context,
-                0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            context,
+            0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification =
@@ -128,10 +132,10 @@ object LampNotificationManager {
                         .setContentText(remoteMessage.data["message"])
                         .setSmallIcon(R.drawable.ic_stat_noti_icon)
                         .setLargeIcon(
-                                BitmapFactory.decodeResource(
-                                        context.resources,
-                                        R.mipmap.ic_launcher_round
-                                )
+                            BitmapFactory.decodeResource(
+                                context.resources,
+                                R.mipmap.ic_launcher_round
+                            )
                         )
                         .setAutoCancel(true)
                         .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
@@ -141,9 +145,9 @@ object LampNotificationManager {
                 context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                    NOTIFICATION_SURVEY_WITHOUT_ACTION,
-                    context.getString(R.string.channel_description),
-                    NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_SURVEY_WITHOUT_ACTION,
+                context.getString(R.string.channel_description),
+                NotificationManager.IMPORTANCE_DEFAULT
             )
             manager.createNotificationChannel(channel)
         }
@@ -156,8 +160,8 @@ object LampNotificationManager {
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
         val homePendingIntent = PendingIntent.getActivity(
-                context,
-                0, homeIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            context,
+            0, homeIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification =
@@ -166,10 +170,10 @@ object LampNotificationManager {
                         .setContentText(remoteMessage.data["message"])
                         .setSmallIcon(R.drawable.ic_stat_noti_icon)
                         .setLargeIcon(
-                                BitmapFactory.decodeResource(
-                                        context.resources,
-                                        R.mipmap.ic_launcher_round
-                                )
+                            BitmapFactory.decodeResource(
+                                context.resources,
+                                R.mipmap.ic_launcher_round
+                            )
                         )
                         .setAutoCancel(true)
                         .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
@@ -179,9 +183,9 @@ object LampNotificationManager {
                 context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                    NOTIFICATION_SURVEY_OPEN,
-                    context.getString(R.string.channel_description),
-                    NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_SURVEY_OPEN,
+                context.getString(R.string.channel_description),
+                NotificationManager.IMPORTANCE_DEFAULT
             )
             manager.createNotificationChannel(channel)
         }
@@ -190,34 +194,46 @@ object LampNotificationManager {
     }
 
     fun showActivityNotification(
-            context: Context,
-            oActivitySchedule: ActivitySchedule,
-            localNotificationId: Int
+        context: Context,
+        oActivitySchedule: ActivitySchedule,
+        localNotificationId: Int
     ) {
         val actionIntent = Intent(context, NotificationActionActivity::class.java)
-        actionIntent.putExtra("survey_path", "participant/${AppState.session.userId}/activity/${oActivitySchedule.id}")
+        actionIntent.putExtra(
+            "survey_path",
+            "participant/${AppState.session.userId}/activity/${oActivitySchedule.id}"
+        )
         actionIntent.putExtra("notification_id", localNotificationId)
         val actionPendingIntent = PendingIntent.getActivity(
-                context,
-                0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            context,
+            0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val timeOut = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((5).toLong())
+        val timeOut =  TimeUnit.HOURS.toMillis((1).toLong())
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
-                .setContentText("Local notification "+String.format(context.getString(R.string.local_notification_text), oActivitySchedule.name))
+                .setContentText(
+                    "Local Notification" + String.format(
+                        context.getString(R.string.local_notification_text),
+                        oActivitySchedule.name
+                    )
+                )
                 .setSmallIcon(R.drawable.ic_stat_noti_icon)
-                .addAction(R.drawable.ic_stat_noti_icon, context.getString(R.string.notification_action), actionPendingIntent)
+                .addAction(
+                    R.drawable.ic_stat_noti_icon,
+                    context.getString(R.string.notification_action),
+                    actionPendingIntent
+                )
                 .setLargeIcon(
-                        BitmapFactory.decodeResource(
-                                context.resources,
-                                R.mipmap.ic_launcher_round
-                        )
+                    BitmapFactory.decodeResource(
+                        context.resources,
+                        R.mipmap.ic_launcher_round
+                    )
                 )
                 .setVibrate(longArrayOf(0L))
                 .setAutoCancel(true)
                 .setContentIntent(actionPendingIntent)
-           // .setTimeoutAfter(timeOut)
+            .setTimeoutAfter(timeOut)
                 .setOngoing(true)
 
 
@@ -226,12 +242,13 @@ object LampNotificationManager {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val activityChannel = NotificationChannel(
-                    NOTIFICATION_ACTIVITY,
-                    oActivitySchedule.id,
-                    NotificationManager.IMPORTANCE_DEFAULT
+                NOTIFICATION_ACTIVITY,
+                oActivitySchedule.id,
+                NotificationManager.IMPORTANCE_DEFAULT
             )
             manager.createNotificationChannel(activityChannel)
         }
         manager.notify(localNotificationId, notification.build())
+
     }
 }
