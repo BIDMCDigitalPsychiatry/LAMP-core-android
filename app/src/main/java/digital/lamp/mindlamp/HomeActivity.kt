@@ -159,10 +159,10 @@ class HomeActivity : AppCompatActivity() {
    private fun requestLocationPermission() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 var rationale = false
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+              //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                    // rationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                     requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-                }
+             //   }
                /* if (rationale) {
                     //Never ask again is not checked
                     requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
@@ -189,12 +189,16 @@ class HomeActivity : AppCompatActivity() {
                 .show()
     }
     private fun requestPermissionAsPerVersion(locationRequestCode: Int) {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            checkLocationPermissionAPI28(locationRequestCode)
-        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-            checkLocationPermissionAPI29(locationRequestCode)
-        } else if (Build.VERSION.SDK_INT >= 30) {
-            checkBackgroundLocationPermissionAPI30()
+        when {
+            Build.VERSION.SDK_INT <= Build.VERSION_CODES.O -> {
+                checkLocationPermissionAPI28(locationRequestCode)
+            }
+            Build.VERSION.SDK_INT == Build.VERSION_CODES.Q -> {
+                checkLocationPermissionAPI29(locationRequestCode)
+            }
+            Build.VERSION.SDK_INT >= 30 -> {
+                checkBackgroundLocationPermissionAPI30()
+            }
         }
     }
 
