@@ -3,6 +3,7 @@ package digital.lamp.mindlamp
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
@@ -11,6 +12,7 @@ import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.Utils
 import kotlinx.android.synthetic.main.activity_webview_overview.*
+
 
 class NotificationActionActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
@@ -39,5 +41,13 @@ class NotificationActionActivity : AppCompatActivity() {
         btnBack.setOnClickListener {
             onBackPressed()
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        finish()
     }
 }

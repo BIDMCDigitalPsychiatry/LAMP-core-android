@@ -39,6 +39,13 @@
         android:largeHeap="true"
         tools:ignore="GoogleAppIndexingWarning">
 
+        <provider
+            android:name="androidx.work.impl.WorkManagerInitializer"
+            android:authorities="${applicationId}.workmanager-init"
+            android:exported="false"
+            android:enabled="false"/>
+
+
         <activity android:name="digital.lamp.mindlamp.SplashActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
             android:screenOrientation="portrait">
