@@ -19,6 +19,7 @@ import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.*
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.*
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -50,6 +51,7 @@ class LampForegroundService : Service(),
         SensorListener {
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private lateinit var workManager:WorkManager
 
     companion object {
         private val TAG = LampForegroundService::class.java.simpleName
@@ -72,6 +74,7 @@ class LampForegroundService : Service(),
         super.onCreate()
 
         firebaseAnalytics = Firebase.analytics
+        workManager =  WorkManager.getInstance(App.app)
 
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
@@ -510,18 +513,12 @@ class LampForegroundService : Service(),
                         AppState.session.userId,
                         basic
                 )
-                WorkManager.getInstance(this@LampForegroundService).cancelAllWorkByTag(WORK_MANAGER_TAG)
+                workManager.cancelAllWorkByTag(WORK_MANAGER_TAG)
                 val activityResponse = Gson().fromJson(
                         activityString.toString(),
                         ActivityResponse::class.java
                 )
-                LampLog.e(
-                        TAG, "Activity Notification Response :-  ${
-                    activityResponse.data[0].schedule?.get(
-                            0
-                    )?.notification_ids?.size.toString()
-                }"
-                )
+
 
 
                 val oActivityList = arrayListOf<ActivitySchedule>()
@@ -950,7 +947,7 @@ class LampForegroundService : Service(),
                         .addTag(WORK_MANAGER_TAG)
                         .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        workManager.enqueue(work)
 
     }
 
@@ -977,7 +974,7 @@ class LampForegroundService : Service(),
                             .addTag(WORK_MANAGER_TAG)
                             .build()
 
-            WorkManager.getInstance(this).enqueue(work)
+            workManager.enqueue(work)
         }
     }
 
@@ -1024,7 +1021,7 @@ class LampForegroundService : Service(),
                         .addTag(WORK_MANAGER_TAG)
                         .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        workManager.enqueue(work)
     }
 
     @SuppressLint("ObsoleteSdkInt")
@@ -1115,7 +1112,7 @@ class LampForegroundService : Service(),
                         .addTag(WORK_MANAGER_TAG)
                         .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        workManager.enqueue(work)
 
     }
 
@@ -1155,7 +1152,7 @@ class LampForegroundService : Service(),
                         .addTag(WORK_MANAGER_TAG)
                         .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        workManager.enqueue(work)
     }
 
 
@@ -1224,7 +1221,7 @@ class LampForegroundService : Service(),
                         .addTag(WORK_MANAGER_TAG)
                         .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        workManager.enqueue(work)
 
     }
 
@@ -1271,7 +1268,7 @@ class LampForegroundService : Service(),
                         .addTag(WORK_MANAGER_TAG)
                         .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        workManager.enqueue(work)
 
     }
 

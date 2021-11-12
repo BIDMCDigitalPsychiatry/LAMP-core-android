@@ -64,20 +64,24 @@ object LampNotificationManager {
         notificationIntent.putExtra("notification_id", notificationId)
         notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
 
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        val pendingIntent = notificationId?.let {
+            PendingIntent.getActivity(
+                    context,
+                    it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
+        }
 
         val actionIntent = Intent(context, NotificationActionActivity::class.java)
         actionIntent.putExtra("survey_path", actionList[0].page)
         actionIntent.putExtra("notification_id", remoteMessage.data["notificationId"]!!.toInt())
         actionIntent.putExtra("remote_message", remoteMessage.data.toString())
 
-        val actionPendingIntent = PendingIntent.getActivity(
-            context,
-            0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        val actionPendingIntent = notificationId?.let {
+            PendingIntent.getActivity(
+                    context,
+                    it, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
+        }
 
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
@@ -121,10 +125,12 @@ object LampNotificationManager {
         notificationIntent.putExtra("notification_id", notificationId)
         notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
 
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        val pendingIntent = notificationId?.let {
+            PendingIntent.getActivity(
+                    context,
+                    it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
+        }
 
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
@@ -206,14 +212,14 @@ object LampNotificationManager {
         actionIntent.putExtra("notification_id", localNotificationId)
         val actionPendingIntent = PendingIntent.getActivity(
             context,
-            0, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                localNotificationId, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val timeOut =  TimeUnit.HOURS.toMillis((1).toLong())
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
                 .setContentText(
-                    "Local Notification" + String.format(
+                   String.format(
                         context.getString(R.string.local_notification_text),
                         oActivitySchedule.name
                     )

@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.util.DebugUtils
 import android.util.Log
+import androidx.work.Configuration
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.appstate.Pref
 import digital.lamp.mindlamp.utils.DebugLogs
@@ -11,7 +12,7 @@ import java.io.PrintWriter
 import java.io.StringWriter
 
 
-class App: Application() {
+class App: Application(), Configuration.Provider {
 
     companion object {
         lateinit var app: App
@@ -34,6 +35,11 @@ class App: Application() {
             )
         }
     }
+
+    override fun getWorkManagerConfiguration() =
+            Configuration.Builder()
+                    .setMinimumLoggingLevel(Log.VERBOSE)
+                    .build()
 
     private fun handleUncaughtException(thread: Thread?, e: Throwable) {
         e.printStackTrace() // not all Android versions will print the stack trace automatically
