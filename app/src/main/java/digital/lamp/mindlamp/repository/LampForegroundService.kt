@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.*
 import androidx.work.*
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -30,11 +32,13 @@ import digital.lamp.mindlamp.database.entity.Analytics
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
+import digital.lamp.mindlamp.sensor.GravityData
 import digital.lamp.mindlamp.sensor.RotationData
 import digital.lamp.mindlamp.sheduleing.*
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.WORK_MANAGER_TAG
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
+import digital.lamp.mindlamp.utils.AppConstants.SYNC_SENSOR_SPEC_INTERVAL
 import kotlinx.coroutines.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -70,8 +74,21 @@ class LampForegroundService : Service(),
     private lateinit var oScope: CoroutineScope
     private lateinit var oGson: Gson
 
+
+    private val powerSaverChangeReceiver =  object : BroadcastReceiver() {
+        override fun onReceive(contxt: Context?, intent: Intent?) {
+            DebugLogs.writeToFile("Power save change listener")
+
+        }
+    }
+
+
     override fun onCreate() {
         super.onCreate()
+
+        val filter =  IntentFilter();
+        filter.addAction("android.os.action.POWER_SAVE_MODE_CHANGED");
+        registerReceiver(powerSaverChangeReceiver, filter);
 
         firebaseAnalytics = Firebase.analytics
         workManager =  WorkManager.getInstance(App.app)
@@ -86,9 +103,9 @@ class LampForegroundService : Service(),
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        isAlarm = intent?.extras?.getBoolean("set_alarm")!!
-        isActivitySchedule = intent.extras?.getBoolean("set_activity_schedule")!!
-        localNotificationId = intent.extras?.getInt("notification_id")!!
+        isAlarm = intent?.extras?.getBoolean("set_alarm")?:false
+        isActivitySchedule = intent?.extras?.getBoolean("set_activity_schedule")?:false
+        localNotificationId = intent?.extras?.getInt("notification_id")?:0
         if (!isAlarm && !isActivitySchedule && localNotificationId == 0) {
             val notification =
                     LampNotificationManager.showNotification(this, "MindLamp Active Data Collection")
@@ -103,6 +120,13 @@ class LampForegroundService : Service(),
         } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_DAILY) {
             LampLog.e(TAG, "Call Activity Schedule for every 24 hours")
             invokeActivitySchedules()
+
+        } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_HOURLY) {
+                LampLog.e(TAG, "Call sensor spec every 1 hours")
+            DebugLogs.writeToFile("Call sensor spec every 1 hours")
+
+            invokeSensorSpecData()
+
         } else if (!isAlarm && isActivitySchedule && localNotificationId != 0) {
             LampLog.e(TAG, "Call for showing up the local notification")
             LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification ")
@@ -114,7 +138,7 @@ class LampForegroundService : Service(),
             LampLog.e("Sensor : Trigger")
             syncAnalyticsData()
 
-            //Fetch google fit data in 3 min interval
+            //Fetch google fit data in 5 min interval
             Lamp.stopLAMP(this)
             collectSensorData()
         }
@@ -201,6 +225,17 @@ class LampForegroundService : Service(),
                 ALARM_INTERVAL,
                 alarmIntent
         )
+
+        val intent = Intent(this, ActivityRepeatReceiver::class.java)
+            intent.putExtra("id", AppConstants.REPEAT_HOURLY)
+          val pendingIntent =  PendingIntent.getBroadcast(this, 120, intent, 0)
+
+        alarmManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SYNC_SENSOR_SPEC_INTERVAL,
+                SYNC_SENSOR_SPEC_INTERVAL,
+                pendingIntent
+        )
     }
 
     private fun collectSensorData() {
@@ -222,10 +257,10 @@ class LampForegroundService : Service(),
                         var accelerometerDataRequired = false
                         var sensorSpec = ""
                         var frequency: Double? = null
-                        if (sensorSpecList.isEmpty()) {
+                       /* if (sensorSpecList.isEmpty()) {
                             accelerometerDataRequired = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
                                         it.spec == Sensors.DEVICE_MOTION.sensor_name) {
@@ -237,7 +272,6 @@ class LampForegroundService : Service(),
                                     }
                                 }
                             }
-                        }
                         //Invoke Accelerometer Call
                         if (accelerometerDataRequired) {
                             AccelerometerData(
@@ -249,10 +283,10 @@ class LampForegroundService : Service(),
                     3 -> {
                         var rotationDataRequird = false
                         var frequency: Double? = null
-                        if (sensorSpecList.isEmpty()) {
+                      /*  if (sensorSpecList.isEmpty()) {
                             rotationDataRequird = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     rotationDataRequird = true
@@ -262,7 +296,7 @@ class LampForegroundService : Service(),
                                     }
                                 } //Invoke Rotation Call
                             }
-                        }
+                      //  }
                         if (rotationDataRequird) {
                             RotationData(
                                     this@LampForegroundService,
@@ -273,10 +307,10 @@ class LampForegroundService : Service(),
                     4 -> {
                         var magnetometerDataRequired = false
                         var frequency: Double? = null
-                        if (sensorSpecList.isEmpty()) {
+                       /* if (sensorSpecList.isEmpty()) {
                             magnetometerDataRequired = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                     magnetometerDataRequired = true
@@ -285,7 +319,7 @@ class LampForegroundService : Service(),
                                             frequency = it
                                     }
                                 }
-                            }
+                          //  }
                         }
                         if (magnetometerDataRequired) {
                             //Invoke Magnet Call
@@ -297,25 +331,25 @@ class LampForegroundService : Service(),
 
                     }
                     5 -> {
-                        var gyroscopeDataRequired = false
+                        var gravityDataRequired = false
                         var frequency: Double? = null
-                        if (sensorSpecList.isEmpty()) {
+                      /*  if (sensorSpecList.isEmpty()) {
                             gyroscopeDataRequired = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                    gyroscopeDataRequired = true
+                                    gravityDataRequired = true
 
                                     it.frequency?.let {
                                         if (it != 0.0 && it <= 1)
                                             frequency = it
                                     }
                                 }//Invoke Gyroscope Call
-                            }
+                           // }
                         }
-                        if (gyroscopeDataRequired) {
-                            GyroscopeData(
+                        if (gravityDataRequired) {
+                            GravityData(
                                     this@LampForegroundService,
                                     applicationContext, frequency
                             )
@@ -325,10 +359,10 @@ class LampForegroundService : Service(),
                     6 -> {
                         var locationDateRequired = false
                         var frequency: Double? = null
-                        if (sensorSpecList.isEmpty()) {
+                       /* if (sensorSpecList.isEmpty()) {
                             locationDateRequired = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.GPS.sensor_name) {
                                     locationDateRequired = true
@@ -338,7 +372,7 @@ class LampForegroundService : Service(),
                                     }
                                 }
                             }
-                        }
+                       // }
                         if (locationDateRequired) {
                             //Invoke Location
                             LocationData(
@@ -350,17 +384,17 @@ class LampForegroundService : Service(),
                     }
                     7 -> {
                         var wifiDataRequired = false
-                        if (sensorSpecList.isEmpty()) {
+                      /*  if (sensorSpecList.isEmpty()) {
                             wifiDataRequired = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
                                     wifiDataRequired = true
 
                                 }
                             }
-                        }
+                     //   }
                         if (wifiDataRequired) {
                             //Invoke WifiData
                             WifiData(
@@ -372,16 +406,16 @@ class LampForegroundService : Service(),
                     }
                     8 -> {
                         var screenStateDataRequired = false
-                        if (sensorSpecList.isEmpty()) {
+                       /* if (sensorSpecList.isEmpty()) {
                             screenStateDataRequired = true
 
-                        } else {
+                        } else {*/
                             sensorSpecList.forEach {
                                 if (it.spec == Sensors.SCREEN_STATE.sensor_name) {
                                     screenStateDataRequired = true
 
                                 }
-                            }
+                          //  }
                         }
                         if (screenStateDataRequired) {
                             //Invoke screen state Data

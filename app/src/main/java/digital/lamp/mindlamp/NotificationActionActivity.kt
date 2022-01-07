@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.webkit.PermissionRequest
+import android.webkit.WebChromeClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import digital.lamp.mindlamp.appstate.AppState
@@ -12,6 +14,7 @@ import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.Utils
 import kotlinx.android.synthetic.main.activity_webview_overview.*
+import kotlinx.android.synthetic.main.custom_webview_layout.*
 
 
 class NotificationActionActivity : AppCompatActivity() {
@@ -34,7 +37,14 @@ class NotificationActionActivity : AppCompatActivity() {
         webviewOverview.clearHistory()
         webviewOverview.settings.javaScriptEnabled = true
         webviewOverview.settings.domStorageEnabled = true
+        webviewOverview.settings.allowFileAccess = true
         webviewOverview.loadUrl(oSurveyUrl);
+
+        webviewOverview.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                request.grant(request.resources)
+            }
+        }
 
         NotificationManagerCompat.from(this).cancel(notificationId)
 

@@ -47,7 +47,7 @@ object LampNotificationManager {
                 .setContentText(message)
                 .setSound(null)
                 .setVibrate(longArrayOf(0L))
-                .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                .setSmallIcon(R.drawable.ic_noti_icon)
                 .build()
     }
 
@@ -87,17 +87,17 @@ object LampNotificationManager {
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
                         .setContentText(remoteMessage.data["message"])
-                        .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                        .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
                                 context.resources,
-                                R.mipmap.ic_launcher_round
+                                R.drawable.ic_launcher_round
                             )
                         )
                         .setAutoCancel(true)
                         .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
                         .addAction(
-                            R.drawable.ic_stat_noti_icon,
+                            R.drawable.ic_noti_icon,
                             actionList[0].name,
                             actionPendingIntent
                         )
@@ -136,11 +136,11 @@ object LampNotificationManager {
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
                         .setContentText(remoteMessage.data["message"])
-                        .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                        .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
                                 context.resources,
-                                R.mipmap.ic_launcher_round
+                                R.drawable.ic_launcher_round
                             )
                         )
                         .setAutoCancel(true)
@@ -174,11 +174,11 @@ object LampNotificationManager {
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
                         .setContentText(remoteMessage.data["message"])
-                        .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                        .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
                                 context.resources,
-                                R.mipmap.ic_launcher_round
+                                R.drawable.ic_launcher_round
                             )
                         )
                         .setAutoCancel(true)
@@ -224,16 +224,16 @@ object LampNotificationManager {
                         oActivitySchedule.name
                     )
                 )
-                .setSmallIcon(R.drawable.ic_stat_noti_icon)
+                .setSmallIcon(R.drawable.ic_noti_icon)
                 .addAction(
-                    R.drawable.ic_stat_noti_icon,
+                    R.drawable.ic_noti_icon,
                     context.getString(R.string.notification_action),
                     actionPendingIntent
                 )
                 .setLargeIcon(
                     BitmapFactory.decodeResource(
                         context.resources,
-                        R.mipmap.ic_launcher_round
+                        R.drawable.ic_launcher_round
                     )
                 )
                 .setVibrate(longArrayOf(0L))
