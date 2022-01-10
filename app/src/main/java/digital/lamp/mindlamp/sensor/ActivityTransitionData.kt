@@ -28,7 +28,7 @@ class ActivityTransitionData constructor(
             ActivityTransitions.setSensorObserver { activityType, transitionType ->
                 var activityTransitionDataRequired = false
                 if (sensorSpecList.isEmpty()) {
-                    activityTransitionDataRequired = true
+                    activityTransitionDataRequired = false
                 } else {
                     sensorSpecList.forEach {
                         if (it.spec == Sensors.ACTIVITY_RECOGNITION.sensor_name) {

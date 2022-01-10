@@ -16,6 +16,7 @@ internal object AppConstants {
     const val ALARM_INTERVAL = /*300000L*/ 600000L //10 Minutes
     const val SYNC_TIME_STAMP_INTERVAL = 300000L//5 mins
     const val DAY_INTERVAL = 86400000L //24 Hours
+    const val SYNC_SENSOR_SPEC_INTERVAL = 1 * 60 * 60 *1000L// 1hour
 
     const val REQUEST_ID_MULTIPLE_PERMISSIONS = 1
 
@@ -25,6 +26,7 @@ internal object AppConstants {
     const val MAIN_PAGE_URL = "https://dashboard.lamp.digital/#/?a="
 
     const val REPEAT_DAILY = 123456
+    const val REPEAT_HOURLY = 122
     const val NOTIFICATION_DEFAULT = 101010
 
 }

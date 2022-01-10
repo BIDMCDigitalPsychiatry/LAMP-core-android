@@ -138,7 +138,9 @@ dependencies {
 
 //    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
  //   implementation 'com.github.amaljofy:Lamp_Kotlin_Sample:v1.0.2'
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
+   implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
+ //   implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:SensorConfigurationParameters-SNAPSHOT'
+    //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:DeviceMotion-SNAPSHOT'
 
 }
 apply plugin: 'com.google.gms.google-services'

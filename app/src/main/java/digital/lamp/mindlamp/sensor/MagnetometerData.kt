@@ -1,13 +1,12 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
+import digital.lamp.lamp_kotlin.lamp_core.models.*
+import digital.lamp.lamp_kotlin.lamp_core.models.RotationData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.sensor_core.Magnetometer
+import digital.lamp.lamp_kotlin.sensor_core.Rotation
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
-import digital.lamp.lamp_kotlin.lamp_core.models.MagnetData
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
-import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
 import digital.lamp.mindlamp.utils.Sensors
 import java.util.concurrent.TimeUnit
 
@@ -30,7 +29,9 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
                 //val value=it.
                 val magnetData =
                     MagnetData(x, y, z)
-                val data = DimensionData(
+                val data = DeviceMotionData( MotionData(null,null,null),magnetData,
+                    AttitudeData(null,null,null),GravityData(null,null,null), RotationData(null,null,null))
+                        /*DimensionData(
                     null,
                     null,
                     null,
@@ -48,7 +49,7 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
                     null,
                     null,
                     null,null,null,null,null,null,null,null, null
-                )
+                )*/
                 val sensorEventData =
                     SensorEvent(
                         data,

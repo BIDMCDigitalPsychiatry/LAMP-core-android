@@ -2,9 +2,8 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.Context
 import android.util.Log
-import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
-import digital.lamp.lamp_kotlin.lamp_core.models.MotionData
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.*
+import digital.lamp.lamp_kotlin.lamp_core.models.RotationData
 import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.utils.LampLog
@@ -32,8 +31,9 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
                 val z = it.getAsDouble(Accelerometer.VALUES_2)
 
                 val motionData = MotionData(x, y, z)
-                val dimensionData =
-                        DimensionData(
+                val dimensionData = DeviceMotionData( motionData,MagnetData(null,null,null),
+                    AttitudeData(null,null,null),GravityData(null,null,null), RotationData(null,null,null))
+                       /* DimensionData(
                                 null,
                                 null,
                                 null,
@@ -53,7 +53,7 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
                                 null, null, null, null, null, null, null,
                                 null,
                                 null
-                        )
+                        )*/
                 when (sensorSpec) {
                     Sensors.DEVICE_MOTION.sensor_name -> {
                         val sensorEventData =
