@@ -2,7 +2,7 @@ package digital.lamp.mindlamp.app
 
 import android.app.Application
 import android.content.Context
-import android.util.DebugUtils
+import android.os.StrictMode
 import android.util.Log
 import androidx.work.Configuration
 import digital.lamp.mindlamp.appstate.AppState
@@ -21,10 +21,17 @@ class App: Application(), Configuration.Provider {
         super.onCreate()
         app = this
 
+     //   ANRWatchDog().start()
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+               .penaltyDeath()
+                .build())
         // Initializing Shared pref
         val directBootContext: Context = this.createDeviceProtectedStorageContext()
 
-        Pref.init(directBootContext,
+        Pref.init(
+            directBootContext,
             AppKeys.APP_PREF_NAME
         )
         // Setup handler for uncaught exceptions.

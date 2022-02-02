@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.notification
 
+import android.net.TrafficStats
 import android.os.Build
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -85,6 +86,8 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
             )
         }"
         Thread {
+            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+
             // Do network action in this function
             val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,

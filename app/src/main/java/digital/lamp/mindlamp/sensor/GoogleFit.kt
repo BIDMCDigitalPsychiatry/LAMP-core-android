@@ -92,6 +92,9 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                         }
                     }
                     sensorListener.getGoogleFitData(sensorEventDataList)
+                    readStepCount(context, oSensorSpecList)
+
+                    readSleepSessions(context, oSensorSpecList)
                 }
                 .addOnFailureListener { exception ->
                     LampLog.e(TAG, "Problem in reading data : $exception")
@@ -121,9 +124,7 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                     Log.i(TAG, "There was a problem getting steps.", e)
                 }*/
 
-        readStepCount(context, oSensorSpecList)
 
-        readSleepSessions(context, oSensorSpecList)
 
     }
 
@@ -168,9 +169,10 @@ class GoogleFit constructor(sensorListener: SensorListener, context: Context, oS
                                         if (oSensorSpecList.isEmpty()) {
                                             sensorEventDataList.add(sensorEvenData)
                                         }
+                                        Log.e(TAG, " Steps : $steps")
+                                        DebugLogs.writeToFile("Step Count : $steps")
                                     }
-                                    Log.e(TAG, " Steps : $steps")
-                                    DebugLogs.writeToFile("Step Count : $steps")
+
                                 }
 
                             }
