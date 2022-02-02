@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -75,20 +76,11 @@ class LampForegroundService : Service(),
     private lateinit var oGson: Gson
 
 
-    private val powerSaverChangeReceiver =  object : BroadcastReceiver() {
-        override fun onReceive(contxt: Context?, intent: Intent?) {
-            DebugLogs.writeToFile("Power save change listener")
 
-        }
-    }
 
 
     override fun onCreate() {
         super.onCreate()
-
-        val filter =  IntentFilter();
-        filter.addAction("android.os.action.POWER_SAVE_MODE_CHANGED");
-        registerReceiver(powerSaverChangeReceiver, filter);
 
         firebaseAnalytics = Firebase.analytics
         workManager =  WorkManager.getInstance(App.app)
@@ -471,18 +463,20 @@ class LampForegroundService : Service(),
             }"
 
             GlobalScope.launch(Dispatchers.IO) {
+                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+
                 val state = SensorAPI(AppState.session.serverAddress).sensorAll(
                         AppState.session.userId,
                         basic
                 )
-                val oSensorSpec: SensorSpec = Gson().fromJson(
+                val oSensorSpec: SensorSpec? = Gson().fromJson(
                         state.toString(),
                         SensorSpec::class.java
                 )
-                if (oSensorSpec.data.isNotEmpty()) {
+                if (oSensorSpec?.data?.isNotEmpty() ==true) {
                     AppState.session.isCellularUploadAllowed = oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
                 }
-                oSensorSpec.data.forEach { sensor ->
+                oSensorSpec?.data?.forEach { sensor ->
                     val sensorSpecs = SensorSpecs(null, sensor.id, sensor.spec, sensor.name, sensor.settings?.frequency, sensor.settings?.cellular_upload)
                     sensorSpecsList.add(sensorSpecs)
                 }
@@ -508,20 +502,26 @@ class LampForegroundService : Service(),
                         ).removePrefix("http://")
                 )
             }"
-            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    sensorEventDataList,
-                    basic
-            )
-            LampLog.e(TAG, " Lamp Core Response -  $state")
-            if (state.isNotEmpty()) {
-                //Code for drop DB
-                GlobalScope.launch(Dispatchers.IO) {
-                    oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                    LampLog.e("Sensor : invokeAddSensorData")
-                    syncAnalyticsData()
-                }
-            }
+
+            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+try {
+    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+            AppState.session.userId,
+            sensorEventDataList,
+            basic
+    )
+    LampLog.e(TAG, " Lamp Core Response -  $state")
+    if (state.isNotEmpty()) {
+        //Code for drop DB
+        GlobalScope.launch(Dispatchers.IO) {
+            oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+            LampLog.e("Sensor : invokeAddSensorData")
+            syncAnalyticsData()
+        }
+    }
+}catch (e:Exception){
+    DebugLogs.writeToFile("Exception :${e.printStackTrace()}")
+}
         }
     }
 
@@ -543,6 +543,7 @@ class LampForegroundService : Service(),
 //            )}"
 
             oScope.launch {
+                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
                 val activityString = ActivityAPI(AppState.session.serverAddress).activityAll(
                         AppState.session.userId,
                         basic

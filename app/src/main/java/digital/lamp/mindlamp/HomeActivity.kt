@@ -7,9 +7,11 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.*
 import android.content.pm.PackageManager
+import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -24,8 +26,8 @@ import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
@@ -38,6 +40,7 @@ import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
+import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
@@ -118,6 +121,10 @@ class HomeActivity : AppCompatActivity() {
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oActivityDao = AppDatabase.getInstance(this).activityDao()
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
+
+        val filter = IntentFilter()
+        filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+        registerReceiver(PowerSaveModeReceiver(), filter)
 
         if (AppState.session.showDisclosureAlert) {
             progressBar.visibility = View.GONE
@@ -224,9 +231,9 @@ class HomeActivity : AppCompatActivity() {
     private fun checkBackgroundLocationPermissionAPI30() {
                 if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
                         if (checkSinglePermission(
-                                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                                this
-                            )
+                                        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                                        this
+                                )
                         ) {
                             return
                         }
@@ -317,8 +324,8 @@ class HomeActivity : AppCompatActivity() {
             REQUEST_ID_MULTIPLE_PERMISSIONS -> {
                 val perms = HashMap<String, Int>()
                 // Initialize the map with both permissions
-               /* perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED*/
-               perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
+                /* perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED*/
+                perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
                 /* perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] = PackageManager.PERMISSION_GRANTED*/
 
                 if (grantResults.isNotEmpty()) {
@@ -327,14 +334,14 @@ class HomeActivity : AppCompatActivity() {
                     // Check for both permissions
                     if (/*perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
                             && */perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
-                           /* && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED*/
+                    /* && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED*/
 
                     ) {
-                        if(checkLocationPermission()) {
+                        if (checkLocationPermission()) {
                             //Fit SignIn Auth
                             fitSignIn()
                             initializeWebview()
-                        }else {
+                        } else {
                             requestLocationPermission()
                         }
                         //else any one or both the permissions are not granted
@@ -376,13 +383,13 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
-            REQUEST_LOCATION_REQUEST_CODE->{
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            REQUEST_LOCATION_REQUEST_CODE -> {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     fitSignIn()
                     initializeWebview()
                 }
             }
-            REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE->{
+            REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
             }
         }
@@ -557,7 +564,46 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun retrieveCurrentToken() {
-        FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
+
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            if(token != null){
+                Log.e(TAG, "FCM Token : $token")
+                DebugLogs.writeToFile("Token : $token")
+
+                val tokenData = TokenData()
+                tokenData.action = "login"
+                tokenData.device_token = token.toString()
+                tokenData.device_type = "Android"
+                val sendTokenRequest = SensorEvent(
+                    tokenData,
+                    "lamp.analytics",
+                    System.currentTimeMillis().toDouble()
+                )
+
+                val basic = "Basic ${
+                    Utils.toBase64(
+                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                            "https://"
+                        ).removePrefix("http://")
+                    )
+                }"
+
+                GlobalScope.launch {
+                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+
+                    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                        AppState.session.userId,
+                        sendTokenRequest,
+                        basic
+                    )
+                    LampLog.e(TAG, " Token Send Response -  $state")
+                }
+                //Setting User Attributes for Firebase
+                firebaseAnalytics.setUserProperty("user_fcm_token", token)
+            }
+
+        }
+     /*   FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
             if (!it.isSuccessful) {
                 return@addOnCompleteListener
             }
@@ -585,6 +631,8 @@ class HomeActivity : AppCompatActivity() {
             }"
 
             GlobalScope.launch {
+                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+
                 val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                         AppState.session.userId,
                         sendTokenRequest,
@@ -594,7 +642,7 @@ class HomeActivity : AppCompatActivity() {
             }
             //Setting User Attributes for Firebase
             firebaseAnalytics.setUserProperty("user_fcm_token", token)
-        }
+        }*/
     }
 
     private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {

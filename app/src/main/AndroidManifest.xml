@@ -105,6 +105,11 @@
             android:exported="false">
         </receiver>
 
+        <receiver android:name=".sheduleing.PowerSaveModeReceiver">
+            <intent-filter>
+                <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED"/>
+            </intent-filter>
+        </receiver>
         <service
             android:name=".notification.LampFirebaseMessagingService"
             android:exported="false">
