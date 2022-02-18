@@ -128,7 +128,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                     Utils.isDeviceIsInPowerSaveMode(this@LampFirebaseMessagingService), this@LampFirebaseMessagingService.isServiceRunning(LampForegroundService::class.java),
                     NetworkUtils.isWifiNetworkAvailable(this@LampFirebaseMessagingService), Utils.getLocationAuthorizationStatus(this@LampFirebaseMessagingService), pendingData)
             val diagnosticData =
-                    DiagnosticData("diagnostic", diagnosticDataContent, "Android", "NativeCore " + BuildConfig.VERSION_NAME + ";" + Build.MANUFACTURER + ";" + Build.MODEL)
+                    DiagnosticData("diagnostic", diagnosticDataContent, "Android",  Utils.getUserAgent())
 
             val diagnosticEvent =
                     SensorEvent(

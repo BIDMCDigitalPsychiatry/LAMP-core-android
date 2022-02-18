@@ -91,6 +91,11 @@ class OneTimeScheduleWorker(
                 timeUnit = TimeUnit.HOURS
                 repeatNotification = true
             }
+            RepeatInterval.FORTNIGHTLY.tag -> {
+                interval = 24 * 14
+                timeUnit = TimeUnit.HOURS
+                repeatNotification = true
+            }
             RepeatInterval.TRIWEEKLY.tag -> {
                 repeatNotification = false
                 scheduleTriWeeklyNotification(notificationId)
