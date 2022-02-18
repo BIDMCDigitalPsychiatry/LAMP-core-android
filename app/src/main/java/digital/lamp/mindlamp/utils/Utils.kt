@@ -16,6 +16,7 @@ import android.os.StatFs
 import android.util.Base64
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
+import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
 import java.io.File
 import java.io.UnsupportedEncodingException
@@ -54,11 +55,11 @@ object Utils {
     @SuppressLint("SimpleDateFormat")
     fun getMilliFromDate(dateString: String): Long {
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        sdf.timeZone =TimeZone.getDefault()// TimeZone.getTimeZone("UTC")
 
         try {
             val mDate = sdf.parse(dateString)!!
-            sdf.timeZone = TimeZone.getDefault()
+           // sdf.timeZone = TimeZone.getDefault()
             val formattedDate: String = sdf.format(mDate)
             val localTime = sdf.parse(formattedDate)!!
             return localTime.time
@@ -183,5 +184,8 @@ object Utils {
         return resultBuffer.toString()
     }
 
+    fun getUserAgent():String{
+        return "NativeCore " + BuildConfig.VERSION_NAME + "; Android " +Build.VERSION.RELEASE+ "; "+ Build.MANUFACTURER + "; " + Build.MODEL
+    }
 
 }

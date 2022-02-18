@@ -739,7 +739,24 @@ try {
                                                         durationIntervalLegacy.start_date.toString())
                                                 LampLog.e(
                                                         TAG,
-                                                        "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                        "WEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                )
+                                            }
+                                        }
+
+
+                                    }
+                                    RepeatInterval.FORTNIGHTLY.tag -> {
+                                        if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
+                                            durationIntervalLegacy.notification_ids?.forEach { notificationId ->
+                                                val nId = Utils.getMyIntValue(notificationId)
+//
+                                                setLocalNotificationFortnightly(nId,
+                                                        durationIntervalLegacy.time.toString(),
+                                                        durationIntervalLegacy.start_date.toString())
+                                                LampLog.e(
+                                                        TAG,
+                                                        "FORTNIGHTLY :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                 )
                                             }
                                         }
@@ -760,7 +777,7 @@ try {
                                                         durationIntervalLegacy.start_date.toString())
                                                 LampLog.e(
                                                         TAG,
-                                                        "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                        "BIMONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                 )
                                             }
                                         }
@@ -780,7 +797,7 @@ try {
                                                         durationIntervalLegacy.start_date.toString())
                                                 LampLog.e(
                                                         TAG,
-                                                        "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
+                                                        "MONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                 )
                                             }
                                         }
@@ -1034,8 +1051,13 @@ try {
                 else -> 24
             }
             calendar.add(Calendar.HOUR, repeatTime)
-            val nextReminderTime = calendar.timeInMillis
-            delay = nextReminderTime - System.currentTimeMillis()
+            var nextReminderTime = calendar.timeInMillis
+            while(nextReminderTime <System.currentTimeMillis()) {
+                calendar.add(Calendar.HOUR, repeatTime)
+                 nextReminderTime = calendar.timeInMillis
+            }
+                delay = nextReminderTime - System.currentTimeMillis()
+
         }
 
         val data = Data.Builder()
@@ -1190,6 +1212,44 @@ try {
         workManager.enqueue(work)
     }
 
+    private fun setLocalNotificationFortnightly(oNotificationId: Int?,
+                                           oTime: String,
+                                           startTime: String) {
+        val reminderTime = getAlarmStartTime(oTime, startTime)
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = reminderTime
+
+        var delay = 0L
+        if (reminderTime > System.currentTimeMillis()) {
+            delay = reminderTime - System.currentTimeMillis()
+        } else {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = reminderTime
+            calendar.add(Calendar.WEEK_OF_MONTH, 2)
+            val nextReminderTime = calendar.timeInMillis
+            delay = nextReminderTime - System.currentTimeMillis()
+        }
+
+        val data = Data.Builder()
+        data.putString(
+                ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
+                RepeatInterval.FORTNIGHTLY.tag
+        )
+        oNotificationId?.let {
+            data.putInt(
+                    ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
+                    it
+            )
+        }
+        val work =
+                OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
+                        .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                        .setInputData(data.build())
+                        .addTag(WORK_MANAGER_TAG)
+                        .build()
+
+        workManager.enqueue(work)
+    }
 
     private fun setLocalNotificationTriWeekly(
             oNotificationId: Int?,
@@ -1352,8 +1412,8 @@ try {
         val sdfStart = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
         val dateSdf = SimpleDateFormat("yyyy-MM-dd")
         val timeSdf = SimpleDateFormat("HH:mm:ss.SSS")
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-        sdfStart.timeZone = TimeZone.getTimeZone("UTC")
+        sdf.timeZone =  TimeZone.getDefault()//TimeZone.getTimeZone("UTC")
+        sdfStart.timeZone = TimeZone.getDefault()//TimeZone.getTimeZone("UTC")
 
         try {
             val mDate = sdf.parse(startTime)!!

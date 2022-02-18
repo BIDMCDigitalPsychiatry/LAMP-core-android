@@ -122,6 +122,16 @@
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_noti_icon" />
 
+<!--
+        <receiver android:name=".PhonecallReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
+-->
+
     </application>
 
 </manifest>

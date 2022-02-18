@@ -29,7 +29,7 @@ class PowerSaveModeReceiver: BroadcastReceiver() {
        val isPowerSaveMode = if(pm.isPowerSaveMode) 1 else 0
         GlobalScope.launch(Dispatchers.IO) {
             val lowPowerModeData =
-                    LowPowerModeData("Android", isPowerSaveMode, "NativeCore " + BuildConfig.VERSION_NAME + ";" + Build.MANUFACTURER + ";" + Build.MODEL,"lowpowermode" )
+                    LowPowerModeData("Android", isPowerSaveMode,  Utils.getUserAgent(),"lowpowermode" )
 
             val lowPowerModeEvent =
                 SensorEvent(

@@ -5,7 +5,10 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.*
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.TrafficStats
 import android.net.Uri
@@ -55,8 +58,6 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
-import kotlin.collections.HashMap
 
 
 /**
@@ -130,14 +131,14 @@ class HomeActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
-             if (checkAndRequestPermissions(this)) {
-                 if(checkLocationPermission()) {
-                     //Fit SignIn Auth
-                     fitSignIn()
-                     initializeWebview()
-                 }else{
-                     requestLocationPermission()
-                 }
+            if (checkAndRequestPermissions(this)) {
+                if (checkLocationPermission()) {
+                    //Fit SignIn Auth
+                    fitSignIn()
+                    initializeWebview()
+                } else {
+                    requestLocationPermission()
+                }
             }
         }
 
@@ -147,8 +148,8 @@ class HomeActivity : AppCompatActivity() {
 //        throw RuntimeException("Test Crash") // Force a crash
     }
 
-   private fun checkLocationPermission(): Boolean {
-       val locationPermission = doHaveAllLocationPermissions()
+    private fun checkLocationPermission(): Boolean {
+        val locationPermission = doHaveAllLocationPermissions()
         return locationPermission
     }
 
@@ -161,21 +162,21 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-   private fun requestLocationPermission() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                var rationale = false
-              //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                   // rationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-             //   }
-               /* if (rationale) {
-                    //Never ask again is not checked
-                    requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-                } else {
-                    //User checked never ask again
-                    showRationaleDialog()
-                }*/
-            }
+    private fun requestLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            var rationale = false
+            //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // rationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
+            //   }
+            /* if (rationale) {
+                 //Never ask again is not checked
+                 requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
+             } else {
+                 //User checked never ask again
+                 showRationaleDialog()
+             }*/
+        }
 
     }
 
@@ -193,6 +194,7 @@ class HomeActivity : AppCompatActivity() {
                 .create()
                 .show()
     }
+
     private fun requestPermissionAsPerVersion(locationRequestCode: Int) {
         when {
             Build.VERSION.SDK_INT <= Build.VERSION_CODES.P -> {
@@ -209,14 +211,14 @@ class HomeActivity : AppCompatActivity() {
 
     @TargetApi(28)
     fun checkLocationPermissionAPI28(locationRequestCode: Int) {
-        if (!PermissionCheck.checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) )
-               {
+        if (!PermissionCheck.checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
             val permList = arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
             )
             requestPermissions(permList, locationRequestCode)
         }
     }
+
     @TargetApi(29)
     private fun checkLocationPermissionAPI29(locationRequestCode: Int) {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) &&
@@ -229,31 +231,31 @@ class HomeActivity : AppCompatActivity() {
 
     @TargetApi(30)
     private fun checkBackgroundLocationPermissionAPI30() {
-                if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
-                        if (checkSinglePermission(
-                                        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                                        this
-                                )
-                        ) {
-                            return
-                        }
-                    requestPermissions(backgroundPermission, REQUEST_LOCATION_REQUEST_CODE)
-                        /*DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 false")
-                        val rationale =
-                            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                        if (rationale) {
-                            DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale true")
-                            //Never ask again is not checked
-                            //  requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-                            showRationaleDialog()
-                        } else {
-                            DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale false")
-                            //User checked never ask again
-                            //showRationaleDialog()
-                        }*/
-                    }else {
-                    requestPermissions(locationPermission, REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE)
-                }
+        if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
+            if (checkSinglePermission(
+                            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                            this
+                    )
+            ) {
+                return
+            }
+            requestPermissions(backgroundPermission, REQUEST_LOCATION_REQUEST_CODE)
+            /*DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 false")
+            val rationale =
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            if (rationale) {
+                DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale true")
+                //Never ask again is not checked
+                //  requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
+                showRationaleDialog()
+            } else {
+                DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale false")
+                //User checked never ask again
+                //showRationaleDialog()
+            }*/
+        } else {
+            requestPermissions(locationPermission, REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE)
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -465,6 +467,7 @@ class HomeActivity : AppCompatActivity() {
         val tokenData = TokenData()
         tokenData.action = "logout"
         tokenData.device_type = "Android"
+        tokenData.user_agent = Utils.getUserAgent()
         val sendTokenRequest = SensorEvent(
                 tokenData,
                 "lamp.analytics",
@@ -566,7 +569,7 @@ class HomeActivity : AppCompatActivity() {
     private fun retrieveCurrentToken() {
 
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-            if(token != null){
+            if (token != null) {
                 Log.e(TAG, "FCM Token : $token")
                 DebugLogs.writeToFile("Token : $token")
 
@@ -574,75 +577,79 @@ class HomeActivity : AppCompatActivity() {
                 tokenData.action = "login"
                 tokenData.device_token = token.toString()
                 tokenData.device_type = "Android"
+                tokenData.user_agent = Utils.getUserAgent()
                 val sendTokenRequest = SensorEvent(
-                    tokenData,
-                    "lamp.analytics",
-                    System.currentTimeMillis().toDouble()
+                        tokenData,
+                        "lamp.analytics",
+                        System.currentTimeMillis().toDouble()
                 )
 
                 val basic = "Basic ${
                     Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
+                            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                    "https://"
+                            ).removePrefix("http://")
                     )
                 }"
 
                 GlobalScope.launch {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
-
-                    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                        AppState.session.userId,
-                        sendTokenRequest,
-                        basic
-                    )
-                    LampLog.e(TAG, " Token Send Response -  $state")
+                    try {
+                        val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                                AppState.session.userId,
+                                sendTokenRequest,
+                                basic
+                        )
+                        LampLog.e(TAG, " Token Send Response -  $state")
+                    } catch (e: Exception) {
+                        DebugLogs.writeToFile("Exception :${e.printStackTrace()}")
+                    }
                 }
                 //Setting User Attributes for Firebase
                 firebaseAnalytics.setUserProperty("user_fcm_token", token)
             }
 
         }
-     /*   FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
-            if (!it.isSuccessful) {
-                return@addOnCompleteListener
-            }
-            // Get new Instance ID token
-            val token = it.result?.token
-            Log.e(TAG, "FCM Token : $token")
-            DebugLogs.writeToFile("Token : $token")
+        /*   FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
+               if (!it.isSuccessful) {
+                   return@addOnCompleteListener
+               }
+               // Get new Instance ID token
+               val token = it.result?.token
+               Log.e(TAG, "FCM Token : $token")
+               DebugLogs.writeToFile("Token : $token")
 
-            val tokenData = TokenData()
-            tokenData.action = "login"
-            tokenData.device_token = token.toString()
-            tokenData.device_type = "Android"
-            val sendTokenRequest = SensorEvent(
-                    tokenData,
-                    "lamp.analytics",
-                    System.currentTimeMillis().toDouble()
-            )
+               val tokenData = TokenData()
+               tokenData.action = "login"
+               tokenData.device_token = token.toString()
+               tokenData.device_type = "Android"
+               val sendTokenRequest = SensorEvent(
+                       tokenData,
+                       "lamp.analytics",
+                       System.currentTimeMillis().toDouble()
+               )
 
-            val basic = "Basic ${
-                Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                                "https://"
-                        ).removePrefix("http://")
-                )
-            }"
+               val basic = "Basic ${
+                   Utils.toBase64(
+                           AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                   "https://"
+                           ).removePrefix("http://")
+                   )
+               }"
 
-            GlobalScope.launch {
-                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+               GlobalScope.launch {
+                   TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
 
-                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                        AppState.session.userId,
-                        sendTokenRequest,
-                        basic
-                )
-                LampLog.e(TAG, " Token Send Response -  $state")
-            }
-            //Setting User Attributes for Firebase
-            firebaseAnalytics.setUserProperty("user_fcm_token", token)
-        }*/
+                   val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                           AppState.session.userId,
+                           sendTokenRequest,
+                           basic
+                   )
+                   LampLog.e(TAG, " Token Send Response -  $state")
+               }
+               //Setting User Attributes for Firebase
+               firebaseAnalytics.setUserProperty("user_fcm_token", token)
+           }*/
     }
 
     private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {

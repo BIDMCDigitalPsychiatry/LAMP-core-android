@@ -12,5 +12,6 @@ enum class RepeatInterval(val tag: String) {
     WEEKLY("weekly"), // WEEK OF THE TIME
     BIMONTHLY("bimonthly"), //10 AND 20
     MONTHLY("monthly"),
+    FORTNIGHTLY("fortnightly"),//every 2 weeks
     NONE("none")
 }
