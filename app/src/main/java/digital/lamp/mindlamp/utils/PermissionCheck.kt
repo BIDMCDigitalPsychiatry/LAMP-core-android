@@ -27,6 +27,7 @@ object PermissionCheck {
         val audioRecordPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
         val modifyAudioSettingsPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.MODIFY_AUDIO_SETTINGS)
         val writeStorage = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val phoneStatePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
         val listPermissionsNeeded = ArrayList<String>()
 
         if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
@@ -64,6 +65,9 @@ object PermissionCheck {
         }
         if(writeStorage!=PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+        if(phoneStatePermission!=PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.READ_PHONE_STATE)
         }
 
         if (listPermissionsNeeded.isNotEmpty()) {

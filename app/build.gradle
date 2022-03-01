@@ -130,22 +130,18 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
     //fitness and auth
-    implementation "com.google.android.gms:play-services-fitness:20.0.0"
-    implementation "com.google.android.gms:play-services-auth:19.2.0"
+    implementation "com.google.android.gms:play-services-fitness:21.0.1"
+    implementation "com.google.android.gms:play-services-auth:20.1.0"
 
     implementation 'androidx.work:work-runtime-ktx:2.5.0'
 
 
 //    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
- //   implementation 'com.github.amaljofy:Lamp_Kotlin_Sample:v1.0.2'
- // implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
-  //  implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:ANR-SNAPSHOT'
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:Performance-SNAPSHOT'
- //   implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:SensorConfigurationParameters-SNAPSHOT'
-  //  implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:DeviceMotion-SNAPSHOT'
+//    implementation 'com.github.amaljofy:Lamp_Kotlin_Sample:v1.0.2'
+ //  implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
+//    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:Performance-SNAPSHOT'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:Telephony-SNAPSHOT'
 
- //   implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:LowPowerMode-SNAPSHOT'
-   // implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
     debugImplementation  'com.github.haroldadmin:WhatTheStack:0.3.0'
 
 }

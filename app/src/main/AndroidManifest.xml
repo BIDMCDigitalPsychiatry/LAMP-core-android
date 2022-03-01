@@ -28,6 +28,9 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+
     <application
         android:name="digital.lamp.mindlamp.app.App"
         android:allowBackup="true"
@@ -122,15 +125,7 @@
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_noti_icon" />
 
-<!--
-        <receiver android:name=".PhonecallReceiver"
-            android:exported="true"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-        </receiver>
--->
+
 
     </application>
 

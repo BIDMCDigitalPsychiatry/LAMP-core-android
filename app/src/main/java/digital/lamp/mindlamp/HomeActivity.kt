@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
@@ -22,6 +23,7 @@ import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.FitnessOptions
@@ -44,17 +46,17 @@ import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
+import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
-import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.mindlamp.utils.PermissionCheck
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
-import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_webview_overview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -710,4 +712,36 @@ class HomeActivity : AppCompatActivity() {
             super.onBackPressed() // finishes activity
         }
     }
+
+    /*override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if(intent?.hasExtra("survey_path")==true){
+            val surveyUrl = intent.getStringExtra("survey_path")
+            val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
+
+            val oSurveyUrl = BuildConfig.BASE_URL_WEB.dropLast(1)+surveyUrl+"?a="+Utils.toBase64(AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
+
+            DebugLogs.writeToFile("URL : $oSurveyUrl")
+
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.cancel(notificationId)
+
+           *//* webView.clearCache(true)
+            webView.clearHistory()
+            webView.settings.javaScriptEnabled = true
+            webView.settings.domStorageEnabled = true
+            webView.settings.allowFileAccess = true*//*
+            webView.clearHistory()
+            webView.loadUrl(oSurveyUrl);
+
+        *//*    webviewOverview.webChromeClient = object : WebChromeClient() {
+                override fun onPermissionRequest(request: PermissionRequest) {
+                    request.grant(request.resources)
+                }
+            }
+*//*
+            NotificationManagerCompat.from(this).cancel(notificationId)
+
+        }
+    }*/
 }

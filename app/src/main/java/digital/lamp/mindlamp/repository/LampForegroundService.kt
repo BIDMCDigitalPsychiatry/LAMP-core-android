@@ -4,13 +4,13 @@ import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
+import androidx.work.PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -35,7 +35,10 @@ import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.sensor.GravityData
 import digital.lamp.mindlamp.sensor.RotationData
+import digital.lamp.mindlamp.sensor.TelephonyData
 import digital.lamp.mindlamp.sheduleing.*
+import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_DATA_WORK_NAME
+import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_WORK_MANAGER_TAG
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.WORK_MANAGER_TAG
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.ALARM_INTERVAL
@@ -109,6 +112,8 @@ class LampForegroundService : Service(),
             invokeSensorSpecData()
 //            invokeActivitySchedules()
             setAlarmManagerForEvery24Hours()
+            setPeriodicSyncWorker()
+
         } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_DAILY) {
             LampLog.e(TAG, "Call Activity Schedule for every 24 hours")
             invokeActivitySchedules()
@@ -137,6 +142,7 @@ class LampForegroundService : Service(),
 
         return START_STICKY
     }
+
 
     private fun syncAnalyticsData() {
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
@@ -189,6 +195,7 @@ class LampForegroundService : Service(),
             list.let {
                 if (it.isNotEmpty()) {
                     AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
+                    AppState.session.lastSyncWorkerTimestamp= it[0].datetimeMillisecond!!
                 }
             }
             LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
@@ -228,6 +235,22 @@ class LampForegroundService : Service(),
                 SYNC_SENSOR_SPEC_INTERVAL,
                 pendingIntent
         )
+    }
+
+    private fun setPeriodicSyncWorker(){
+        workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
+        val periodicWork =
+            PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
+                MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS)
+                .addTag(SYNC_WORK_MANAGER_TAG)
+                .build()
+
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork(
+                        SYNC_DATA_WORK_NAME,
+                        ExistingPeriodicWorkPolicy.KEEP,
+                periodicWork
+            )
     }
 
     private fun collectSensorData() {
@@ -423,6 +446,28 @@ class LampForegroundService : Service(),
                             applicationContext,
                             sensorSpecList
                     )
+                    10 -> {
+                        var telephonyDataRequired = false
+                        /* if (sensorSpecList.isEmpty()) {
+                             screenStateDataRequired = true
+
+                         } else {*/
+                        sensorSpecList.forEach {
+                            if (it.spec == Sensors.TELEPHONY.sensor_name) {
+                                telephonyDataRequired = true
+
+                            }
+                            //  }
+                        }
+                        if (telephonyDataRequired) {
+                            //Invoke screen state Data
+                            TelephonyData(
+                                this@LampForegroundService,
+                                applicationContext
+                            )
+                        }
+
+                    }
                 }
             }
 
@@ -958,6 +1003,14 @@ try {
             //Insert it into Analytics DB
             oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
             LampLog.e("Google Fit : ${oGson.toJson(sensorEventData)}")
+        }
+    }
+
+    override fun getTelephonyData(sensorEventData: SensorEvent) {
+        val oAnalytics = Analytics()
+        oAnalytics.analyticsData = oGson.toJson(sensorEventData)
+        GlobalScope.async {
+            oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
 
