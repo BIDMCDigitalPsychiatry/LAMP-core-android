@@ -1,7 +1,7 @@
 name: Publish
 on:
-  push:
-    branches: [master]
+ # push:
+  #  branches: [master]
   release:
     types: [created]
 jobs:
@@ -27,15 +27,6 @@ jobs:
           gradlePath: app/build.gradle
           versionCode: ${{steps.setup.outputs.COMMIT_NUM}}
           versionName: ${{steps.setup.outputs.LATEST_TAG}}
-
-      -run: |
-          git commit -m "Version changes"
-
-      - name: Push changes
-      -uses: ad-m/github-push-action@master
-              with:
-                github_token: ${{ secrets.GITHUB_TOKEN }}
-                branch: ${{ github.ref }}
       - run: |
           chmod +x build.gradle
           ./gradlew build
