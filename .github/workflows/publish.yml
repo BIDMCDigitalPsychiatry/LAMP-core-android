@@ -18,5 +18,7 @@ jobs:
           java-version: 1.8
       - name: Do a commit for release type
         run: |
+          git config user.name "$(git log -n 1 --pretty=format:%an)"
+          git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git commit --allow-empty -m "empty commit"
           git push origin HEAD
