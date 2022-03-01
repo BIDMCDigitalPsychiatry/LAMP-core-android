@@ -27,13 +27,15 @@ jobs:
           gradlePath: app/build.gradle
           versionCode: ${{steps.setup.outputs.COMMIT_NUM}}
           versionName: ${{steps.setup.outputs.LATEST_TAG}}
-          git commit --allow-empty -m "Empty commit"
-          git push
-          - uses: chkfung/android-version-actions@v1.1
+
+      -run: |
+          git commit -m "Version changes"
+
+      - name: Push changes
+      -uses: ad-m/github-push-action@master
               with:
-                gradlePath: app/build.gradle
-                versionCode: ${{steps.setup.outputs.COMMIT_NUM}}
-                versionName: ${{steps.setup.outputs.LATEST_TAG}}
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                branch: ${{ github.ref }}
       - run: |
           chmod +x build.gradle
           ./gradlew build
