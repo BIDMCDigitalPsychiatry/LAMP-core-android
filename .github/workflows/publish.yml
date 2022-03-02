@@ -19,7 +19,7 @@ jobs:
           java-version: 1.8
       - name: Do a commit for release type
         run: |
-          git config --global user.email "saranya.sajeev@zcocorporation.com"
-            git config --global user.name "saranya-sajeev"
+          git config --local  user.email "saranya.sajeev@zcocorporation.com"
+            git config --local  user.name "saranya-sajeev"
           git commit --allow-empty -m "empty commit"
           git push origin HEAD
