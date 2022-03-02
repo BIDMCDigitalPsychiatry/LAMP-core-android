@@ -6,6 +6,7 @@ on:
     types: [created]
 jobs:
   build:
+    if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
     steps:
       -
@@ -22,7 +23,7 @@ jobs:
         run: |
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
-          git commit --allow-empty -m "empty commit"
+          git commit --allow-empty -m "NO_CI"
           git push origin HEAD
       -
         env:
