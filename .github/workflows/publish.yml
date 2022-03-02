@@ -19,6 +19,6 @@ jobs:
       - name: Do a commit for release type
         run: |
           git config --local  user.email "saranya.sajeev@zcocorporation.com"
-            git config --local  user.name "saranya-sajeev"
+          git config --local  user.name "saranya-sajeev"
           git commit --allow-empty -m "empty commit"
           git push origin HEAD
