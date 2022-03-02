@@ -8,16 +8,54 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      -
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          token: ${{ secrets.PERSONAL_TOKEN }}
-      - uses: actions/setup-java@v1
+          token: "${{ secrets.PERSONAL_TOKEN }}"
+      -
+        uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Do a commit for release type
+      -
+        name: "Do a commit for release type"
         run: |
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
           git commit --allow-empty -m "empty commit"
           git push origin HEAD
+      -
+        env:
+          FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
+        id: setup
+        run: |
+          echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
+          echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
+          echo "::set-output name=LATEST_TAG::$(git describe --tags `git rev-list --tags --max-count=1`)"
+          echo "::set-output name=COMMIT_NUM::$(git rev-list --count master)"
+      -
+        uses: chkfung/android-version-actions@v1.1
+        with:
+          gradlePath: app/build.gradle
+          versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
+          versionName: "${{steps.setup.outputs.LATEST_TAG}}"
+      -
+        run: |
+          chmod +x build.gradle
+          ./gradlew build
+          ./gradlew bundleRelease
+      -
+        uses: r0adkll/sign-android-release@v1
+        with:
+          alias: "${{secrets.ALIAS}}"
+          keyPassword: "${{secrets.KEY_PASSWORD}}"
+          keyStorePassword: "${{secrets.KEY_STORE_PASSWORD}}"
+          releaseDirectory: app/build/outputs/bundle/prodRelease
+          signingKeyBase64: "${{secrets.SIGNING_KEY}}"
+      -
+        uses: actions/upload-artifact@v1
+        with:
+          name: mindLAMP
+          path: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+
+
