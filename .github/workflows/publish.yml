@@ -6,7 +6,7 @@ on:
     types: [created]
 jobs:
   build:
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
+    if: github.event_name == 'push' || github.event_name == 'release' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
     steps:
       -
@@ -58,4 +58,11 @@ jobs:
         with:
           name: mindLAMP
           path: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service_account.json
+          packageName: digital.lamp.mindlamp
+          releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          track: beta
+          status: completed
 
