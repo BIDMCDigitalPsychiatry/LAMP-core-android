@@ -6,7 +6,7 @@ on:
     types: [created]
 jobs:
   build:
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
+    if: contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
     steps:
       -
