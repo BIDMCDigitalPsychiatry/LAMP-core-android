@@ -9,6 +9,7 @@ class SessionState {
         const val PREF_KEY_SERVER_ADDRESS= "serverAddress"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
         const val PREF_ANALYTICS_TIME_STAMP = "lastAnalyticsTimestamp"
+        const val PREF_WORKER_TIME_STAMP = "lastSyncWorkerTimestamp"
         const val PREF_SHOW_DISCLOSURE_ALERT = "show_disclosure_alert"
         const val PREF_KEY_ALLOWED_CELLULAR_UPLOAD ="allowed_cellular_upload"
         const val PREF_LAST_SLEEP_DATA_TIME_STAMP = "last_sleep_data_timestamp"
@@ -42,6 +43,7 @@ class SessionState {
     )
 
     var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,1L)
+    var lastSyncWorkerTimestamp by Pref(PREF_WORKER_TIME_STAMP,1L)
     var lastSleepDataTimestamp by Pref(PREF_LAST_SLEEP_DATA_TIME_STAMP,1L)
     var lastStepDataTimestamp by Pref(PREF_LAST_STEP_DATA_TIME_STAMP,1L)
 
@@ -52,6 +54,7 @@ class SessionState {
         serverAddress = ""
         crashValue = ""
         lastAnalyticsTimestamp = 1L
+        lastSyncWorkerTimestamp = 1L
         lastSleepDataTimestamp =1L
         isCellularUploadAllowed = true
     }

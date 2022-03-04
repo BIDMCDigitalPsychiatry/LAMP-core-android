@@ -14,6 +14,11 @@ object SensorConstants {
         SCREEN_UNLOCKED("screen_unlocked")
     }
 
+    enum class CallState(val value: String){
+        INCOMING("incoming"),
+        OUTGOING("outgoing"),
+        MISSED("missed")
+    }
     enum class ActivityType(val value: String){
         IN_VEHICLE("In vehicle"),
         BIKING("Biking"),
