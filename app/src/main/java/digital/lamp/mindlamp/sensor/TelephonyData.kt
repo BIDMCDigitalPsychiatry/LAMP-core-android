@@ -7,6 +7,7 @@ import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.sensor_core.Screen
 import digital.lamp.lamp_kotlin.sensor_core.TelephonySensor
 import digital.lamp.mindlamp.sensor.constants.SensorConstants
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Sensors
@@ -24,6 +25,7 @@ class TelephonyData constructor(sensorListener: SensorListener, context: Context
             TelephonySensor.setSensorObserver(object :TelephonySensor.TelephonyListener{
                 override fun onIncomingCallEnded(callDuration: Int?) {
                     callDuration?.let {
+                        DebugLogs.writeToFile("Incoming cAll : $callDuration time ${System.currentTimeMillis().toDouble()}")
                         val telephonyData = TelephonyData(
                             callDuration,
                             null,
@@ -40,7 +42,7 @@ class TelephonyData constructor(sensorListener: SensorListener, context: Context
 
                 override fun onOutgoingCallEnded(callDuration: Int?) {
                     callDuration?.let {
-
+                        DebugLogs.writeToFile("Outgoing cAll : $callDuration time ${System.currentTimeMillis().toDouble()}")
                         val telephonyData = TelephonyData(callDuration, null, SensorConstants.CallState.OUTGOING.value)
                         val sensorEventData =
                             SensorEvent(
@@ -52,6 +54,7 @@ class TelephonyData constructor(sensorListener: SensorListener, context: Context
                 }
 
                 override fun onMissedCall() {
+                    DebugLogs.writeToFile("missed cAll :  time ${System.currentTimeMillis().toDouble()}")
                     val telephonyData = TelephonyData(0, null, SensorConstants.CallState.MISSED.value)
                     val sensorEventData =
                         SensorEvent(
