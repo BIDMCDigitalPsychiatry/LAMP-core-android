@@ -25,7 +25,7 @@ jobs:
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
           git commit --allow-empty -m "NO_CI"
-          git push origin HEAD
+          git push
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
