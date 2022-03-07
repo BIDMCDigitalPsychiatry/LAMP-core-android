@@ -21,6 +21,7 @@ jobs:
       -
         name: "Do a commit for release type"
         run: |
+          git remote set-head origin master
           echo "Version code before empty commit is $(git rev-list --count master)"
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
@@ -32,6 +33,7 @@ jobs:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
         id: setup
         run: |
+          git remote set-head origin master
           echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
           echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
           echo "::set-output name=LATEST_TAG::$(git describe --tags `git rev-list --tags --max-count=1`)"
