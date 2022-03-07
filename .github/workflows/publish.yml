@@ -21,10 +21,12 @@ jobs:
       -
         name: "Do a commit for release type"
         run: |
+          echo "Version code before empty commit is $(git rev-list --count master)"
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
           git commit --allow-empty -m "NO_CI"
           git push origin HEAD:master
+          echo "Version code after empty commit is $(git rev-list --count master)"
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
@@ -34,6 +36,8 @@ jobs:
           echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
           echo "::set-output name=LATEST_TAG::$(git describe --tags `git rev-list --tags --max-count=1`)"
           echo "::set-output name=COMMIT_NUM::$(git rev-list --count master)"
+          echo "Version code before upload ${{steps.setup.outputs.COMMIT_NUM}}"
+
       -
         uses: chkfung/android-version-actions@v1.1
         with:
