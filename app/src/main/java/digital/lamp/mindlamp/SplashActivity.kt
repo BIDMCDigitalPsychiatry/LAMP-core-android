@@ -30,24 +30,7 @@ class SplashActivity : AppCompatActivity() {
         }, 3000)
 
 
-//        val bundle = intent.extras
-//        if (bundle != null) {
-//            try {
-//                if (bundle.containsKey("page")) {
-//                    val path = bundle.getString("page")
-//                    if(path != null && path.isNotEmpty()){
-//                        moveToHome = false
-//                        val mainIntent = Intent(this, CustomWebviewActivity::class.java)
-//                        mainIntent.putExtra("survey_path",path)
-//                        startActivity(mainIntent)
-//                        finish()
-//                    }
-//                    Log.e("Splash : "," : $path")
-//                }
-//            } catch (ex: JSONException) {
-//                ex.printStackTrace()
-//            }
-//        }
+
 
     }
 
