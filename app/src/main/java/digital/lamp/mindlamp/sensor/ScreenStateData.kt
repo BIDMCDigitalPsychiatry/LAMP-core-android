@@ -50,7 +50,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                     val sensorEventData =
                         SensorEvent(
                             data,
-                            Sensors.SCREEN_STATE.sensor_name, System.currentTimeMillis().toDouble()
+                            Sensors.DEVICE_STATE.sensor_name, System.currentTimeMillis().toDouble()
                         )
 
                     LampLog.e("Screen State : Locked")
@@ -82,7 +82,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                     val sensorEventRequest =
                         SensorEvent(
                             data,
-                            Sensors.SCREEN_STATE.sensor_name, System.currentTimeMillis().toDouble()
+                            Sensors.DEVICE_STATE.sensor_name, System.currentTimeMillis().toDouble()
                         )
 
                     LampLog.e("Screen State : Off")
@@ -114,7 +114,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                     val sensorEventRequest =
                         SensorEvent(
                             data,
-                            Sensors.SCREEN_STATE.sensor_name, System.currentTimeMillis().toDouble()
+                            Sensors.DEVICE_STATE.sensor_name, System.currentTimeMillis().toDouble()
                         )
 
                     LampLog.e("Screen State : On")
@@ -146,7 +146,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                     val sensorEventRequest =
                         SensorEvent(
                             data,
-                            Sensors.SCREEN_STATE.sensor_name, System.currentTimeMillis().toDouble()
+                            Sensors.DEVICE_STATE.sensor_name, System.currentTimeMillis().toDouble()
                         )
                     sensorListener.getScreenState(sensorEventRequest)
                 }
