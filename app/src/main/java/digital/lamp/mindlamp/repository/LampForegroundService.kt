@@ -426,7 +426,7 @@ class LampForegroundService : Service(),
 
                         } else {*/
                             sensorSpecList.forEach {
-                                if (it.spec == Sensors.SCREEN_STATE.sensor_name) {
+                                if (it.spec == Sensors.SCREEN_STATE.sensor_name || it.spec==Sensors.DEVICE_STATE.sensor_name) {
                                     screenStateDataRequired = true
 
                                 }
