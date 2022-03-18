@@ -20,8 +20,8 @@ class RotationData constructor(sensorListener: SensorListener, context: Context,
 
             Lamp.startGyroscope(context)//start Sensor
             frequency?.let {
-                val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
-                Gyroscope.setInterval(interval)
+                val interval = (1 / frequency!!)*1000
+                Gyroscope.setInterval(interval.toLong())
             }
             //Sensor Observer
             Gyroscope.setSensorObserver {

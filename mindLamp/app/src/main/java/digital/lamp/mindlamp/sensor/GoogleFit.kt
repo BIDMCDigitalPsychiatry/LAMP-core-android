@@ -15,10 +15,7 @@ import com.google.android.gms.fitness.result.DataReadResponse
 import com.google.android.gms.fitness.result.SessionReadResponse
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import digital.lamp.lamp_kotlin.lamp_core.models.Activity
-import digital.lamp.lamp_kotlin.lamp_core.models.BloodPressureData
-import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.*
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.utils.DebugLogs
@@ -129,7 +126,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                 .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ).build()
 
         val startTime: Long = AppState.session.lastStepDataTimestamp
-        val endTime = Calendar.getInstance().timeInMillis
+        val endTime = System.currentTimeMillis()
         Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptionsStep))
                 .readData(
                         DataReadRequest.Builder()
@@ -188,7 +185,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val calendar = Calendar.getInstance()
         val now = Date()
         calendar.time = now
-        val endTime = calendar.timeInMillis
+        val endTime = System.currentTimeMillis()
         val startTime: Long = AppState.session.lastSleepDataTimestamp
 
 
@@ -219,7 +216,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val calendar = Calendar.getInstance()
         val now = Date()
         calendar.time = now
-        val endTime = calendar.timeInMillis
+        val endTime = System.currentTimeMillis()
         val startTime: Long = AppState.session.lastSleepDataTimestamp
 
 
@@ -551,7 +548,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         val now = Date()
         calendar.time = now
-        val endTime = calendar.timeInMillis
+        val endTime = System.currentTimeMillis()
         val startTime: Long = AppState.session.lastAnalyticsTimestamp
 
 
@@ -606,26 +603,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //3
     private fun getSleepData(sleep: Int?,source:String?, representation:String?,duration:Long): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
+                SleepData(
                         representation,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
-                        null,
-                        sleep, null, null,source,duration
+                        sleep, source,duration
                 )
         return SensorEvent(dimensionData, Sensors.SLEEP.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -633,53 +613,18 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //4
     private fun getCalorieData(calories: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                NutritionData(
                         "kcal",
-                        calories.asFloat(), "calories", null,source,null
+                        calories.asFloat(), "calories", source
                 )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name, System.currentTimeMillis().toDouble())
     }
 
     //5
-    private fun getStepsData(steps: Value,source:String?): SensorEvent {
+    private fun getStepsData(steps: Value,source:Any?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                       null,
-                        null,
-                        null, "count",  steps.asInt(), "step_count", null, source,null
+                StepsData(
+                         "count",  steps.asInt(), "step_count",  source
                 )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -687,26 +632,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //6
     private fun getDistanceData(distanceDelta: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                StepsData(
                         "meter",
-                        distanceDelta.asFloat(), "distance", null,source,null
+                        distanceDelta.asFloat(), "distance", source
                 )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -716,26 +644,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //8
     private fun getBmrData(bmrCalorie: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                NutritionData(
                         "Kcal",
-                        bmrCalorie.asFloat(), "calories_bmr", null,source,null
+                        bmrCalorie.asFloat(), "calories_bmr", source
                 )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -743,26 +654,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //9
     private fun getHeartRateData(heart_rate: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                GoogleFitData(
                         "bpm",
-                        heart_rate.asFloat(), "heart_rate", null,source,null
+                        heart_rate.asFloat(), source
                 )
         return SensorEvent(dimensionData, Sensors.HEART_RATE.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -770,26 +664,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //10
     private fun getBodyFatPercentage(body_fat_percentage: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                NutritionData(
                         "Percentage",
-                        body_fat_percentage.asFloat(), "body_fat_percentage", null,source,null
+                        body_fat_percentage.asFloat(), "body_fat_percentage", source
                 )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -801,26 +678,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //13
     private fun getSpeedData(speed: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                StepsData(
                         "meters per second",
-                        speed.asFloat(), "speed", null,source,null
+                        speed.asFloat(), "speed", source
                 )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -828,26 +688,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //14
     private fun getHydrationData(hydration: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                NutritionData(
                         "liters",
-                        hydration.asFloat(), "hydration", null,source,null
+                        hydration.asFloat(), "hydration", source
                 )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -855,26 +698,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //15
     private fun getNutritionData(nutrition: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                NutritionData(
                         "enum",
-                        nutrition.asInt(), "nutrition", null,source,null
+                        nutrition.asInt(), "nutrition", source
                 )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -882,26 +708,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //16
     private fun getBloodGlucose(bloodGlucose: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                GoogleFitData(
                         "mmol/L",
-                        bloodGlucose.asFloat(), null, null,source,null
+                        bloodGlucose.asFloat(),  source
                 )
         return SensorEvent(dimensionData, Sensors.BLOOD_GLUCOSE.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -909,27 +718,10 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //17
     private fun getBloodPressure(bpSystolic: Float, bpDiastolic: Float, source: String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, BloodPressureData(bpSystolic, "mmHg", source),
+                BloodPressure(
+                         BloodPressureData(bpSystolic, "mmHg", source),
                         BloodPressureData(bpDiastolic, "mmHg", source),
-                        null,
-                        null, null, null,null,null
+
                 )
         return SensorEvent(dimensionData, Sensors.BLOOD_PRESSURE.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -937,26 +729,10 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //18
     private fun getOxygenSaturation(oxygenSaturation: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                GoogleFitData(
+
                         "percentage",
-                        oxygenSaturation.asFloat(), null, null,source,null
+                        oxygenSaturation.asFloat(), source
                 )
         return SensorEvent(dimensionData, Sensors.OXYGEN_SATURATION.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -964,26 +740,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //19
     private fun getBodyTemperature(bodyTemperature: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
+                GoogleFitData(
                         "celsius",
-                        bodyTemperature.asFloat(), null, null,source, null
+                        bodyTemperature.asFloat(),  source
                 )
         return SensorEvent(dimensionData, Sensors.BODY_TEMPERATURE.sensor_name, System.currentTimeMillis().toDouble())
     }
@@ -998,25 +757,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     //25
     private fun getStepCountCadenceData(count: Value,source:String?): SensorEvent {
         val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null, null,
+                StepsData(
                         "steps/minute",
-                        count.asFloat(), "cadence", null, source,null
+                        count.asFloat(), "cadence",  source
                 )
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, System.currentTimeMillis().toDouble())
     }

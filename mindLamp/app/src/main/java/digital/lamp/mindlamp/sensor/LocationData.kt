@@ -36,8 +36,8 @@ class LocationData constructor(sensorListener: SensorListener, context: Context,
            //Location Settings
            Lamp.startLocations(context)
            frequency?.let {
-               val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
-               Locations.setInterval(interval)
+               val interval = (1 / frequency!!)*1000
+               Locations.setInterval(interval.toLong())
            }
            //Location Observer
            Locations.setSensorObserver{ data ->

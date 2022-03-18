@@ -20,9 +20,9 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
             //Accelerometer settings
             Lamp.startAccelerometer(context)//start sensor
             frequency?.let {
-                val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
+                val interval = (1 / frequency!!)*1000
                 Log.e("AccelerometerData", "$interval")
-                Accelerometer.setInterval(interval)
+                Accelerometer.setInterval(interval.toLong())
             }
             //Sensor Observer
             Accelerometer.setSensorObserver {

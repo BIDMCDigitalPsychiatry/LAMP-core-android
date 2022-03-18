@@ -19,8 +19,8 @@ class GravityData constructor(sensorListener: SensorListener, context: Context, 
         try {
             Lamp.startGravity(context)//Start Gyroscope Sensor
             frequency?.let {
-                val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
-                Gravity.setInterval(interval)// 1 millisecond
+                val interval = (1 / frequency!!)*1000
+                Gravity.setInterval(interval.toLong())// 1 millisecond
             }
             //Sensor Observer
             Gravity.setSensorObserver {

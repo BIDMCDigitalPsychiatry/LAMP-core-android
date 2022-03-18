@@ -40,9 +40,14 @@ class PeriodicDataSyncWorker(
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
+        val googleFitSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
+        googleFitSensorEventDataList.clear()
+
         val gson = GsonBuilder()
             .create()
 
+        val gsonWithNull = GsonBuilder().serializeNulls()
+            .create()
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
             LampLog.e("Sensor PeriodicDataSyncWorker: START TIME ${AppState.session.lastAnalyticsTimestamp}")
@@ -61,12 +66,29 @@ class PeriodicDataSyncWorker(
 
 
             list.forEach {
-                sensorEventDataList.add(
-                    gson.fromJson(
+                val sensorEvent = gson.fromJson(
+                    it.analyticsData,
+                    SensorEvent::class.java
+                )
+                if (sensorEvent.sensor == Sensors.SLEEP.sensor_name || sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
+                    sensorEvent.sensor == Sensors.STEPS.sensor_name || sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
+                    sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
+                    || sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name || sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
+                ) {
+                    val googleFitData = gsonWithNull.fromJson(
                         it.analyticsData,
                         SensorEvent::class.java
                     )
-                )
+
+                    googleFitSensorEventDataList.add(
+                        googleFitData
+                    )
+                    LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleFitData)}")
+                } else {
+                    sensorEventDataList.add(
+                        sensorEvent
+                    )
+                }
             }
             list.let {
                 if (it.isNotEmpty()) {
@@ -77,7 +99,9 @@ class PeriodicDataSyncWorker(
             LampLog.e("DB : ${list.size} and Sensor PeriodicDataSyncWorker: ${sensorEventDataList.size}")
             //   DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
-                invokeAddSensorData(sensorEventDataList, context)
+                invokeAddSensorData(sensorEventDataList,context,false)
+            if (googleFitSensorEventDataList.isNotEmpty())
+                invokeAddSensorData(googleFitSensorEventDataList,context,true)
             else {
                 LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
 
@@ -95,7 +119,7 @@ class PeriodicDataSyncWorker(
         }
     }
 
-    private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>, context: Context) {
+    private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>, context: Context, isGogolefitData :Boolean) {
         if (!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(
                 context
             )
@@ -118,7 +142,7 @@ class PeriodicDataSyncWorker(
                 val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,
                     sensorEventDataList,
-                    basic
+                    basic, isGogolefitData
                 )
                 LampLog.e("PeriodicDataSyncWorker", " Lamp Core Response -  $state")
                 if (state.isNotEmpty()) {

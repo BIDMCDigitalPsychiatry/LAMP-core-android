@@ -10,8 +10,8 @@ object SensorConstants {
     enum class ScreenStateRepresentation(val value :String){
         SCREEN_ON("screen_on"),
         SCREEN_OFF("screen_off"),
-        SCREEN_LOCKED("screen_locked"),
-        SCREEN_UNLOCKED("screen_unlocked")
+        SCREEN_LOCKED("locked"),
+        SCREEN_UNLOCKED("unlocked")
     }
 
     enum class CallState(val value: String){

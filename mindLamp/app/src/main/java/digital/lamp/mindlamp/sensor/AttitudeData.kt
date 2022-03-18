@@ -18,8 +18,8 @@ class AttitudeData constructor(sensorListener: SensorListener, context: Context,
 
             Lamp.startRotation(context)//start Sensor
             frequency?.let {
-                val interval = TimeUnit.SECONDS.toMillis((1 / frequency!!).toLong())
-                Rotation.setInterval(interval)
+                val interval =(1 / frequency!!)*1000
+                Rotation.setInterval(interval.toLong())
             }
             //Sensor Observer
             Rotation.setSensorObserver {
