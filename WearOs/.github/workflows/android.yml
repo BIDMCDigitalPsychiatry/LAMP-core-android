@@ -1,6 +1,6 @@
 ---
 jobs:
-  push:
+  wearpush:
     runs-on: ubuntu-latest
     steps:
       -
@@ -15,7 +15,7 @@ jobs:
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
-        id: setup
+        id: setupwear
         run: |
           echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
           echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
@@ -25,8 +25,8 @@ jobs:
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: app/build.gradle
-          versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
-          versionName: "${{steps.setup.outputs.LATEST_TAG}}"
+          versionCode: "${{steps.setupwear.outputs.COMMIT_NUM}}"
+          versionName: "${{steps.setupwear.outputs.LATEST_TAG}}"
       -
         run: |
           chmod +x build.gradle
@@ -53,7 +53,7 @@ jobs:
           serviceAccountJson: service_account.json
           status: completed
           track: beta
-name: Publish
+name: android
 true:
   push:
     branches:
