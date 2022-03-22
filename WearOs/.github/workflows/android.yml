@@ -43,7 +43,7 @@ jobs:
       -
         uses: actions/upload-artifact@v1
         with:
-          name: WearOS
+          name: WearOS uplod
           path: app/build/outputs/bundle/release/app-prod-release.aab
       -
         uses: r0adkll/upload-google-play@v1
