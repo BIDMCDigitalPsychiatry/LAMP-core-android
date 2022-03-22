@@ -148,7 +148,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                     basic
             )
             LampLog.e(TAG, "diagnostic data send -  $state")
-            DebugLogs.writeToFile("Diagnostic Data Send")
+            DebugLogs.writeToFile("Diagnostic Data Send $state")
 
         }
     }
