@@ -102,8 +102,8 @@ jobs:
       -
         run: |
           chmod +x build.gradle
-          ./gradlew build
-          ./gradlew bundleRelease
+          chmod +x ./gradlew build
+          chmod +x ./gradlew bundleRelease
       -
         uses: r0adkll/sign-android-release@v1
         with:
