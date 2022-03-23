@@ -99,6 +99,9 @@ jobs:
           gradlePath: app/build.gradle
           versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
           versionName: "${{steps.setup.outputs.LATEST_TAG}}"
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       -
         run: |
           chmod +x build.gradle
