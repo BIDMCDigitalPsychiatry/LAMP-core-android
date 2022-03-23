@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="lamp_service">Lamp Foreground  Service</string>
+
+        <string name="log_accelerometer_null">Aware error NULL : Accelerometer data does not exist.</string>
+        <string name="warning">warning</string>
+        <string name="log_accelerometer_error">Aware error CRASH : Accelerometer data could not be retrieved.</string>
+        <string name="error">error</string>
+        <string name="log_gyroscope_null">Aware error NULL : Gyroscope data does not exist.</string>
+        <string name="log_gyroscope_error">Aware error CRASH : Gyroscope data could not be retrieved.</string>
+        <string name="log_location_null">Aware error NULL : Location data does not exist.</string>
+        <string name="log_location_error">Aware error CRASH : Location data could not be retrieved.</string>
+        <string name="log_magnetometer_null">Aware error NULL : Magnetometer data does not exist.</string>
+        <string name="log_magnetometer_error">Aware error CRASH : Magnetometer data could not be retrieved.</string>
+        <string name="log_rotation_null">Aware error NULL : Rotation data does not exist.</string>
+        <string name="log_rotation_error">Aware error CRASH : Rotation data could not be retrieved.</string>
+        <string name="log_screen_state_error">Aware error CRASH : ScreenState data could not be retrieved.</string>
+        <string name="log_wifi_null">Aware error NULL : Wifi data does not exist.</string>
+        <string name="log_wifi_error">Aware error CRASH : Wifi data could not be retrieved.</string>
+        <string name="log_activity_null">Aware error NULL : Activity Transition data does not exist.</string>
+        <string name="log_activity_error">Aware error CRASH : Activity Transition data could not be retrieved.</string>
+        <string name="info">info</string>
+        <string name="battery_low">Battery is low.</string>
+        <string name="app_crash">The app has crashed.</string>
+    <string name="gps_off">"GPS is disabled."</string>
+    <string name="channel_description">MindLamp Active Data Collection</string>
+    <string name="channel_survey_description">MindLamp Notifications</string>
+    <string name="copy">Copy</string>
+    <string name="app_disclosure">This app collects location data for clinical use and research studies even when the app is closed or not in use. Your data is HIPAA-compliant and de-identified. It is stored in a secured, encrypted format accessible only to your clinician and/or research study coordinators.</string>
+    <string name="local_notification_text">You have a mindLAMP activity waiting for you: %s.</string>
+    <string name="notification_action">Open App</string>
+    <string name="location_status_background_allowed">Allow all the time</string>
+    <string name="location_status_allowed">Allow only while using the app</string>
+    <string name="location_status_denied">Denied</string>
+
+    <string name="location_permission">Location Permission Needed</string>
+    <string name="settings">Settings</string>
+    <string name="ok">OK</string>
+</resources>
