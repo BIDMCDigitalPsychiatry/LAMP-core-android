@@ -37,9 +37,9 @@ jobs:
         with:
           alias: "${{secrets.RELEASE_KEY_ALIAS}}"
           keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
-          keyStorePassword: "${{secrets.RELEASE_KEYSTORE_PASSWORD}}"
+          keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
           releaseDirectory: app/build/outputs/bundle/release
-          signingKeyBase64: "${{secrets.SIGNING_KEY}}"
+          signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
       -
         uses: actions/upload-artifact@v1
         with:

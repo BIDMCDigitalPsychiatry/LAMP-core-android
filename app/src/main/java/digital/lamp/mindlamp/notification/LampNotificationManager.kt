@@ -58,7 +58,7 @@ object LampNotificationManager {
     ) {
 
         //Notification with open App Button with value
-        val notificationIntent = Intent(context, NotificationActivity::class.java)
+        val notificationIntent = Intent(context, HomeActivity::class.java)
         val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
         notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
         notificationIntent.putExtra("notification_id", notificationId)
@@ -71,7 +71,7 @@ object LampNotificationManager {
         )
         }
 
-        val actionIntent = Intent(context, NotificationActionActivity::class.java)
+        val actionIntent = Intent(context, HomeActivity::class.java)
         actionIntent.putExtra("survey_path", actionList[0].page)
         actionIntent.putExtra("notification_id", remoteMessage.data["notificationId"]!!.toInt())
         actionIntent.putExtra("remote_message", remoteMessage.data.toString())
@@ -120,7 +120,7 @@ object LampNotificationManager {
 
     fun notificationWithoutAction(context: Context, remoteMessage: RemoteMessage) {
         val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
-        val notificationIntent = Intent(context, NotificationActionActivity::class.java)
+        val notificationIntent = Intent(context, HomeActivity::class.java)
         notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
         notificationIntent.putExtra("notification_id", notificationId)
         notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
@@ -204,7 +204,7 @@ object LampNotificationManager {
         oActivitySchedule: ActivitySchedule,
         localNotificationId: Int
     ) {
-        val actionIntent = Intent(context, NotificationActionActivity::class.java)
+        val actionIntent = Intent(context, HomeActivity::class.java)
         actionIntent.putExtra(
             "survey_path",
             "participant/${AppState.session.userId}/activity/${oActivitySchedule.id}"

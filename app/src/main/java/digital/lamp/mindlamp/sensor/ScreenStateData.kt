@@ -21,6 +21,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
             //Sensor Observer
             Screen.sensorObserver = object : Screen.LAMPSensorObserver {
                 override fun onScreenLocked() {
+                    val batteryPercentage :Float = (NetworkUtils.getBatteryPercentage(context).toFloat()/100)
                     val data = DimensionData(
                         null,
                         null,
@@ -34,7 +35,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                         null,
                         null,
                         SensorConstants.ScreenStateRepresentation.SCREEN_LOCKED.value,
-                        NetworkUtils.getBatteryPercentage(context),
+                            batteryPercentage,
                         null,
                         null,
                         null,
@@ -59,6 +60,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                 }
 
                 override fun onScreenOff() {
+                    val batteryPercentage :Float = (NetworkUtils.getBatteryPercentage(context).toFloat()/100)
                     val data = DimensionData(
                         null,
                         null,
@@ -72,7 +74,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                         null,
                         null,
                             SensorConstants.ScreenStateRepresentation.SCREEN_OFF.value,
-                            NetworkUtils.getBatteryPercentage(context),
+                            batteryPercentage,
                         null,
                         null,
                         null,
@@ -91,6 +93,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                 }
 
                 override fun onScreenOn() {
+                    val batteryPercentage :Float = (NetworkUtils.getBatteryPercentage(context).toFloat()/100)
                     val data = DimensionData(
                         null,
                         null,
@@ -104,7 +107,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                         null,
                         null,
                             SensorConstants.ScreenStateRepresentation.SCREEN_ON.value,
-                            NetworkUtils.getBatteryPercentage(context),
+                            batteryPercentage,
                         null,
                         null,
                         null,
@@ -123,6 +126,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                 }
 
                 override fun onScreenUnlocked() {
+                    val batteryPercentage :Float = (NetworkUtils.getBatteryPercentage(context).toFloat()/100)
                     val data = DimensionData(
                         null,
                         null,
@@ -136,7 +140,7 @@ class ScreenStateData constructor(sensorListener: SensorListener, context: Conte
                         null,
                         null,
                             SensorConstants.ScreenStateRepresentation.SCREEN_UNLOCKED.value,
-                            NetworkUtils.getBatteryPercentage(context),
+                            batteryPercentage,
                         null,
                         null,
                         null,

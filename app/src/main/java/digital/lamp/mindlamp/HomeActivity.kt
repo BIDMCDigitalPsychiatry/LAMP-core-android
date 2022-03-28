@@ -15,10 +15,12 @@ import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -125,6 +127,7 @@ class HomeActivity : AppCompatActivity() {
         oActivityDao = AppDatabase.getInstance(this).activityDao()
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
 
+
         val filter = IntentFilter()
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
@@ -143,6 +146,7 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
         }
+        handleNotification(intent)
 
 //        AppState.session.isLoggedIn = true
 //        allocateActivitySchedules()
@@ -713,8 +717,13 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    /*override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+       handleNotification(intent)
+    }
+
+    private fun handleNotification(intent: Intent?){
+        hideKeyboard()
         if(intent?.hasExtra("survey_path")==true){
             val surveyUrl = intent.getStringExtra("survey_path")
             val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
@@ -726,22 +735,26 @@ class HomeActivity : AppCompatActivity() {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.cancel(notificationId)
 
-           *//* webView.clearCache(true)
+            webView.clearCache(true)
             webView.clearHistory()
             webView.settings.javaScriptEnabled = true
             webView.settings.domStorageEnabled = true
-            webView.settings.allowFileAccess = true*//*
+            webView.settings.allowFileAccess = true
             webView.clearHistory()
             webView.loadUrl(oSurveyUrl);
 
-        *//*    webviewOverview.webChromeClient = object : WebChromeClient() {
+            webView.webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest) {
                     request.grant(request.resources)
                 }
             }
-*//*
+
             NotificationManagerCompat.from(this).cancel(notificationId)
 
         }
-    }*/
+    }
+    private fun hideKeyboard() {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(webView.getWindowToken(), 0)
+    }
 }

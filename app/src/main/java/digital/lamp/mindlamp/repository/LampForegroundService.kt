@@ -1086,7 +1086,11 @@ class LampForegroundService : Service(),
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = elapsedTimeMs
             calendar.add(Calendar.DAY_OF_MONTH, 1)
-            val nextNotificationTime = calendar.timeInMillis
+            var nextNotificationTime = calendar.timeInMillis
+            while (nextNotificationTime < System.currentTimeMillis()) {
+                calendar.add(Calendar.DAY_OF_MONTH, 1)
+                nextNotificationTime = calendar.timeInMillis
+            }
             delay = nextNotificationTime - System.currentTimeMillis()
         }
 
@@ -1302,7 +1306,11 @@ class LampForegroundService : Service(),
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = reminderTime
             calendar.add(Calendar.WEEK_OF_MONTH, 1)
-            val nextReminderTime = calendar.timeInMillis
+            var nextReminderTime = calendar.timeInMillis
+            while (nextReminderTime < System.currentTimeMillis()) {
+                calendar.add(Calendar.WEEK_OF_MONTH, 1)
+                nextReminderTime = calendar.timeInMillis
+            }
             delay = nextReminderTime - System.currentTimeMillis()
         }
 
@@ -1343,7 +1351,14 @@ class LampForegroundService : Service(),
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = reminderTime
             calendar.add(Calendar.WEEK_OF_MONTH, 2)
-            val nextReminderTime = calendar.timeInMillis
+            var nextReminderTime = calendar.timeInMillis
+
+
+
+            while (nextReminderTime < System.currentTimeMillis()) {
+                calendar.add(Calendar.WEEK_OF_MONTH, 2)
+                nextReminderTime = calendar.timeInMillis
+            }
 
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
             val calendar1 = Calendar.getInstance()
