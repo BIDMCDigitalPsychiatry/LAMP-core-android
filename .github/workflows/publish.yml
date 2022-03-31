@@ -116,6 +116,11 @@ jobs:
           releaseDirectory: app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.SIGNING_KEY}}"
 
+      -
+        run: |
+          chmod +x WearOs/build.gradle
+          ./gradlew build
+          ./gradlew bundleRelease
       - uses: r0adkll/sign-android-release@v1
         with:
           alias: "${{secrets.RELEASE_KEY_ALIAS}}"
