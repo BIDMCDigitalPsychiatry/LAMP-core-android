@@ -57,6 +57,14 @@ jobs:
           keyStorePassword: "${{secrets.KEY_STORE_PASSWORD}}"
           releaseDirectory: app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.SIGNING_KEY}}"
+
+      - uses: r0adkll/sign-android-release@v1
+        with:
+          alias: "${{secrets.RELEASE_KEY_ALIAS}}"
+          keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
+          keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
+          releaseDirectory: app/build/outputs/bundle/release
+          signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
       -
         uses: actions/upload-artifact@v1
         with:
