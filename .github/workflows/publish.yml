@@ -126,7 +126,7 @@ jobs:
           alias: "${{secrets.RELEASE_KEY_ALIAS}}"
           keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
           keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
-          releaseDirectory: WearOs/app/build/outputs/bundle/release
+          releaseDirectory: WearOs/app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
       -
         uses: actions/upload-artifact@v1
