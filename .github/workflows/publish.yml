@@ -120,7 +120,7 @@ jobs:
       -
         run: |
           cd WearOs
-          chmod +x build.gradle
+          chmod +x WearOs/build.gradle
           ./gradlew build
           ./gradlew bundleRelease
       - uses: r0adkll/sign-android-release@v1
