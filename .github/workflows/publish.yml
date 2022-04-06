@@ -119,8 +119,9 @@ jobs:
 
       -
         run: |
+          working-directory: WearOs
           chmod +x WearOs/build.gradle
-          ./gradlew WearOs/build
+          ./gradlew build
           ./gradlew WearOs/bundleRelease
       - uses: r0adkll/sign-android-release@v1
         with:
