@@ -119,10 +119,10 @@ jobs:
 
       -
         run: |
-          working-directory: WearOs
-          chmod +x WearOs/build.gradle
+          cd WearOs
+          chmod +x build.gradle
           ./gradlew build
-          ./gradlew WearOs/bundleRelease
+          ./gradlew bundleRelease
       - uses: r0adkll/sign-android-release@v1
         with:
           alias: "${{secrets.RELEASE_KEY_ALIAS}}"
