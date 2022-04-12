@@ -147,8 +147,10 @@ dependencies {
  //   implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:UnifySteps-SNAPSHOT'
     implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:BatteryLevel-SNAPSHOT'
 
-    implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'
 
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:-SNAPSHOT'
+
+    implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'
 
 }
 apply plugin: 'com.google.gms.google-services'
