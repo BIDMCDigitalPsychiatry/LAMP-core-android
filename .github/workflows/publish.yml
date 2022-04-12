@@ -117,7 +117,21 @@ jobs:
           releaseDirectory: app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.SIGNING_KEY}}"
 
-
+     # -
+      #  run: |
+       #   cd WearOs
+        #  chmod +x build.gradle
+         # chmod +x gradlew
+         # ./gradlew clean
+         # ./gradlew build
+         # ./gradlew bundleRelease
+     # - uses: r0adkll/sign-android-release@v1
+      #  with:
+       #   alias: "${{secrets.RELEASE_KEY_ALIAS}}"
+        #  keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
+         # keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
+          #releaseDirectory: WearOs/app/build/outputs/bundle/prodRelease
+          #signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
       -
         uses: actions/upload-artifact@v1
         with:
@@ -131,19 +145,4 @@ jobs:
           releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
           status: completed
-     # -
-     #   run: |
-     #   cd WearOs
-     #   chmod +x build.gradle
-      #  chmod +x gradlew
-      #  ./gradlew clean
-      #  ./gradlew build
-       # ./gradlew bundleRelease
-      #- uses: r0adkll/sign-android-release@v1
-       # with:
-        #  alias: "${{secrets.RELEASE_KEY_ALIAS}}"
-         # keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
-          #keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
-          #releaseDirectory: WearOs/app/build/outputs/bundle/prodRelease
-          #signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
 
