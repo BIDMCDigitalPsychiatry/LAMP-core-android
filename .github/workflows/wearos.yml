@@ -119,3 +119,16 @@ jobs:
       - env:
           SIGNED_RELEASE_FILES: WearOs/app/build/outputs/bundle/prodRelease
 
+      - uses: actions/upload-artifact@v1
+        with:
+          name: mindLAMP
+          path: WearOs/app/build/outputs/bundle/prodRelease/app-prod-release.aab
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service_account.json
+          packageName: digital.lamp.mindlamp
+          releaseFile: WearOs/app/build/outputs/bundle/prodReleasee/app-prod-release.aab
+          track: beta
+          status: completed
+
+
