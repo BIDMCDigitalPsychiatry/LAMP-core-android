@@ -36,32 +36,34 @@ class PowerSaveModeReceiver: BroadcastReceiver() {
                     lowPowerModeData,
                     "lamp.analytics", System.currentTimeMillis().toDouble()
                 )
-           if( NetworkUtils.isNetworkAvailable(context) ) {
+            if(AppState.session.isLoggedIn) {
+                if (NetworkUtils.isNetworkAvailable(context)) {
 
-               val basic = "Basic ${
-                   Utils.toBase64(
-                       AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                           "https://"
-                       ).removePrefix("http://")
-                   )
-               }"
+                    val basic = "Basic ${
+                        Utils.toBase64(
+                                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                        "https://"
+                                ).removePrefix("http://")
+                        )
+                    }"
 
-               val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                   AppState.session.userId,
-                   lowPowerModeEvent,
-                   basic
-               )
-               LampLog.e("PowerSaveModeReceiver", "PowerSaveModeReceiver data send -  $state")
-               DebugLogs.writeToFile("PowerSaveModeReceiver Data Send")
-           }else{
-               val oAnalytics = Analytics()
-               val  gson = Gson()
-               oAnalytics.analyticsData = gson.toJson(lowPowerModeEvent)
-               val oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
-               GlobalScope.async {
-                   val id =  oAnalyticsDao.insertAnalytics(oAnalytics)
-               }
-           }
+                    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                            AppState.session.userId,
+                            lowPowerModeEvent,
+                            basic
+                    )
+                    LampLog.e("PowerSaveModeReceiver", "PowerSaveModeReceiver data send -  $state")
+                    DebugLogs.writeToFile("PowerSaveModeReceiver Data Send")
+                } else {
+                    val oAnalytics = Analytics()
+                    val gson = Gson()
+                    oAnalytics.analyticsData = gson.toJson(lowPowerModeEvent)
+                    val oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
+                    GlobalScope.async {
+                        val id = oAnalyticsDao.insertAnalytics(oAnalytics)
+                    }
+                }
+            }
         }
     }
 }
