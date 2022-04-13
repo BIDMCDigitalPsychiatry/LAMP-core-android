@@ -108,8 +108,6 @@ jobs:
           chmod +x build.gradle
           ./gradlew build
           ./gradlew bundleRelease
-
-      - name: sign staging build
       -
         uses: r0adkll/sign-android-release@v1
         with:
