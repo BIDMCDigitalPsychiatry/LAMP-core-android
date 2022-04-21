@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -126,6 +127,7 @@ class HomeActivity : AppCompatActivity() {
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oActivityDao = AppDatabase.getInstance(this).activityDao()
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
+
 
 
         val filter = IntentFilter()
@@ -270,9 +272,13 @@ class HomeActivity : AppCompatActivity() {
         webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
         webView.settings.javaScriptEnabled = true
+        webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = true
-        progressBar.visibility = View.VISIBLE;
+        webView.settings.allowContentAccess =true
+        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        progressBar.visibility = View.VISIBLE
 
         webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)

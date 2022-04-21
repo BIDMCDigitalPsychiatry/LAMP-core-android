@@ -63,6 +63,7 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
+            android:hardwareAccelerated="true"
             />
         <activity android:name=".NotificationActivity"
             android:theme="@style/Theme.AppCompat.Light.Dialog"
