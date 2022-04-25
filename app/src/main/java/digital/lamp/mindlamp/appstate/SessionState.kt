@@ -14,6 +14,7 @@ class SessionState {
         const val PREF_KEY_ALLOWED_CELLULAR_UPLOAD ="allowed_cellular_upload"
         const val PREF_LAST_SLEEP_DATA_TIME_STAMP = "last_sleep_data_timestamp"
         const val PREF_LAST_STEP_DATA_TIME_STAMP = "last_step_data_timestamp"
+        const val PREF_GOOGLE_FIT_CONNECTED = "google_fit_connected"
     }
 
     var isLoggedIn by Pref(
@@ -62,5 +63,10 @@ class SessionState {
     var isCellularUploadAllowed by Pref(
         PREF_KEY_ALLOWED_CELLULAR_UPLOAD,
         true
+    )
+
+    var isGoogleFitConnected by Pref(
+            PREF_GOOGLE_FIT_CONNECTED,
+            true
     )
 }

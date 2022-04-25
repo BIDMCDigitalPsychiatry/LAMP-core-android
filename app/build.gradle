@@ -67,7 +67,7 @@ android {
             buildConfigField 'String', 'HOST_LOG', project.qaLogUrl
             buildConfigField 'String', 'BASE_URL_WEB', project.qaBaseUrlWeb
             buildConfigField 'String', 'MAIN_PAGE_URL', project.qaMainPageUrlWeb
-            buildConfigField 'boolean', 'DO_LOG', 'false'
+            buildConfigField 'boolean', 'DO_LOG', 'true'
         }
 
         beta {
