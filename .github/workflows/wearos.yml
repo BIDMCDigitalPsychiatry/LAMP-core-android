@@ -89,6 +89,7 @@ jobs:
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
+          SIGNED_RELEASE_FILES: WearOs/app/build/outputs/bundle/prodRelease
         id: setup
         run: |
           echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
