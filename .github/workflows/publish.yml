@@ -35,7 +35,7 @@ jobs:
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: app/build.gradle
-          versionCode: "${{steps.setup.outputs.COMMIT_NUM + 1}}"
+          versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
           versionName: "${{steps.setup.outputs.LATEST_TAG}}"
       -
         run: |
@@ -116,19 +116,19 @@ jobs:
           alias: "${{secrets.ALIAS}}"
           keyPassword: "${{secrets.KEY_PASSWORD}}"
           keyStorePassword: "${{secrets.KEY_STORE_PASSWORD}}"
-          releaseDirectory: app/build/outputs/bundle/qaRelease
+          releaseDirectory: app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.SIGNING_KEY}}"
       -
         uses: actions/upload-artifact@v1
         with:
           name: mindLAMP
-          path: app/build/outputs/bundle/qaRelease/app-qa-release.aab
+          path: app/build/outputs/bundle/prodRelease/app-prod-release.aab
       -
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: app/build/outputs/bundle/qaRelease/app-qa-release.aab
+          releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
           status: completed
 
