@@ -6,14 +6,14 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
 
-    signingConfigs {
+   /* signingConfigs {
         release {
             storeFile file('key.jks')
             storePassword 'v2lamp20*89'
             keyAlias = 'key0'
             keyPassword 'v2lamp20*89'
         }
-    }
+    }*/
 
     defaultConfig {
         applicationId "digital.lamp.mindlamp"
