@@ -119,7 +119,7 @@ jobs:
           alias: "${{secrets.RELEASE_KEY_ALIAS}}"
           keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
           keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
-          releaseDirectory: WearOs/app/build/outputs/bundle/prodRelease
+          releaseDirectory: WearOs/app/build/outputs/bundle/qaRelease
           signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
 
 
