@@ -6,7 +6,7 @@ on:
     types: [created]
 jobs:
   build:
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
+    if: github.event_name == 'release' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
     steps:
       -
@@ -19,15 +19,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      -
-        name: "Do a commit for release type"
-        run: |
-          echo "Version code before empty commit is $(git rev-list --count HEAD)"
-          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
-          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
-          git commit --allow-empty -m "NO_CI"
-          git push origin HEAD:master
-          echo "Version code after empty commit is $(git rev-list --count HEAD)"
+
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
@@ -43,7 +35,7 @@ jobs:
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: app/build.gradle
-          versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
+          versionCode: "${{steps.setup.outputs.COMMIT_NUM + 1}}"
           versionName: "${{steps.setup.outputs.LATEST_TAG}}"
       -
         run: |
@@ -72,8 +64,17 @@ jobs:
           releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
           status: completed
+
+      - name: "Do a commit for release type"
+        run: |
+          echo "Version code before empty commit is $(git rev-list --count HEAD)"
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+          git commit --allow-empty -m "NO_CI"
+          git push origin HEAD:master
+          echo "Version code after empty commit is $(git rev-list --count HEAD)"
   push:
-    if: github.event_name == 'release' && contains(toJson(github.event.commits), 'NO_CI') == false
+    if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
     steps:
       -
