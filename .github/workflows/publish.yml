@@ -20,7 +20,7 @@ jobs:
         with:
           java-version: 1.8
       -
-        name: "Do a commit for release type"
+        name: "Do a commit for release type to increment version code"
         run: |
           echo "Version code before empty commit is $(git rev-list --count HEAD)"
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
