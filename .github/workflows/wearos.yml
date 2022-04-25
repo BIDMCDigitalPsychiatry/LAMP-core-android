@@ -6,14 +6,15 @@ on:
     types: [created]
 jobs:
   build:
-    if: github.event_name == 'release' && contains(toJson(github.event.commits), 'WEAR_OS_WORKFLOW') == true
+    if: github.event_name == 'release' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
     steps:
       -
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          token: "${{ secrets.PERSONAL_TOKEN }}"
+        env:
+          token: ${{ secrets.GITHUB_TOKENN }}
       -
         uses: actions/setup-java@v1
         with:
@@ -101,6 +102,8 @@ jobs:
           versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
           versionName: "${{steps.setup.outputs.LATEST_TAG}}"
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       -
         run: |
           cd WearOs
@@ -109,7 +112,8 @@ jobs:
           ./gradlew clean
           ./gradlew build
           ./gradlew bundleRelease
-      - uses: r0adkll/sign-android-release@v1
+      -
+        uses: r0adkll/sign-android-release@v1
         with:
           alias: "${{secrets.RELEASE_KEY_ALIAS}}"
           keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
@@ -122,13 +126,12 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: mindLAMP
-          path: WearOs/app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          path: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
       - uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: WearOs/app/build/outputs/bundle/prodReleasee/app-prod-release.aab
+          releaseFile: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
           track: beta
           status: completed
-
 
