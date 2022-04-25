@@ -120,8 +120,7 @@ jobs:
           keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
           releaseDirectory: WearOs/app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
-       env:
-          SIGNED_RELEASE_FILES: WearOs/app/build/outputs/bundle/prodRelease
+
 
       - uses: actions/upload-artifact@v1
         with:
