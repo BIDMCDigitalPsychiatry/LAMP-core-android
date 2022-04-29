@@ -125,11 +125,11 @@ jobs:
       -
         uses: r0adkll/sign-android-release@v1
         with:
-          alias: "${{secrets.RELEASE_KEY_ALIAS}}"
-          keyPassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
-          keyStorePassword: "${{secrets.RELEASE_KEY_PASSWORD}}"
+          alias: "${{secrets.ALIAS}}"
+          keyPassword: "${{secrets.KEY_PASSWORD}}"
+          keyStorePassword: "${{secrets.KEY_STORE_PASSWORD}}"
           releaseDirectory: WearOs/app/build/outputs/bundle/qaRelease
-          signingKeyBase64: "${{secrets.WEAR_OS_SIGNING_KEY}}"
+          signingKeyBase64: "${{secrets.SIGNING_KEY}}"
 
 
       - uses: actions/upload-artifact@v1
