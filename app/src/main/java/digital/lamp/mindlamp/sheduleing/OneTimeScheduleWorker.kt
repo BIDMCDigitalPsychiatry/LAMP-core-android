@@ -40,7 +40,7 @@ class OneTimeScheduleWorker(
                                 TAG,
                                 "Activity Name :: - ${activitySchedule.name} ---- $notificationId"
                         )
-                        if(!Utils.isOnline(context))
+                      //  if(!Utils.isOnline(context))
                         LampNotificationManager.showActivityNotification(
                                 context,
                                 activitySchedule,
