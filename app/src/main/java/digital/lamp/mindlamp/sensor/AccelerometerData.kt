@@ -65,14 +65,15 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
 
                         sensorListener.getAccelerometerData(sensorEventData)
                     }
+
                     Sensors.ACCELEROMETER.sensor_name -> {
                         val dimensionData =
                                 DimensionData(
+                                x,
+                                y,
+                                z,
                                 null,
                                 null,
-                                null,
-                                null,
-                                motionData,
                                 null,
                                 null,
                                 null,
@@ -111,11 +112,11 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
 
                         val dimensionData =
                                 DimensionData(
+                                        x,
+                                        y,
+                                        z,
                                         null,
                                         null,
-                                        null,
-                                        null,
-                                        motionData,
                                         null,
                                         null,
                                         null,

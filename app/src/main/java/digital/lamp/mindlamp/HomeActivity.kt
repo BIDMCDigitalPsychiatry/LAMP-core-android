@@ -477,7 +477,7 @@ class HomeActivity : AppCompatActivity() {
     private fun showSignedOut() {
 
         val tokenData = TokenData()
-        tokenData.action = "logout"
+        tokenData.type = "logout"
         tokenData.device_type = "Android"
         tokenData.user_agent = Utils.getUserAgent()
         val sendTokenRequest = SensorEvent(
@@ -572,6 +572,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun accessGoogleFit() {
+        AppState.session.isGoogleFitConnected= true
         LampLog.e(TAG, "Google Fit Connected")
         trackSingleEvent("Fit_Success")
         DebugLogs.writeToFile("Google Fit Connected")
@@ -586,7 +587,7 @@ class HomeActivity : AppCompatActivity() {
                 DebugLogs.writeToFile("Token : $token")
 
                 val tokenData = TokenData()
-                tokenData.action = "login"
+                tokenData.type = "login"
                 tokenData.device_token = token.toString()
                 tokenData.device_type = "Android"
                 tokenData.user_agent = Utils.getUserAgent()
@@ -665,6 +666,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
+        AppState.session.isGoogleFitConnected = false
         val message = """
             There was an error signing into Fit. Check the troubleshooting section of the README
             for potential issues.

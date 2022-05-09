@@ -22,6 +22,7 @@ import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_CHANNEL
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_OPEN
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITHOUT_ACTION
 import digital.lamp.mindlamp.utils.AppConstants.NOTIFICATION_SURVEY_WITH_ACTION
+import digital.lamp.mindlamp.utils.DebugLogs
 import java.util.concurrent.TimeUnit
 
 /**
@@ -57,7 +58,7 @@ object LampNotificationManager {
         actionList: List<ActionData>
     ) {
 
-        //Notification with open App Button with value
+       /* //Notification with open App Button with value
         val notificationIntent = Intent(context, HomeActivity::class.java)
         val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
         notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
@@ -69,14 +70,14 @@ object LampNotificationManager {
                     context,
                     it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
-        }
-
+        }*/
+        val index= remoteMessage.data["notificationId"]?.toInt()?:0
         val actionIntent = Intent(context, HomeActivity::class.java)
         actionIntent.putExtra("survey_path", actionList[0].page)
-        actionIntent.putExtra("notification_id", remoteMessage.data["notificationId"]!!.toInt())
+        actionIntent.putExtra("notification_id", index)
         actionIntent.putExtra("remote_message", remoteMessage.data.toString())
 
-        val actionPendingIntent = notificationId?.let {
+        val actionPendingIntent = index?.let {
             PendingIntent.getActivity(
                     context,
                     it, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
@@ -114,18 +115,20 @@ object LampNotificationManager {
             )
             manager.createNotificationChannel(channel)
         }
-        manager.notify(notificationId!!, notification.build())
+
+        manager.notify(index, notification.build())
 
     }
 
     fun notificationWithoutAction(context: Context, remoteMessage: RemoteMessage) {
         val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
+        val index= remoteMessage.data["notificationId"]?.toInt()?:0
         val notificationIntent = Intent(context, HomeActivity::class.java)
         notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
-        notificationIntent.putExtra("notification_id", notificationId)
+        notificationIntent.putExtra("notification_id", index)
         notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
 
-        val pendingIntent = notificationId?.let {
+        val pendingIntent = index?.let {
             PendingIntent.getActivity(
                     context,
                     it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
@@ -157,7 +160,9 @@ object LampNotificationManager {
             )
             manager.createNotificationChannel(channel)
         }
-        manager.notify(notificationId!!, notification.build())
+
+        DebugLogs.writeToFile("online 2 notificationId $notificationId index $index");
+        manager.notify(index, notification.build())
 
     }
 
@@ -196,7 +201,10 @@ object LampNotificationManager {
             manager.createNotificationChannel(channel)
         }
         val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
-        manager.notify(notificationId!!, notification.build())
+
+        val index= remoteMessage.data["notificationId"]?.toInt()?:0
+        DebugLogs.writeToFile("online 3  notificationId $notificationId index $index");
+        manager.notify(index, notification.build())
     }
 
     fun showActivityNotification(
@@ -204,6 +212,8 @@ object LampNotificationManager {
         oActivitySchedule: ActivitySchedule,
         localNotificationId: Int
     ) {
+        DebugLogs.writeToFile("localNotificationId $localNotificationId");
+
         val actionIntent = Intent(context, HomeActivity::class.java)
         actionIntent.putExtra(
             "survey_path",
@@ -215,11 +225,10 @@ object LampNotificationManager {
                 localNotificationId, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val timeOut =  TimeUnit.HOURS.toMillis((1).toLong())
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
                 .setContentText(
-                   String.format(
+                   String.format("Local "+
                         context.getString(R.string.local_notification_text),
                         oActivitySchedule.name
                     )
@@ -239,7 +248,6 @@ object LampNotificationManager {
                 .setVibrate(longArrayOf(0L))
                 .setAutoCancel(true)
                 .setContentIntent(actionPendingIntent)
-            .setTimeoutAfter(timeOut)
                 .setOngoing(true)
 
 
