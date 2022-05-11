@@ -228,7 +228,7 @@ object LampNotificationManager {
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
                 .setContentText(
-                   String.format("Local "+
+                   String.format(
                         context.getString(R.string.local_notification_text),
                         oActivitySchedule.name
                     )
