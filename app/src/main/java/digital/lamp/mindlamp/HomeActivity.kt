@@ -436,7 +436,7 @@ class HomeActivity : AppCompatActivity() {
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, 0)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_IMMUTABLE)
         alarmManager.cancel(pendingIntent)
     }
 
@@ -517,6 +517,7 @@ class HomeActivity : AppCompatActivity() {
             oSensorDao.deleteSensorList()
             oActivityDao.deleteActivityList()
             oAnalyticsDao.dropAnalyticsList()
+            NotificationManagerCompat.from(this@HomeActivity).cancelAll();
         }
     }
 

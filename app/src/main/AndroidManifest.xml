@@ -42,16 +42,29 @@
         android:largeHeap="true"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <provider
+       <!-- <provider
             android:name="androidx.work.impl.WorkManagerInitializer"
             android:authorities="${applicationId}.workmanager-init"
             android:exported="false"
-            android:enabled="false"/>
+            android:enabled="false"/>-->
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <!-- If you are using androidx.startup to initialize other components -->
+            <meta-data
+                android:name="androidx.work.impl.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
 
 
         <activity android:name="digital.lamp.mindlamp.SplashActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
         <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -109,7 +122,8 @@
             android:exported="false">
         </receiver>
 
-        <receiver android:name=".sheduleing.PowerSaveModeReceiver">
+        <receiver android:name=".sheduleing.PowerSaveModeReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED"/>
             </intent-filter>
