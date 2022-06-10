@@ -61,7 +61,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
         //Call Analytics API
         if (AppState.session.isLoggedIn) {
             val notificationData =
-                NotificationData("notification", "Open App", remoteMessage.data.toString())
+                NotificationData("notification", remoteMessage.data.toString(),Utils.getUserAgent() )
 
             val notificationEvent =
                 SensorEvent(
