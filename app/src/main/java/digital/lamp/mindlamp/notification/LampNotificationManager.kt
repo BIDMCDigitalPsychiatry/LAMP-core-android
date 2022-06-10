@@ -80,7 +80,7 @@ object LampNotificationManager {
         val actionPendingIntent = index?.let {
             PendingIntent.getActivity(
                     context,
-                    it, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    it, actionIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         }
 
@@ -131,7 +131,7 @@ object LampNotificationManager {
         val pendingIntent = index?.let {
             PendingIntent.getActivity(
                     context,
-                    it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                    it, notificationIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         }
 
@@ -172,7 +172,7 @@ object LampNotificationManager {
 
         val homePendingIntent = PendingIntent.getActivity(
             context,
-            0, homeIntent, PendingIntent.FLAG_UPDATE_CURRENT
+            0, homeIntent,  PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification =
@@ -222,7 +222,7 @@ object LampNotificationManager {
         actionIntent.putExtra("notification_id", localNotificationId)
         val actionPendingIntent = PendingIntent.getActivity(
             context,
-                localNotificationId, actionIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                localNotificationId, actionIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)

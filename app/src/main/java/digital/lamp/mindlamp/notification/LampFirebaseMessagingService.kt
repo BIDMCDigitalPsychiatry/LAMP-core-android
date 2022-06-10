@@ -22,6 +22,7 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
@@ -36,7 +37,10 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
         val gson = Gson()
         var actionList: List<ActionData> = listOf()
         if (remoteMessage.data["actions"] != null)
-         actionList = gson.fromJson(remoteMessage.data["actions"], object : TypeToken<List<ActionData?>?>() {}.type) as List<ActionData>
+            actionList = gson.fromJson(
+                remoteMessage.data["actions"],
+                object : TypeToken<List<ActionData?>?>() {}.type
+            ) as List<ActionData>
 
         //Notification with page and action Button
         if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty() && actionList.isNotEmpty()) {
@@ -57,13 +61,13 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
         //Call Analytics API
         if (AppState.session.isLoggedIn) {
             val notificationData =
-                    NotificationData("notification", "Open App", remoteMessage.data.toString())
+                NotificationData("notification", remoteMessage.data.toString(),Utils.getUserAgent() )
 
             val notificationEvent =
-                    SensorEvent(
-                            notificationData,
-                            "lamp.analytics", System.currentTimeMillis().toDouble()
-                    )
+                SensorEvent(
+                    notificationData,
+                    "lamp.analytics", System.currentTimeMillis().toDouble()
+                )
             invokeNotificationData(notificationEvent)
         }
     }
@@ -80,27 +84,34 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     private fun invokeNotificationData(notificationEventRequest: SensorEvent) {
         val basic = "Basic ${
             Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                    ).removePrefix("http://")
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                    "https://"
+                ).removePrefix("http://")
             )
         }"
         Thread {
             TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
-
-            // Do network action in this function
-            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+            try {
+                // Do network action in this function
+                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,
                     notificationEventRequest,
                     basic
-            )
-            LampLog.e(TAG, " Notification Data Send -  $state")
+                )
+                LampLog.e(TAG, " Notification Data Send -  $state")
+            } catch (e: Exception) {
+
+            }
         }.start()
+
 
     }
 
     private fun invokeDiagnosticData() {
-        val storage = DiagnosticStorage(Utils.getTotalInternalMemorySize(), Utils.getAvailableInternalMemorySize())
+        val storage = DiagnosticStorage(
+            Utils.getTotalInternalMemorySize(),
+            Utils.getAvailableInternalMemorySize()
+        )
         val sensorDao = AppDatabase.getInstance(this).sensorDao()
         val analyticsDao = AppDatabase.getInstance(this).analyticsDao()
         var sensorSpecList = listOf<SensorSpecs>()
@@ -108,10 +119,14 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
         var pendingRecordCount = 0
         GlobalScope.launch(Dispatchers.IO) {
             sensorSpecList = sensorDao.getSensorsList()
-            pendingRecordCount = analyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
+            pendingRecordCount =
+                analyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
 
 
-            val pendingData = PendingData(AppState.session.lastAnalyticsTimestamp.toString(), pendingRecordCount.toString())
+            val pendingData = PendingData(
+                AppState.session.lastAnalyticsTimestamp.toString(),
+                pendingRecordCount.toString()
+            )
 
 
 
@@ -124,28 +139,38 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                 configuredSensors = sensorSpecList.map { it.spec!! }
             }
 
-            val diagnosticDataContent = DiagnosticDataContent(storage, configuredSensors, false, AppState.session.isLoggedIn,
-                    Utils.isDeviceIsInPowerSaveMode(this@LampFirebaseMessagingService), this@LampFirebaseMessagingService.isServiceRunning(LampForegroundService::class.java),
-                    NetworkUtils.isWifiNetworkAvailable(this@LampFirebaseMessagingService), Utils.getLocationAuthorizationStatus(this@LampFirebaseMessagingService), pendingData)
+            val diagnosticDataContent = DiagnosticDataContent(
+                storage,
+                configuredSensors,
+                false,
+                AppState.session.isLoggedIn,
+                Utils.isDeviceIsInPowerSaveMode(this@LampFirebaseMessagingService),
+                this@LampFirebaseMessagingService.isServiceRunning(LampForegroundService::class.java),
+                NetworkUtils.isWifiNetworkAvailable(this@LampFirebaseMessagingService),
+                Utils.getLocationAuthorizationStatus(this@LampFirebaseMessagingService),
+                pendingData
+            )
             val diagnosticData =
-                    DiagnosticData("diagnostic", diagnosticDataContent, "Android",  Utils.getUserAgent())
+                DiagnosticData("diagnostic", diagnosticDataContent, "Android", Utils.getUserAgent())
 
             val diagnosticEvent =
-                    SensorEvent(
-                            diagnosticData,
-                            "lamp.analytics", System.currentTimeMillis().toDouble()
-                    )
+                SensorEvent(
+                    diagnosticData,
+                    "lamp.analytics", System.currentTimeMillis().toDouble()
+                )
 
-            val basic = "Basic ${Utils.toBase64(
+            val basic = "Basic ${
+                Utils.toBase64(
                     AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
+                        "https://"
                     ).removePrefix("http://")
-            )}"
+                )
+            }"
 
             val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    diagnosticEvent,
-                    basic
+                AppState.session.userId,
+                diagnosticEvent,
+                basic
             )
             LampLog.e(TAG, "diagnostic data send -  $state")
             DebugLogs.writeToFile("Diagnostic Data Send $state")

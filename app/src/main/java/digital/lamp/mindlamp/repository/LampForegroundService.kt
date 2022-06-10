@@ -3,6 +3,7 @@ package digital.lamp.mindlamp.repository
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -24,6 +25,7 @@ import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
+
 import digital.lamp.mindlamp.database.*
 import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.AnalyticsDao
@@ -242,7 +244,7 @@ class LampForegroundService : Service(),
     private fun setAlarmManager() {
         alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java).let { intent ->
-            PendingIntent.getBroadcast(this, 0, intent, 0)
+            PendingIntent.getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
         }
         alarmManager.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -253,7 +255,7 @@ class LampForegroundService : Service(),
 
         val intent = Intent(this, ActivityRepeatReceiver::class.java)
         intent.putExtra("id", AppConstants.REPEAT_HOURLY)
-        val pendingIntent = PendingIntent.getBroadcast(this, 120, intent, 0)
+        val pendingIntent = PendingIntent.getBroadcast(this, 120, intent, FLAG_IMMUTABLE)
 
         alarmManager.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -987,7 +989,7 @@ class LampForegroundService : Service(),
         val alarmIntent = Intent(this, ActivityRepeatReceiver::class.java).apply {
             putExtra("id", AppConstants.REPEAT_DAILY)
         }.let { intent ->
-            PendingIntent.getBroadcast(this, 0, intent, 0)
+            PendingIntent.getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
         }
         // Set the alarm to start at approximately 12:00 p.m.
 //        val calendar: Calendar = Calendar.getInstance().apply {

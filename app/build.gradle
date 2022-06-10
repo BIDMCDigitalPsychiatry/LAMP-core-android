@@ -95,8 +95,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.core:core-ktx:1.7.0'
 
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
@@ -131,13 +131,18 @@ dependencies {
 
     //fitness and auth
     implementation "com.google.android.gms:play-services-fitness:21.0.1"
-    implementation "com.google.android.gms:play-services-auth:20.1.0"
+    implementation "com.google.android.gms:play-services-auth:20.2.0"
 
-    implementation 'androidx.work:work-runtime-ktx:2.5.0'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
 
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
 
+  //  implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
+
+//    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:Notification-SNAPSHOT'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2022.6.10'
+
+    //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'
     implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'
 
 }
