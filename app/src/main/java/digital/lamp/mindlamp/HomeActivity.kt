@@ -15,14 +15,12 @@ import android.net.TrafficStats
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -37,8 +35,10 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
+import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.appstate.AppState
@@ -46,20 +46,19 @@ import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
+import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.utils.*
-import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
-import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
+import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.activity_webview_overview.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -75,6 +74,9 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var oActivityDao: ActivityDao
     private lateinit var oAnalyticsDao: AnalyticsDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+
+    private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
+
 
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
@@ -139,13 +141,14 @@ class HomeActivity : AppCompatActivity() {
             populateOnDisclosureARAlert()
         } else {
             if (checkAndRequestPermissions(this)) {
-                if (checkLocationPermission()) {
+           //     if (checkLocationPermission()) {
+             //       AppState.session.isLocationPermissionAllowed =true
                     //Fit SignIn Auth
-                    fitSignIn()
+              //      fitSignIn()
                     initializeWebview()
-                } else {
+              /*  } else {
                     requestLocationPermission()
-                }
+                }*/
             }
         }
         handleNotification(intent)
@@ -351,13 +354,13 @@ class HomeActivity : AppCompatActivity() {
                     /* && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED*/
 
                     ) {
-                        if (checkLocationPermission()) {
+                       // if (checkLocationPermission()) {
                             //Fit SignIn Auth
-                            fitSignIn()
+                       //     fitSignIn()
                             initializeWebview()
-                        } else {
-                            requestLocationPermission()
-                        }
+                       // } else {
+                       //     requestLocationPermission()
+                       // }
                         //else any one or both the permissions are not granted
                     } else {
                         //Now further we check if used denied permanently or not
@@ -399,14 +402,62 @@ class HomeActivity : AppCompatActivity() {
             }
             REQUEST_LOCATION_REQUEST_CODE -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    fitSignIn()
-                    initializeWebview()
+                    AppState.session.isLocationPermissionAllowed =true
+                    checkGoogleFit()
+                   // initializeWebview()
+                }else{
+                    checkGoogleFit()
                 }
             }
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
             }
+            AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS->{
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    AppState.session.isTelephonyPermissionAllowed = true
+                }
+                    val specList = mSensorSpecsList.map { it.spec }
+                        if( specList.contains(Sensors.GPS.sensor_name)){
+                            checkLocation()
+                        }else{
+                            checkGoogleFit()
+                        }
+
+            }
         }
+    }
+
+    private fun checkLocation() {
+        if (checkLocationPermission()) {
+            AppState.session.isLocationPermissionAllowed = true
+            //Fit SignIn Auth
+            checkGoogleFit()
+            //  initializeWebview()
+        } else {
+            AppState.session.isLocationPermissionAllowed = false
+            requestLocationPermission()
+        }
+    }
+
+    private fun checkGoogleFit() {
+        val specList = mSensorSpecsList.map { it.spec }
+
+            if (specList.contains(Sensors.SLEEP.sensor_name) ||
+                specList.contains(Sensors.NUTRITION.sensor_name) ||
+                specList.contains(Sensors.STEPS.sensor_name) ||
+                specList.contains( Sensors.HEART_RATE.sensor_name) ||
+                specList.contains(Sensors.BLOOD_GLUCOSE.sensor_name) ||
+                specList.contains(Sensors.BLOOD_PRESSURE.sensor_name) ||
+                specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
+                specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
+            ) {
+                fitSignIn()
+            }else{
+                checkGPSPermission()
+                if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
+            }
     }
 
     private fun showDialogOK(message: String, okListener: DialogInterface.OnClickListener) {
@@ -533,15 +584,16 @@ class HomeActivity : AppCompatActivity() {
         } else AppState.session.serverAddress = oLoginResponse.serverAddress
 
         //Start Foreground service for retrieving data
-        if (!this.isServiceRunning(LampForegroundService::class.java)) {
+      /*   if (!this.isServiceRunning(LampForegroundService::class.java)) {
             startLampService()
-        }
+        }*/
 
         //Updating current user token
         retrieveCurrentToken()
 
         //Setting User Attributes for Firebase
         firebaseAnalytics.setUserProperty("user_token", oLoginResponse.authorizationToken)
+        invokeSensorSpecData()
     }
 
     private fun fitSignIn() {
@@ -566,6 +618,9 @@ class HomeActivity : AppCompatActivity() {
             RESULT_OK -> {
                 if (requestCode == REQUEST_OAUTH_REQUEST_CODE) {
                     accessGoogleFit()
+                    if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                        startLampService()
+                    }
                 }
             }
             else -> oAuthErrorMsg(requestCode, resultCode)
@@ -577,6 +632,11 @@ class HomeActivity : AppCompatActivity() {
         LampLog.e(TAG, "Google Fit Connected")
         trackSingleEvent("Fit_Success")
         DebugLogs.writeToFile("Google Fit Connected")
+        mSensorSpecsList.forEach {
+            if (it.spec == Sensors.GPS.sensor_name) {
+                checkGPSPermission()
+            }
+        }
 //        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
 
@@ -668,6 +728,11 @@ class HomeActivity : AppCompatActivity() {
 
     private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
         AppState.session.isGoogleFitConnected = false
+        mSensorSpecsList.forEach {
+            if (it.spec == Sensors.GPS.sensor_name) {
+                checkGPSPermission()
+            }
+        }
         val message = """
             There was an error signing into Fit. Check the troubleshooting section of the README
             for potential issues.
@@ -701,7 +766,7 @@ class HomeActivity : AppCompatActivity() {
             AppState.session.showDisclosureAlert = false
             if (checkAndRequestPermissions(this)) {
                 //Fit SignIn Auth
-                fitSignIn()
+              //  fitSignIn()
                 initializeWebview()
             }
         }
@@ -766,4 +831,98 @@ class HomeActivity : AppCompatActivity() {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(webView.getWindowToken(), 0)
     }
+
+    private fun invokeSensorSpecData() {
+        if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this) > 15) {
+            val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
+            val basic = "Basic ${
+                Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                        "https://"
+                    ).removePrefix("http://")
+                )
+            }"
+
+            GlobalScope.launch(Dispatchers.IO) {
+                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+                try {
+                    val state = SensorAPI(AppState.session.serverAddress).sensorAll(
+                        AppState.session.userId,
+                        basic
+                    )
+                    val oSensorSpec: SensorSpec? = Gson().fromJson(
+                        state.toString(),
+                        SensorSpec::class.java
+                    )
+                    if (oSensorSpec?.data?.isNotEmpty() == true) {
+                        AppState.session.isCellularUploadAllowed =
+                            oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
+                    }
+                    oSensorSpec?.data?.forEach { sensor ->
+                        val sensorSpecs = SensorSpecs(
+                            null,
+                            sensor.id,
+                            sensor.spec,
+                            sensor.name,
+                            sensor.settings?.frequency,
+                            sensor.settings?.cellular_upload
+                        )
+                        sensorSpecsList.add(sensorSpecs)
+                    }
+                    oSensorDao.deleteSensorList()
+                    oSensorDao.insertAllSensors(sensorSpecsList)
+                    mSensorSpecsList = sensorSpecsList
+                    val specList = mSensorSpecsList.map { it.spec }
+                    GlobalScope.launch(Dispatchers.Main) {
+                            if (specList.contains(Sensors.TELEPHONY.sensor_name)) {
+                                if(checkTelephonyPermission(this@HomeActivity)){
+                                    AppState.session.isTelephonyPermissionAllowed = true
+                                    if(specList.contains(Sensors.GPS.sensor_name)){
+                                        checkLocation()
+                                    }else{
+                                        checkGoogleFit()
+                                    }
+                                }
+
+                            }else if( specList.contains( Sensors.GPS.sensor_name)){
+                                checkLocation()
+                               }
+                            else{
+                                checkGoogleFit()
+                            }
+                    }
+                    LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
+                }catch (e: Exception){
+
+                }
+            }
+        }
+    }
+
+    private fun checkGPSPermission() {
+        val specList = mSensorSpecsList.map { it.spec }
+        if (!isFinishing && checkLocationPermission() && specList.contains(Sensors.GPS.sensor_name)) {
+            if (Utils.isGPSEnabled(this)) {
+
+            } else {
+                val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                    dialog.cancel()
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    startActivity(intent)
+                }
+
+                val builder = AlertDialog.Builder(this)
+
+                with(builder)
+                {
+                    setTitle(getString(R.string.app_name))
+                    setMessage(getString(R.string.gps_enable))
+                    setCancelable(false)
+                    setPositiveButton("OK", DialogInterface.OnClickListener(function = positiveButtonClick))
+                    show()
+                }
+            }
+        }
+    }
+
 }

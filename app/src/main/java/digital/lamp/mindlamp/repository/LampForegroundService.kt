@@ -287,6 +287,7 @@ class LampForegroundService : Service(),
     }
 
     private fun collectSensorData() {
+        DebugLogs.writeToFile("collectSensorData")
         var sensorSpecList = arrayListOf<SensorSpecs>()
         oScope.launch(Dispatchers.IO) {
             sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
@@ -537,6 +538,8 @@ class LampForegroundService : Service(),
 
     //Method to perform the Sensor Spec or custom sensor data,
     private fun invokeSensorSpecData(initialCall: Boolean = false) {
+        DebugLogs.writeToFile("Call sensor spec")
+
         if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
             val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
             val basic = "Basic ${

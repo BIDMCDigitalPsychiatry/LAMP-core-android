@@ -36,4 +36,6 @@
     <string name="location_permission">Location Permission Needed</string>
     <string name="settings">Settings</string>
     <string name="ok">OK</string>
+
+    <string name="gps_enable">Location is currently disabled on your device. Please enable it.</string>
 </resources>
