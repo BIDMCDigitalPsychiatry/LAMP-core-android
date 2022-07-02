@@ -19,6 +19,7 @@ internal object AppConstants {
     const val SYNC_SENSOR_SPEC_INTERVAL = 1 * 60 * 60 *1000L// 1hour
 
     const val REQUEST_ID_MULTIPLE_PERMISSIONS = 1
+    const val REQUEST_ID_TELEPHONY_PERMISSIONS = 2
 
     const val JAVASCRIPT_OBJ_LOGIN = "login"
     const val JAVASCRIPT_OBJ_LOGOUT = "logout"

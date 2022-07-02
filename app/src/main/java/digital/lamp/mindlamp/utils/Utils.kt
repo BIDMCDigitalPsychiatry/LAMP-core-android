@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -15,7 +16,7 @@ import android.os.PowerManager
 import android.os.StatFs
 import android.util.Base64
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.location.LocationManagerCompat
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
 import java.io.File
@@ -188,4 +189,19 @@ object Utils {
         return "NativeCore " + BuildConfig.VERSION_NAME + "; Android " +Build.VERSION.RELEASE+ "; "+ Build.MANUFACTURER + "; " + Build.MODEL
     }
 
+    fun isGPSEnabled(context: Context): Boolean {
+        var enabled = false
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            ?: return enabled
+        val gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+        if (gpsEnabled) {
+            enabled = true
+        }
+        return enabled
+    }
+    fun isLocationEnabled(context: Context): Boolean {
+        val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return manager?.let { LocationManagerCompat.isLocationEnabled(it) } ?: false
+    }
 }

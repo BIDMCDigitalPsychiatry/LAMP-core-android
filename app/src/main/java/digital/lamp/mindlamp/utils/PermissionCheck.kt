@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
+import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
@@ -27,7 +28,7 @@ object PermissionCheck {
         val audioRecordPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
         val modifyAudioSettingsPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.MODIFY_AUDIO_SETTINGS)
         val writeStorage = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val phoneStatePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+
         val listPermissionsNeeded = ArrayList<String>()
 
         if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
@@ -66,9 +67,7 @@ object PermissionCheck {
         if(writeStorage!=PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
-        if(phoneStatePermission!=PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.READ_PHONE_STATE)
-        }
+
 
         if (listPermissionsNeeded.isNotEmpty()) {
             ActivityCompat.requestPermissions(context, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
@@ -77,6 +76,20 @@ object PermissionCheck {
         return true
     }
 
+    fun checkTelephonyPermission(context: Activity) : Boolean  {
+
+        val listPermissionsNeeded = ArrayList<String>()
+        val phoneStatePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+
+        if(phoneStatePermission!=PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.READ_PHONE_STATE)
+
+            ActivityCompat.requestPermissions(context, listPermissionsNeeded.toTypedArray(), REQUEST_ID_TELEPHONY_PERMISSIONS)
+return false
+        }
+        return true
+
+    }
      fun checkSinglePermission(permission: String,context: Activity): Boolean {
         return ActivityCompat.checkSelfPermission(context, permission) === PackageManager.PERMISSION_GRANTED
     }

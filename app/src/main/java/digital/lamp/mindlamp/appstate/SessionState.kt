@@ -15,6 +15,8 @@ class SessionState {
         const val PREF_LAST_SLEEP_DATA_TIME_STAMP = "last_sleep_data_timestamp"
         const val PREF_LAST_STEP_DATA_TIME_STAMP = "last_step_data_timestamp"
         const val PREF_GOOGLE_FIT_CONNECTED = "google_fit_connected"
+        const val PREF_LOCATION_PERMISSION_ALLOWED = "location_permission_allowed"
+        const val PREF_TELEPHONY_PERMISSION_ALLOWED = "location_permission_allowed"
     }
 
     var isLoggedIn by Pref(
@@ -58,6 +60,9 @@ class SessionState {
         lastSyncWorkerTimestamp = 1L
         lastSleepDataTimestamp =1L
         isCellularUploadAllowed = true
+        isLocationPermissionAllowed = false
+        isGoogleFitConnected = false
+        isTelephonyPermissionAllowed = false
     }
 
     var isCellularUploadAllowed by Pref(
@@ -67,6 +72,16 @@ class SessionState {
 
     var isGoogleFitConnected by Pref(
             PREF_GOOGLE_FIT_CONNECTED,
-            true
+            false
+    )
+
+    var isLocationPermissionAllowed by Pref(
+        PREF_LOCATION_PERMISSION_ALLOWED,
+        false
+    )
+
+    var isTelephonyPermissionAllowed by Pref(
+        PREF_TELEPHONY_PERMISSION_ALLOWED,
+        false
     )
 }
