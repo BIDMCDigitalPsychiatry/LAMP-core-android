@@ -166,7 +166,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                     ).removePrefix("http://")
                 )
             }"
-
+try{
             val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                 AppState.session.userId,
                 diagnosticEvent,
@@ -175,6 +175,9 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
             LampLog.e(TAG, "diagnostic data send -  $state")
             DebugLogs.writeToFile("Diagnostic Data Send $state")
 
-        }
+        }catch (e: Exception){
+
+
+}        }
     }
 }

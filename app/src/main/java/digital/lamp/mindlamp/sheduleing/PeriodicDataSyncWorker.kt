@@ -155,7 +155,7 @@ class PeriodicDataSyncWorker(
                     }
                 }
             } catch (e: Exception) {
-                DebugLogs.writeToFile("Exception :${e.printStackTrace()}")
+                DebugLogs.writeToFile("Exception PeriodicDataSyncWorker invokeAddSensorData:${e.printStackTrace()} \n ${e.message}")
             }
         }
     }

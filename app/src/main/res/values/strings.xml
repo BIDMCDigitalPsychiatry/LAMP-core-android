@@ -38,4 +38,8 @@
     <string name="ok">OK</string>
 
     <string name="gps_enable">Location is currently disabled on your device. Please enable it.</string>
+    <string name="unexpected_error">Something went wrong. Please try again later.</string>
+    <string name="txt_no_internet">You are not connected to the internet.</string>
+    <string name="txt_unable_to_connect">Unable to connect to server. Please try again later.</string>
+
 </resources>
