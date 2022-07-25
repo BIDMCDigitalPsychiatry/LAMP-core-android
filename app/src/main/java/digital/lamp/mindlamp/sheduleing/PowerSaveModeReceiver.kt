@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 
 class PowerSaveModeReceiver: BroadcastReceiver() {
@@ -47,12 +48,18 @@ class PowerSaveModeReceiver: BroadcastReceiver() {
                         )
                     }"
 
-                    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                            AppState.session.userId,
-                            lowPowerModeEvent,
-                            basic
-                    )
-                    LampLog.e("PowerSaveModeReceiver", "PowerSaveModeReceiver data send -  $state")
+                    try {
+                        val state =
+                            SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                                AppState.session.userId,
+                                lowPowerModeEvent,
+                                basic
+                            )
+                        LampLog.e("PowerSaveModeReceiver", "PowerSaveModeReceiver data send -  $state")
+                    }catch (e: Exception){
+
+                    }
+
                     DebugLogs.writeToFile("PowerSaveModeReceiver Data Send")
                 } else {
                     val oAnalytics = Analytics()

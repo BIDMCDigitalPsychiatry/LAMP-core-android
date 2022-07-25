@@ -549,7 +549,10 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val now = Date()
         calendar.time = now
         val endTime = System.currentTimeMillis()
-        val startTime: Long = AppState.session.lastAnalyticsTimestamp
+        val startTime: Long =  AppState.session.lastGooglefitDataTimestamp
+        AppState.session.lastGooglefitDataTimestamp = endTime
+
+        DebugLogs.writeToFile("queryFitnessData StartTime $startTime EndTime $endTime")
 
 
         return DataReadRequest.Builder()

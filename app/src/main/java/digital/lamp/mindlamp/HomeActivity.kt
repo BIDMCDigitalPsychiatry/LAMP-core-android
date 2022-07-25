@@ -1,6 +1,7 @@
 package digital.lamp.mindlamp
 
 import android.Manifest
+import android.accounts.NetworkErrorException
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.AlarmManager
@@ -37,10 +38,13 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
+import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ClientException
+import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ServerException
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -62,6 +66,9 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 
 /**
@@ -297,9 +304,9 @@ class HomeActivity : AppCompatActivity() {
             webView.loadUrl(url)
 
             //Start Foreground service for retrieving data
-            if (!this.isServiceRunning(LampForegroundService::class.java)) {
+           /* if (!this.isServiceRunning(LampForegroundService::class.java)) {
                 startLampService()
-            }
+            }*/
         } else {
 
             url = BuildConfig.BASE_URL_WEB
@@ -623,7 +630,12 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
-            else -> oAuthErrorMsg(requestCode, resultCode)
+            else -> {
+                oAuthErrorMsg(requestCode, resultCode)
+                if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
+            }
         }
     }
 
@@ -676,7 +688,7 @@ class HomeActivity : AppCompatActivity() {
                         )
                         LampLog.e(TAG, " Token Send Response -  $state")
                     } catch (e: Exception) {
-                        DebugLogs.writeToFile("Exception :${e.printStackTrace()}")
+                        DebugLogs.writeToFile("Exception SensorEventAPI HomeActivity retrieveCurrentToken:${e.printStackTrace()}\n ${e.message}")
                     }
                 }
                 //Setting User Attributes for Firebase
@@ -833,7 +845,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun invokeSensorSpecData() {
-        if (NetworkUtils.isNetworkAvailable(this) && NetworkUtils.getBatteryPercentage(this) > 15) {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            if(NetworkUtils.getBatteryPercentage(this) > 15) {
             val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
             val basic = "Basic ${
                 Utils.toBase64(
@@ -892,8 +905,48 @@ class HomeActivity : AppCompatActivity() {
                             }
                     }
                     LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
-                }catch (e: Exception){
+                } catch (e: ClientException){
+                    GlobalScope.launch(Dispatchers.Main) {
+                        showApiErrorAlert("User not found", e.statusCode) }
 
+
+                }catch (e: ServerException){
+                    GlobalScope.launch(Dispatchers.Main) {
+                        showApiErrorAlert("Something went wrong. Please try again later.")
+
+                    }
+                }catch (e: UnsupportedOperationException){
+                    GlobalScope.launch(Dispatchers.Main) {
+
+                        showApiErrorAlert("Something went wrong on server. Please try again later.")
+                    }
+                }catch (e: HttpException) {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        var message = Utils.getHttpErrorMessage(e.code())
+                        if(message.isEmpty())
+                            message = e.message()
+                        showApiErrorAlert(message, e.code())
+                    }
+                } catch (e: SocketTimeoutException) {
+                    GlobalScope.launch(Dispatchers.Main) {
+                         showApiErrorAlert(getString(R.string.txt_unable_to_connect)) }
+                } catch (e: NetworkErrorException) {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        showApiErrorAlert(getString(R.string.txt_unable_to_connect)) }
+
+                }catch (e: UnknownHostException){
+                    GlobalScope.launch(Dispatchers.Main) {
+                        showApiErrorAlert(getString(R.string.txt_unable_to_connect)) }
+
+                }
+            }
+        }
+            }else{
+
+            GlobalScope.launch(Dispatchers.Main) {
+
+                GlobalScope.launch(Dispatchers.Main) {
+                     showApiErrorAlert(getString(R.string.txt_no_internet))
                 }
             }
         }
@@ -925,4 +978,39 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun showApiErrorAlert(message: String, errorCode:Int =0) {
+        if(!isFinishing) {
+            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                if(errorCode== 404){
+                    GlobalScope.launch(Dispatchers.IO) {
+                        AppState.session.clearData()
+                        val oSensorDao = AppDatabase.getInstance(this@HomeActivity).sensorDao()
+                        val oActivityDao = AppDatabase.getInstance(this@HomeActivity).activityDao()
+                        val oAnalyticsDao =
+                            AppDatabase.getInstance(this@HomeActivity).analyticsDao()
+                        oSensorDao.deleteSensorList()
+                        oActivityDao.deleteActivityList()
+                        oAnalyticsDao.dropAnalyticsList()
+                        NotificationManagerCompat.from(this@HomeActivity).cancelAll();
+                    }
+                }
+                dialog.cancel()
+
+            }
+
+            val builder = AlertDialog.Builder(this)
+
+            with(builder)
+            {
+                setTitle(getString(R.string.app_name))
+                setMessage(message)
+                setCancelable(false)
+                setPositiveButton(
+                    "OK",
+                    DialogInterface.OnClickListener(function = positiveButtonClick)
+                )
+                show()
+            }
+        }
+    }
 }

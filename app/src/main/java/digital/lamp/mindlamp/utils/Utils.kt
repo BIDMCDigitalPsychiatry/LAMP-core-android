@@ -204,4 +204,34 @@ object Utils {
         val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return manager?.let { LocationManagerCompat.isLocationEnabled(it) } ?: false
     }
+    fun getHttpErrorMessage(errorCode:Int): String{
+        when (errorCode) {
+            400 -> {
+                return "Invalid request. Please try again later."
+            }
+            401 -> {
+                return "You are not authorized."
+
+            }
+            403 -> {
+                return "You don't have access."
+            }
+            404 -> {
+                return "User not found."
+            }
+            408 -> {
+                return "Request timeout."
+            }
+            500 -> {
+                return "Something went wrong on server. Please try again later."
+            }
+            502 -> {
+                return "Bad Gateway."
+            }
+            503 -> {
+                return "Service is unavailable. Please try again later."
+            }
+            else -> return ""
+        }
+    }
 }

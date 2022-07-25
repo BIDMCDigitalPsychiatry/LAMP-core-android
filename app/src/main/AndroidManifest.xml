@@ -90,6 +90,11 @@
             android:windowSoftInputMode="adjustResize">
         </activity>
 
+        <activity android:name=".ExceptionActivity"
+            android:theme="@style/DialogTheme"
+            android:excludeFromRecents="true"
+            android:windowSoftInputMode="adjustResize"/>
+
         <service
             android:name="digital.lamp.mindlamp.repository.LampForegroundService"
             android:enabled="true"

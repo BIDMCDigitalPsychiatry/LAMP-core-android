@@ -102,8 +102,16 @@ class LocationData constructor(sensorListener: SensorListener, context: Context,
             )}"
 
             GlobalScope.launch(Dispatchers.IO) {
-                val state = SensorAPI(AppState.session.serverAddress).sensorAll(AppState.session.userId, basic)
-                val oSensorSpec: SensorSpec = Gson().fromJson(state.toString(), SensorSpec::class.java)
+                try {
+                    val state = SensorAPI(AppState.session.serverAddress).sensorAll(
+                        AppState.session.userId,
+                        basic
+                    )
+                    val oSensorSpec: SensorSpec =
+                        Gson().fromJson(state.toString(), SensorSpec::class.java)
+                }catch (e:Exception){
+
+                }
             }
         }
     }

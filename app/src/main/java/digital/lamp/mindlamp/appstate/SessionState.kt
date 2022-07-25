@@ -17,6 +17,7 @@ class SessionState {
         const val PREF_GOOGLE_FIT_CONNECTED = "google_fit_connected"
         const val PREF_LOCATION_PERMISSION_ALLOWED = "location_permission_allowed"
         const val PREF_TELEPHONY_PERMISSION_ALLOWED = "location_permission_allowed"
+        const val PREF_GOOGLE_FIT_DATA_TIME_STAMP = "last_google_fit_data_timestamp"
     }
 
     var isLoggedIn by Pref(
@@ -49,6 +50,7 @@ class SessionState {
     var lastSyncWorkerTimestamp by Pref(PREF_WORKER_TIME_STAMP,1L)
     var lastSleepDataTimestamp by Pref(PREF_LAST_SLEEP_DATA_TIME_STAMP,1L)
     var lastStepDataTimestamp by Pref(PREF_LAST_STEP_DATA_TIME_STAMP,1L)
+    var lastGooglefitDataTimestamp by Pref(PREF_GOOGLE_FIT_DATA_TIME_STAMP,1L)
 
     fun clearData() {
         isLoggedIn = false
@@ -59,6 +61,7 @@ class SessionState {
         lastAnalyticsTimestamp = 1L
         lastSyncWorkerTimestamp = 1L
         lastSleepDataTimestamp =1L
+        lastGooglefitDataTimestamp = 1L
         isCellularUploadAllowed = true
         isLocationPermissionAllowed = false
         isGoogleFitConnected = false

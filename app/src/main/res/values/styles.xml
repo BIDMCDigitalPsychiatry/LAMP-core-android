@@ -24,4 +24,12 @@
     <style name="AppTheme.ProgressAccent">
         <item name="colorAccent">@color/colorPrimary</item> <!-- Whatever color you want-->
     </style>
+
+    <style name="DialogTheme" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
 </resources>
