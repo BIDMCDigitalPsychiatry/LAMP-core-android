@@ -14,13 +14,20 @@ jobs:
         with:
           fetch-depth: 0
         env:
-            token: ${{ secrets.GITHUB_TOKENN }}
-
+          token: ${{ secrets.GITHUB_TOKENN }}
       -
         uses: actions/setup-java@v1
         with:
           java-version: 11
-
+      -
+        name: "Do a commit for release type to increment version code"
+        run: |
+          echo "Version code before empty commit is $(git rev-list --count master)"
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+          git commit --allow-empty -m "NO_CI"
+          git push origin HEAD:master
+          echo "Version code after empty commit is $(git rev-list --count master)"
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
@@ -68,14 +75,6 @@ jobs:
           releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
           status: completed
-      - name: "Do a commit for release type"
-        run: |
-          echo "Version code before empty commit is $(git rev-list --count HEAD)"
-          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
-          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
-          git commit --allow-empty -m "NO_CI"
-          git push origin HEAD:master
-          echo "Version code after empty commit is $(git rev-list --count HEAD)"
   push:
     if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
