@@ -25,6 +25,7 @@ jobs:
           echo "Version code before empty commit is $(git rev-list --count HEAD)"
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+          git pull origin HEAD:master
           git commit --allow-empty -m "NO_CI"
           git push origin HEAD:master
           echo "Version code after empty commit is $(git rev-list --count HEAD)"
@@ -89,6 +90,16 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      -
+        name: "Do a commit for release type to increment version code"
+        run: |
+          echo "Version code before empty commit is $(git rev-list --count HEAD)"
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+          git pull origin HEAD:master
+          git commit --allow-empty -m "NO_CI"
+          git push origin HEAD:master
+          echo "Version code after empty commit is $(git rev-list --count HEAD)"
       -
         env:
           FIREBASE_CONFIG: "${{secrets.GOOGLE_SERVICES_JSON}}"
