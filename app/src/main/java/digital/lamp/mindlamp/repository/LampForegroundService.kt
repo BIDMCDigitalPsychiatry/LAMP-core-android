@@ -57,6 +57,7 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLHandshakeException
 import kotlin.math.max
 import kotlin.math.min
 
@@ -595,7 +596,17 @@ class LampForegroundService : Service(),
                         }
                         LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
 
-                    }catch (e: ClientException){
+                    } catch (e: SSLHandshakeException){
+                        GlobalScope.launch(Dispatchers.Main) {
+                            val mainIntent =
+                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                            mainIntent.putExtra("message", "Server is unreachable.")
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            if(App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
+                        }
+                    }
+                    catch (e: ClientException){
                         GlobalScope.launch(Dispatchers.Main) {
                             DebugLogs.writeToFile("invokeSensorSpecData client exception")
                             val mainIntent =
@@ -784,17 +795,30 @@ class LampForegroundService : Service(),
                         if(App.app.isApplicationInForeground())
                         startActivity(mainIntent)
                     }
-                }catch (e: UnknownHostException){
+                }catch (e: UnknownHostException) {
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            "Unable to connect to server. Please try again later."
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
+                }catch (e: SSLHandshakeException){
+                        GlobalScope.launch(Dispatchers.Main) {
+
+                            val mainIntent =
+                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                            mainIntent.putExtra("message","Server not reachable.")
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if(App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
+                        }
+                    }
                 }
-            }
 
         }else{
 
@@ -1202,6 +1226,17 @@ class LampForegroundService : Service(),
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        if(App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
+                    }
+                }
+                catch (e: SSLHandshakeException){
+                    GlobalScope.launch(Dispatchers.Main) {
+
+                        val mainIntent =
+                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                        mainIntent.putExtra("message","Server not reachable.")
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if(App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }

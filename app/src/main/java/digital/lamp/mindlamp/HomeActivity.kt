@@ -44,7 +44,6 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
-import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -66,9 +65,13 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+import javax.net.ssl.*
 
 
 /**
@@ -845,6 +848,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun invokeSensorSpecData() {
+
         if (NetworkUtils.isNetworkAvailable(this)) {
             if(NetworkUtils.getBatteryPercentage(this) > 15) {
             val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
@@ -905,7 +909,13 @@ class HomeActivity : AppCompatActivity() {
                             }
                     }
                     LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
-                } catch (e: ClientException){
+                } catch (e:SSLHandshakeException){
+                    GlobalScope.launch(Dispatchers.Main) {
+
+                        showApiErrorAlert("Server is unreachable.")
+                    }
+                }
+                catch (e: ClientException){
                     GlobalScope.launch(Dispatchers.Main) {
                         showApiErrorAlert("User not found", e.statusCode) }
 
