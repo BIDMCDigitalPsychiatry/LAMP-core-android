@@ -1855,6 +1855,9 @@ class LampForegroundService : Service(),
     ) {
 
         val reminderTime = getAlarmStartTime(oTime, startTime)
+        val todaysDate = Calendar.getInstance()
+        todaysDate.timeInMillis = reminderTime
+
         val calendar = Calendar.getInstance()
         var delay = 0L
         if (reminderTime > System.currentTimeMillis()) {
@@ -1879,14 +1882,20 @@ class LampForegroundService : Service(),
             )
         }
 
-        val work =
-            OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
-                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .setInputData(data.build())
-                .addTag(WORK_MANAGER_TAG)
-                .build()
 
-        WorkManager.getInstance(this).enqueue(work)
+        if (todaysDate.get(Calendar.MONTH) == Calendar.getInstance().get(Calendar.MONTH)&&
+            todaysDate.get(Calendar.DAY_OF_MONTH) == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)&&
+            todaysDate.get(Calendar.HOUR_OF_DAY) == Calendar.getInstance().get(Calendar.HOUR_OF_DAY)&&
+            todaysDate.get(Calendar.MINUTE) == Calendar.getInstance().get(Calendar.MINUTE)) {
+            val work =
+                OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
+                    .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                    .setInputData(data.build())
+                    .addTag(WORK_MANAGER_TAG)
+                    .build()
+
+            WorkManager.getInstance(this).enqueue(work)
+        }
 
     }
 
