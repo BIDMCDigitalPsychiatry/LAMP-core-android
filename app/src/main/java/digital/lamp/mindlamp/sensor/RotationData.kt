@@ -32,25 +32,7 @@ class RotationData constructor(sensorListener: SensorListener, context: Context,
                 val rotationData =
                     RotationData(x, y, z)
                 val data = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),
-                    AttitudeData(null,null,null),GravityData(null,null,null), rotationData) /*DimensionData(
-                    null,
-                    null,
-                    null,
-                    rotationData,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,null,null,null,null,null,null,null,null
-                )*/
+                    AttitudeData(null,null,null),GravityData(null,null,null), rotationData)
                 val sensorEventData =
                     SensorEvent(
                         data,

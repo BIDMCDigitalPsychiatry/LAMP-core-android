@@ -112,7 +112,7 @@ class LampForegroundService : Service(),
             val notification =
                 LampNotificationManager.showNotification(
                     this,
-                    "MindLamp Active Data Collection"
+                    getString(digital.lamp.mindlamp.R.string.active_data_collection)
                 )
 
             startForeground(1010, notification)
@@ -131,20 +131,16 @@ class LampForegroundService : Service(),
         } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_HOURLY) {
             LampLog.e(TAG, "Call sensor spec every 1 hours")
             DebugLogs.writeToFile("Call sensor spec every 1 hours")
-
             invokeSensorSpecData()
 
         } else if (!isAlarm && isActivitySchedule && localNotificationId != 0) {
             LampLog.e(TAG, "Call for showing up the local notification")
             LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification ")
-            //   if(!Utils.isOnline(this)) {
             invokeLocalNotification(localNotificationId)
-            //  }
         } else {
             //This will execute every 10 min if logged in
             LampLog.e("Sensor : Trigger")
             syncAnalyticsData()
-
             //Fetch google fit data in 5 min interval
             Lamp.stopLAMP(this)
             collectSensorData()
@@ -165,27 +161,7 @@ class LampForegroundService : Service(),
             .create()
         val gsonWithNull = GsonBuilder().serializeNulls()
             .create()
-        /*    GlobalScope.launch(Dispatchers.IO) {
-                val endTime = AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
-                val list = oAnalyticsDao.getAnalyticsList(endTime)
-                list.forEach {
-                    sensorEventDataList.add(
-                            gson.fromJson(
-                                    it.analyticsData,
-                                    SensorEvent::class.java
-                            )
-                    )
-                }
-                list.let {
-                    if (it.isNotEmpty()) {
-                        AppState.session.lastAnalyticsTimestamp = it[0].datetimeMillisecond!!
-                    }
-                }
-                LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
-                DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
-                if (sensorEventDataList.isNotEmpty())
-                    invokeAddSensorData(sensorEventDataList)
-            }*/
+
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
             LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
@@ -199,7 +175,6 @@ class LampForegroundService : Service(),
                 AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
             LampLog.e("Sensor : END TIME $endTime")
             list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
-
 
             list.forEach {
                 val sensorEvent = gson.fromJson(
@@ -233,7 +208,6 @@ class LampForegroundService : Service(),
                 }
             }
             LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
-            //   DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
             if (googleFitSensorEventDataList.isNotEmpty())
@@ -317,10 +291,7 @@ class LampForegroundService : Service(),
                         var accelerometerDataRequired = false
                         var sensorSpec = ""
                         var frequency: Double? = null
-                        /* if (sensorSpecList.isEmpty()) {
-                            accelerometerDataRequired = true
 
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
                                 it.spec == Sensors.DEVICE_MOTION.sensor_name
@@ -348,10 +319,7 @@ class LampForegroundService : Service(),
                     3 -> {
                         var rotationDataRequird = false
                         var frequency: Double? = null
-                        /*  if (sensorSpecList.isEmpty()) {
-                            rotationDataRequird = true
 
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 rotationDataRequird = true
@@ -361,7 +329,7 @@ class LampForegroundService : Service(),
                                 }
                             } //Invoke Rotation Call
                         }
-                        //  }
+
                         if (rotationDataRequird) {
                             RotationData(
                                 this@LampForegroundService,
@@ -372,10 +340,6 @@ class LampForegroundService : Service(),
                     4 -> {
                         var magnetometerDataRequired = false
                         var frequency: Double? = null
-                        /* if (sensorSpecList.isEmpty()) {
-                            magnetometerDataRequired = true
-
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 magnetometerDataRequired = true
@@ -384,7 +348,6 @@ class LampForegroundService : Service(),
                                         frequency = it
                                 }
                             }
-                            //  }
                         }
                         if (magnetometerDataRequired) {
                             //Invoke Magnet Call
@@ -398,10 +361,6 @@ class LampForegroundService : Service(),
                     5 -> {
                         var gravityDataRequired = false
                         var frequency: Double? = null
-                        /*  if (sensorSpecList.isEmpty()) {
-                            gyroscopeDataRequired = true
-
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
                                 gravityDataRequired = true
@@ -411,7 +370,6 @@ class LampForegroundService : Service(),
                                         frequency = it
                                 }
                             }//Invoke Gyroscope Call
-                            // }
                         }
                         if (gravityDataRequired) {
                             GravityData(
@@ -419,15 +377,11 @@ class LampForegroundService : Service(),
                                 applicationContext, frequency
                             )
                         }
-
                     }
                     6 -> {
                         var locationDateRequired = false
                         var frequency: Double? = null
-                        /* if (sensorSpecList.isEmpty()) {
-                            locationDateRequired = true
 
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.GPS.sensor_name) {
                                 locationDateRequired = true
@@ -437,7 +391,6 @@ class LampForegroundService : Service(),
                                 }
                             }
                         }
-                        // }
                         if (locationDateRequired) {
                             //Invoke Location
                             LocationData(
@@ -449,17 +402,12 @@ class LampForegroundService : Service(),
                     }
                     7 -> {
                         var wifiDataRequired = false
-                        /*  if (sensorSpecList.isEmpty()) {
-                            wifiDataRequired = true
-
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
                                 wifiDataRequired = true
 
                             }
                         }
-                        //   }
                         if (wifiDataRequired) {
                             //Invoke WifiData
                             WifiData(
@@ -471,16 +419,11 @@ class LampForegroundService : Service(),
                     }
                     8 -> {
                         var screenStateDataRequired = false
-                        /* if (sensorSpecList.isEmpty()) {
-                            screenStateDataRequired = true
-
-                        } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.SCREEN_STATE.sensor_name || it.spec == Sensors.DEVICE_STATE.sensor_name) {
                                 screenStateDataRequired = true
 
                             }
-                            //  }
                         }
                         if (screenStateDataRequired) {
                             //Invoke screen state Data
@@ -498,16 +441,11 @@ class LampForegroundService : Service(),
                     )
                     10 -> {
                         var telephonyDataRequired = false
-                        /* if (sensorSpecList.isEmpty()) {
-                             screenStateDataRequired = true
-
-                         } else {*/
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.TELEPHONY.sensor_name) {
                                 telephonyDataRequired = true
 
                             }
-                            //  }
                         }
                         if (telephonyDataRequired) {
                             //Invoke screen state Data
@@ -522,11 +460,7 @@ class LampForegroundService : Service(),
             }
 
             override fun onFinish() {
-//                if (!isAlarm) {
-//                    setAlarmManager()
-//                }
-//                stopForeground(true)
-//                stopSelf()
+
             }
         }
         timer.start()
@@ -549,8 +483,8 @@ class LampForegroundService : Service(),
     private fun invokeSensorSpecData(initialCall: Boolean = false) {
         DebugLogs.writeToFile("Call sensor spec")
 
-        if (NetworkUtils.isNetworkAvailable(this) ){
-            if( NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
                 val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
                 val basic = "Basic ${
                     Utils.toBase64(
@@ -563,7 +497,6 @@ class LampForegroundService : Service(),
                 GlobalScope.launch(Dispatchers.IO) {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
                     try {
-
 
                         val state = SensorAPI(AppState.session.serverAddress).sensorAll(
                             AppState.session.userId,
@@ -596,102 +529,115 @@ class LampForegroundService : Service(),
                         }
                         LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
 
-                    } catch (e: SSLHandshakeException){
+                    } catch (e: SSLHandshakeException) {
                         GlobalScope.launch(Dispatchers.Main) {
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message", "Server is unreachable.")
+                            mainIntent.putExtra("message",getString(digital.lamp.mindlamp.R.string.server_un_rechable))
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            if(App.app.isApplicationInForeground())
+                            if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
-                    }
-                    catch (e: ClientException){
+                    } catch (e: ClientException) {
                         GlobalScope.launch(Dispatchers.Main) {
                             DebugLogs.writeToFile("invokeSensorSpecData client exception")
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message","User not found.")
-                            mainIntent.putExtra("code",e.statusCode)
+                            mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.user_not_found))
+                            mainIntent.putExtra("code", e.statusCode)
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
+                            if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
-                    }catch (e: ServerException){
+                    } catch (e: ServerException) {
                         GlobalScope.launch(Dispatchers.Main) {
 
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message","Something went wrong on server. Please try again later.")
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
+                            if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
-                    }catch (e: UnsupportedOperationException){
+                    } catch (e: UnsupportedOperationException) {
                         GlobalScope.launch(Dispatchers.Main) {
 
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message","Something went wrong on server. Please try again later.")
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
+                            if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
-                    }
-                    catch (e: HttpException){
+                    } catch (e: HttpException) {
                         GlobalScope.launch(Dispatchers.Main) {
-                            var message = Utils.getHttpErrorMessage(e.code())
-                            if(message.isEmpty())
+                            var message =
+                                Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
+                            if (message.isEmpty())
                                 message = e.message()
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message",message)
-                            mainIntent.putExtra("code",e.code())
+                            mainIntent.putExtra("message", message)
+                            mainIntent.putExtra("code", e.code())
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
+                            if (App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
                         }
-                    }catch (e : SocketTimeoutException){
+                    } catch (e: SocketTimeoutException) {
                         GlobalScope.launch(Dispatchers.Main) {
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message","Unable to connect to server. Please try again later.")
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
+                            if (App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
                         }
-                    }
-                    catch (e: NetworkErrorException){
+                    } catch (e: NetworkErrorException) {
                         GlobalScope.launch(Dispatchers.Main) {
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message","Unable to connect to server. Please try again later.")
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
+                            if (App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
                         }
-                    }catch (e: UnknownHostException){
+                    } catch (e: UnknownHostException) {
                         GlobalScope.launch(Dispatchers.Main) {
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            if(App.app.isApplicationInForeground())
+                            if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
                     }
                 }
             }
-        }else{
+        } else {
 
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
                     Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", "You are not connected to the internet")
+                mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.you_are_not_connected))
                 mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                if(App.app.isApplicationInForeground()){
-                startActivity(mainIntent)
-            }
+                if (App.app.isApplicationInForeground()) {
+                    startActivity(mainIntent)
+                }
             }
         }
     }
@@ -716,7 +662,7 @@ class LampForegroundService : Service(),
                     )
                 }"
 
-                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
                 try {
                     val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                         AppState.session.userId,
@@ -733,108 +679,119 @@ class LampForegroundService : Service(),
                             syncAnalyticsData()
                         }
                     }
-                } catch (e: ClientException){
+                } catch (e: ClientException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","User not found.")
-                        mainIntent.putExtra("code",e.statusCode)
+                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.user_not_found))
+                        mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: ServerException){
+                } catch (e: ServerException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","Something went wrong on server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: UnsupportedOperationException){
+                } catch (e: UnsupportedOperationException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","Something went wrong on server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: HttpException) {
+                } catch (e: HttpException) {
                     GlobalScope.launch(Dispatchers.Main) {
-                        var message = Utils.getHttpErrorMessage(e.code())
-                        if(message.isEmpty())
+                        var message =
+                            Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
+                        if (message.isEmpty())
                             message = e.message()
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra("message", message)
-                        mainIntent.putExtra("code",e.code())
+                        mainIntent.putExtra("code", e.code())
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
-                        startActivity(mainIntent)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
                     }
                 } catch (e: SocketTimeoutException) {
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
-                        startActivity(mainIntent)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
                     }
                 } catch (e: NetworkErrorException) {
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
-                        startActivity(mainIntent)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
                     }
-                }catch (e: UnknownHostException) {
+                } catch (e: UnknownHostException) {
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra(
                             "message",
-                            "Unable to connect to server. Please try again later."
+                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
                         )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: SSLHandshakeException){
-                        GlobalScope.launch(Dispatchers.Main) {
+                } catch (e: SSLHandshakeException) {
+                    GlobalScope.launch(Dispatchers.Main) {
 
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message","Server not reachable.")
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if(App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
+                        val mainIntent =
+                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
                     }
                 }
+            }
 
-        }else{
+        } else {
 
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
                     Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", "You are not connected to the internet.")
+                mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.you_are_not_connected))
                 mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                if(App.app.isApplicationInForeground()){
+                if (App.app.isApplicationInForeground()) {
                     startActivity(mainIntent)
                 }
             }
         }
-}
-
-
+    }
 
     //Method to perform Activity API store details to Activity Table and Schedule Activity Alarm Manager
     private fun invokeActivitySchedules() {
@@ -848,11 +805,6 @@ class LampForegroundService : Service(),
                 )
             }"
 
-
-//            val basic = "Basic ${Utils.toBase64(
-//                "U0817022664@lamp.com:U0817022664"
-//            )}"
-
             oScope.launch {
                 TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
                 try {
@@ -865,7 +817,6 @@ class LampForegroundService : Service(),
                         activityString.toString(),
                         ActivityResponse::class.java
                     )
-
 
                     val oActivityList = arrayListOf<ActivitySchedule>()
                     LampLog.e(TAG, " Response Activity Data-  ${activityResponse.data.size}")
@@ -1003,11 +954,6 @@ class LampForegroundService : Service(),
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                     val nId = Utils.getMyIntValue(notificationId)
-//                                                    setAlarmManagerCustom(
-//                                                        0,
-//                                                        nId,
-//                                                        durationIntervalLegacy.time.toString()
-//                                                    )
                                                     setLocalNotificationBiWeekly(
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
@@ -1032,7 +978,6 @@ class LampForegroundService : Service(),
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                     val nId = Utils.getMyIntValue(notificationId)
-//
                                                     setLocalNotificationTriWeekly(
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
@@ -1050,7 +995,6 @@ class LampForegroundService : Service(),
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                     val nId = Utils.getMyIntValue(notificationId)
-//
                                                     setLocalNotificationWeekly(
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
@@ -1069,7 +1013,6 @@ class LampForegroundService : Service(),
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                     val nId = Utils.getMyIntValue(notificationId)
-//
                                                     setLocalNotificationFortnightly(
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
@@ -1088,11 +1031,6 @@ class LampForegroundService : Service(),
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                     val nId = Utils.getMyIntValue(notificationId)
-//                                                    setAlarmManagerCustom(
-//                                                        0,
-//                                                        nId,
-//                                                        durationIntervalLegacy.time.toString()
-//                                                    )
                                                     setLocalNotificationBiMonthly(
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
@@ -1110,11 +1048,6 @@ class LampForegroundService : Service(),
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
                                                     val nId = Utils.getMyIntValue(notificationId)
-//                                                    setAlarmManagerCustom(
-//                                                        0,
-//                                                        nId,
-//                                                        durationIntervalLegacy.time.toString()
-//                                                    )
                                                     setLocalNotificationMonthly(
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
@@ -1155,49 +1088,55 @@ class LampForegroundService : Service(),
                         TAG,
                         "Activity DB Size : ${oActivityDao.getActivityList().size.toString()}"
                     )
-                }
-                catch (e: ClientException){
+                } catch (e: ClientException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","User not found.")
-                        mainIntent.putExtra("code",e.statusCode)
+                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.user_not_found))
+                        mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: ServerException){
+                } catch (e: ServerException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","Something went wrong on server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: UnsupportedOperationException){
+                } catch (e: UnsupportedOperationException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","Something went wrong on server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: HttpException) {
+                } catch (e: HttpException) {
                     GlobalScope.launch(Dispatchers.Main) {
-                        var message = Utils.getHttpErrorMessage(e.code())
-                       if(message.isEmpty())
-                           message = e.message()
+                        var message =
+                            Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
+                        if (message.isEmpty())
+                            message = e.message()
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra("message", message)
-                        mainIntent.putExtra("code",e.code())
+                        mainIntent.putExtra("code", e.code())
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground()) {
+                        if (App.app.isApplicationInForeground()) {
                             startActivity(mainIntent)
                         }
                     }
@@ -1205,9 +1144,12 @@ class LampForegroundService : Service(),
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground()) {
+                        if (App.app.isApplicationInForeground()) {
                             startActivity(mainIntent)
                         }
                     }
@@ -1215,41 +1157,46 @@ class LampForegroundService : Service(),
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if(App.app.isApplicationInForeground())
-                        startActivity(mainIntent)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
                     }
-                }catch (e: UnknownHostException){
+                } catch (e: UnknownHostException) {
                     GlobalScope.launch(Dispatchers.Main) {
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", "Unable to connect to server. Please try again later.")
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }
-                catch (e: SSLHandshakeException){
+                } catch (e: SSLHandshakeException) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message","Server not reachable.")
+                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if(App.app.isApplicationInForeground())
+                        if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
                 }
             }
-        }else{
+        } else {
 
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
                     Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", "You are not connected to the internet.")
+                mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.you_are_not_connected))
                 mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                if(App.app.isApplicationInForeground()){
+                if (App.app.isApplicationInForeground()) {
                     startActivity(mainIntent)
                 }
             }
@@ -1292,11 +1239,6 @@ class LampForegroundService : Service(),
         }.let { intent ->
             PendingIntent.getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
         }
-        // Set the alarm to start at approximately 12:00 p.m.
-//        val calendar: Calendar = Calendar.getInstance().apply {
-//            timeInMillis = System.currentTimeMillis()
-//            set(Calendar.HOUR_OF_DAY, 12)
-//        }
 
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
@@ -1883,10 +1825,13 @@ class LampForegroundService : Service(),
         }
 
 
-        if (todaysDate.get(Calendar.MONTH) == Calendar.getInstance().get(Calendar.MONTH)&&
-            todaysDate.get(Calendar.DAY_OF_MONTH) == Calendar.getInstance().get(Calendar.DAY_OF_MONTH)&&
-            todaysDate.get(Calendar.HOUR_OF_DAY) == Calendar.getInstance().get(Calendar.HOUR_OF_DAY)&&
-            todaysDate.get(Calendar.MINUTE) == Calendar.getInstance().get(Calendar.MINUTE)) {
+        if (todaysDate.get(Calendar.MONTH) == Calendar.getInstance().get(Calendar.MONTH) &&
+            todaysDate.get(Calendar.DAY_OF_MONTH) == Calendar.getInstance()
+                .get(Calendar.DAY_OF_MONTH) &&
+            todaysDate.get(Calendar.HOUR_OF_DAY) == Calendar.getInstance()
+                .get(Calendar.HOUR_OF_DAY) &&
+            todaysDate.get(Calendar.MINUTE) == Calendar.getInstance().get(Calendar.MINUTE)
+        ) {
             val work =
                 OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
                     .setInitialDelay(delay, TimeUnit.MILLISECONDS)

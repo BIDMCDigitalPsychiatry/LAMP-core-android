@@ -35,11 +35,9 @@ class AppLifeCycleListener : DefaultLifecycleObserver {
 
     override fun onPause(owner: LifecycleOwner) {
         super.onPause(owner)
-       // isOnForground = false
     }
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
-      //  isOnForground = true
     }
 }

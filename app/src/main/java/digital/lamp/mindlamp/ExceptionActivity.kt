@@ -22,12 +22,10 @@ class ExceptionActivity : AppCompatActivity() {
     private var errorCode:Int=0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_exception)
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         buttonOk.setOnClickListener {
-           // finish()
             if(errorCode == 404) {
                 AppState.session.clearData()
                 stopLampService()
@@ -65,7 +63,6 @@ class ExceptionActivity : AppCompatActivity() {
 
         val stopIntent = Intent(this, LampForegroundService::class.java)
         stopService(stopIntent)
-
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_IMMUTABLE)

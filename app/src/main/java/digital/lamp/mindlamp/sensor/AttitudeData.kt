@@ -26,28 +26,9 @@ class AttitudeData constructor(sensorListener: SensorListener, context: Context,
                 val x = it.getAsDouble(Rotation.VALUES_0)
                 val y = it.getAsDouble(Rotation.VALUES_1)
                 val z = it.getAsDouble(Rotation.VALUES_2)
-                //val value=it.
                 val attitudeData =
                     AttitudeData(x, y, z)
-                val data = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),attitudeData,GravityData(null,null,null),  RotationData(null,null,null)) /*DimensionData(
-                    null,
-                    null,
-                    null,
-                    rotationData,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,null,null,null,null,null,null,null,null
-                )*/
+                val data = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),attitudeData,GravityData(null,null,null),  RotationData(null,null,null))
                 val sensorEventData =
                     SensorEvent(
                         data,

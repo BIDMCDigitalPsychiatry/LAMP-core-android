@@ -31,8 +31,6 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        Log.e(TAG, "Remote Message: ${remoteMessage.data}")
-
         DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
         var actionList: List<ActionData> = listOf()
@@ -61,7 +59,11 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
         //Call Analytics API
         if (AppState.session.isLoggedIn) {
             val notificationData =
-                NotificationData("notification", remoteMessage.data.toString(),Utils.getUserAgent() )
+                NotificationData(
+                    "notification",
+                    remoteMessage.data.toString(),
+                    Utils.getUserAgent()
+                )
 
             val notificationEvent =
                 SensorEvent(
@@ -109,8 +111,8 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
 
     private fun invokeDiagnosticData() {
         val storage = DiagnosticStorage(
-            Utils.getTotalInternalMemorySize(),
-            Utils.getAvailableInternalMemorySize()
+            Utils.getTotalInternalMemorySize(this@LampFirebaseMessagingService),
+            Utils.getAvailableInternalMemorySize(this@LampFirebaseMessagingService)
         )
         val sensorDao = AppDatabase.getInstance(this).sensorDao()
         val analyticsDao = AppDatabase.getInstance(this).analyticsDao()
@@ -122,14 +124,10 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
             pendingRecordCount =
                 analyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
 
-
             val pendingData = PendingData(
                 AppState.session.lastAnalyticsTimestamp.toString(),
                 pendingRecordCount.toString()
             )
-
-
-
 
             if (sensorSpecList.isEmpty()) {
                 val sensorsList: Array<Sensors> = Sensors.values()
@@ -166,18 +164,18 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                     ).removePrefix("http://")
                 )
             }"
-try{
-            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                AppState.session.userId,
-                diagnosticEvent,
-                basic
-            )
-            LampLog.e(TAG, "diagnostic data send -  $state")
-            DebugLogs.writeToFile("Diagnostic Data Send $state")
+            try {
+                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                    AppState.session.userId,
+                    diagnosticEvent,
+                    basic
+                )
+                LampLog.e(TAG, "diagnostic data send -  $state")
+                DebugLogs.writeToFile("Diagnostic Data Send $state")
 
-        }catch (e: Exception){
+            } catch (e: Exception) {
 
-
-}        }
+            }
+        }
     }
 }

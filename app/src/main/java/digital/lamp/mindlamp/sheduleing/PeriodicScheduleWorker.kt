@@ -30,7 +30,6 @@ class PeriodicScheduleWorker(
                                 OneTimeScheduleWorker.TAG,
                             "Activity Name :: - ${activitySchedule.name} ---- $notificationId"
                         )
-      //                  if(!Utils.isOnline(context))
                         LampNotificationManager.showActivityNotification(
                             context,
                             activitySchedule,
@@ -40,34 +39,6 @@ class PeriodicScheduleWorker(
                 }
             }
         }
-
-        /*val notification = NotificationCompat.Builder(context, AppConstants.NOTIFICATION_CHANNEL)
-            .setContentTitle("Scheduled notification $text")
-            .setContentText("Hello from one-time worker")
-            .setSmallIcon(R.mipmap.ic_launcher_round)
-            .setLargeIcon(
-                BitmapFactory.decodeResource(
-                    context.resources,
-                    R.mipmap.ic_launcher_round
-                )
-            )
-            .setVibrate(longArrayOf(0L))
-            .setAutoCancel(true)
-        Log.e("OneTimeScheduleWorker","OneTimeScheduleWorker 2")
-        val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.e("OneTimeScheduleWorker","OneTimeScheduleWorker 3")
-            val activityChannel = NotificationChannel(
-                AppConstants.NOTIFICATION_ACTIVITY,
-                "channel1",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            manager.createNotificationChannel(activityChannel)
-        }
-        Log.e("OneTimeScheduleWorker","OneTimeScheduleWorker 4")
-        manager.notify(notificationId, notification.build())
-        Log.e("OneTimeScheduleWorker","OneTimeScheduleWorker 5")*/
         return Result.success()
     }
 }

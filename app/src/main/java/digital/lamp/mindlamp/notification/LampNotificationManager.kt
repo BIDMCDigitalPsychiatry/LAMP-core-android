@@ -44,7 +44,7 @@ object LampNotificationManager {
         }
 
         return NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-                .setContentTitle("MindLamp Service")
+                .setContentTitle(context.getString(R.string.mindlamp_service))
                 .setContentText(message)
                 .setSound(null)
                 .setVibrate(longArrayOf(0L))
@@ -58,19 +58,6 @@ object LampNotificationManager {
         actionList: List<ActionData>
     ) {
 
-       /* //Notification with open App Button with value
-        val notificationIntent = Intent(context, HomeActivity::class.java)
-        val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
-        notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
-        notificationIntent.putExtra("notification_id", notificationId)
-        notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
-
-        val pendingIntent = notificationId?.let {
-            PendingIntent.getActivity(
-                    context,
-                    it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        }*/
         val index= remoteMessage.data["notificationId"]?.toInt()?:0
         val actionIntent = Intent(context, HomeActivity::class.java)
         actionIntent.putExtra("survey_path", actionList[0].page)

@@ -14,20 +14,28 @@ import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS
  */
 object PermissionCheck {
 
-    fun checkAndRequestPermissions(context: Activity) : Boolean  {
-        val cameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-        val contactPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
-        val permissionLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        //val permissionBackgroundLocation = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-        val readStorage = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
-        val readSyncSettingPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_SETTINGS)
-        val readSyncStatPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_STATS)
+    fun checkAndRequestPermissions(context: Activity): Boolean {
+        val cameraPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+        val contactPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
+        val permissionLocation =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val readStorage =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+        val readSyncSettingPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_SETTINGS)
+        val readSyncStatPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_STATS)
         //Android 10
-        val activityRecognitionPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION)
-
-        val audioRecordPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
-        val modifyAudioSettingsPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.MODIFY_AUDIO_SETTINGS)
-        val writeStorage = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val activityRecognitionPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION)
+        val audioRecordPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
+        val modifyAudioSettingsPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.MODIFY_AUDIO_SETTINGS)
+        val writeStorage =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
         val listPermissionsNeeded = ArrayList<String>()
 
@@ -37,14 +45,7 @@ object PermissionCheck {
         if (contactPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_CONTACTS)
         }
-     /*   if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION)
-        }*/
-       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        if (permissionBackgroundLocation != PackageManager.PERMISSION_GRANTED) {
-                listPermissionsNeeded.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            }
-        }*/
+
         if (readStorage != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
@@ -58,39 +59,52 @@ object PermissionCheck {
             listPermissionsNeeded.add(Manifest.permission.ACTIVITY_RECOGNITION)
         }
 
-        if(audioRecordPermission!=PackageManager.PERMISSION_GRANTED) {
+        if (audioRecordPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO)
         }
-        if(modifyAudioSettingsPermission!=PackageManager.PERMISSION_GRANTED) {
+        if (modifyAudioSettingsPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.MODIFY_AUDIO_SETTINGS)
         }
-        if(writeStorage!=PackageManager.PERMISSION_GRANTED) {
+        if (writeStorage != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
 
 
         if (listPermissionsNeeded.isNotEmpty()) {
-            ActivityCompat.requestPermissions(context, listPermissionsNeeded.toTypedArray(), REQUEST_ID_MULTIPLE_PERMISSIONS)
+            ActivityCompat.requestPermissions(
+                context,
+                listPermissionsNeeded.toTypedArray(),
+                REQUEST_ID_MULTIPLE_PERMISSIONS
+            )
             return false
         }
         return true
     }
 
-    fun checkTelephonyPermission(context: Activity) : Boolean  {
+    fun checkTelephonyPermission(context: Activity): Boolean {
 
         val listPermissionsNeeded = ArrayList<String>()
-        val phoneStatePermission = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+        val phoneStatePermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
 
-        if(phoneStatePermission!=PackageManager.PERMISSION_GRANTED) {
+        if (phoneStatePermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_PHONE_STATE)
 
-            ActivityCompat.requestPermissions(context, listPermissionsNeeded.toTypedArray(), REQUEST_ID_TELEPHONY_PERMISSIONS)
-return false
+            ActivityCompat.requestPermissions(
+                context,
+                listPermissionsNeeded.toTypedArray(),
+                REQUEST_ID_TELEPHONY_PERMISSIONS
+            )
+            return false
         }
         return true
 
     }
-     fun checkSinglePermission(permission: String,context: Activity): Boolean {
-        return ActivityCompat.checkSelfPermission(context, permission) === PackageManager.PERMISSION_GRANTED
+
+    fun checkSinglePermission(permission: String, context: Activity): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            context,
+            permission
+        ) === PackageManager.PERMISSION_GRANTED
     }
 }

@@ -41,5 +41,32 @@
     <string name="unexpected_error">Something went wrong. Please try again later.</string>
     <string name="txt_no_internet">You are not connected to the internet.</string>
     <string name="txt_unable_to_connect">Unable to connect to server. Please try again later.</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">Service Permissions are required for this app</string>
+    <string name="cancel">Cancel</string>
+    <string name="server_unreachable">Server is unreachable.</string>
+    <string name="user_not_found">User not found.</string>
+    <string name="something_went_wrong">Something went wrong. Please try again later.</string>
+    <string name="something_went_wrong_on_server">Something went wrong on server. Please try again later.</string>
+    <string name="kb">KB</string>
+    <string name="mb">MB</string>
+    <string name="invalid_request_please_try_again">Invalid request. Please try again later.</string>
+    <string name="you_are_not_authorized">You are not authorized.</string>
+    <string name="you_dont_have_access">You don\'t have access.</string>
+    <string name="user_not_found_here">User not found.</string>
+    <string name="request_timeout">Request timeout.</string>
+    <string name="bad_gateway">Bad Gateway.</string>
+    <string name="service_not_available">Service is unavailable. Please try again later.</string>
+    <string name="unused">Unused</string>
+    <string name="awake_during_sleep">Awake (during sleep)</string>
+    <string name="sleep">Sleep</string>
+    <string name="out_of_bed">Out-of-bed</string>
+    <string name="light_sleep">Light sleep</string>
+    <string name="deep_sleep">Deep sleep</string>
+    <string name="rem_sleep">REM sleep</string>
+    <string name="active_data_collection">MindLamp Active Data Collection</string>
+    <string name="server_un_rechable">Server is unreachable.</string>
+    <string name="you_are_not_connected">You are not connected to the internet</string>
+    <string name="server_not_reachable">Server not reachable.</string>
+    <string name="mindlamp_service">MindLamp Service</string>
 
 </resources>

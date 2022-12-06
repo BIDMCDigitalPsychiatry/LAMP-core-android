@@ -56,11 +56,10 @@ object Utils {
     @SuppressLint("SimpleDateFormat")
     fun getMilliFromDate(dateString: String): Long {
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        sdf.timeZone =TimeZone.getDefault()// TimeZone.getTimeZone("UTC")
+        sdf.timeZone =TimeZone.getDefault()
 
         try {
             val mDate = sdf.parse(dateString)!!
-           // sdf.timeZone = TimeZone.getDefault()
             val formattedDate: String = sdf.format(mDate)
             val localTime = sdf.parse(formattedDate)!!
             return localTime.time
@@ -68,13 +67,6 @@ object Utils {
             e.printStackTrace()
         }
         return 0
-    }
-
-    fun getTimestampForAnalytics(): String? {
-        val date = Date()
-        @SuppressLint("SimpleDateFormat") val simpleDateFormat =
-            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        return simpleDateFormat.format(date)
     }
 
     @Suppress("DEPRECATION")
@@ -98,27 +90,6 @@ object Utils {
             }
         }
         return false
-    }
-
-    fun permissionStatus(context: Context){
-       /* val info: PackageInfo = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
-        val requestedPermissions = info.requestedPermissions //This array contains the requested permissions.
-        val permissions = info.permissions
-        Log.e("PermissionStatus ", "permissions " + permissions.size)*/
-
-        val granted: MutableList<String> = ArrayList()
-        try {
-            val pi: PackageInfo = context.packageManager.getPackageInfo(
-                context.packageName,
-                PackageManager.GET_PERMISSIONS
-            )
-            for (i in pi.requestedPermissions.indices) {
-                if ((pi.requestedPermissionsFlags[i] and PackageInfo.REQUESTED_PERMISSION_GRANTED) == PackageInfo.REQUESTED_PERMISSION_GRANTED){
-                    granted.add(pi.requestedPermissions[i])
-                }
-            }
-        } catch (e: java.lang.Exception) {
-        }
     }
 
     fun getLocationAuthorizationStatus(context: Context):String{
@@ -146,32 +117,32 @@ object Utils {
     }
 
 
-    fun getAvailableInternalMemorySize(): String? {
+    fun getAvailableInternalMemorySize(context: Context): String? {
         val path: File = Environment.getDataDirectory()
         val stat = StatFs(path.getPath())
         val blockSize = stat.blockSizeLong
         val availableBlocks = stat.availableBlocksLong
-        return formatSize(availableBlocks * blockSize)
+        return formatSize(context,availableBlocks * blockSize)
     }
 
-    fun getTotalInternalMemorySize(): String? {
+    fun getTotalInternalMemorySize(context: Context): String? {
         val path: File = Environment.getDataDirectory()
         val stat = StatFs(path.getPath())
         val blockSize = stat.blockSizeLong
         val totalBlocks = stat.blockCountLong
-        return formatSize(totalBlocks * blockSize)
+        return formatSize(context,totalBlocks * blockSize)
     }
 
 
 
-    private fun formatSize(size: Long): String? {
+    private fun formatSize(context: Context,size: Long): String? {
         var size = size
         var suffix: String? = null
         if (size >= 1024) {
-            suffix = "KB"
+            suffix = context.getString(R.string.kb)
             size /= 1024
             if (size >= 1024) {
-                suffix = "MB"
+                suffix = context.getString(R.string.mb)
                 size /= 1024
             }
         }
@@ -204,32 +175,32 @@ object Utils {
         val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return manager?.let { LocationManagerCompat.isLocationEnabled(it) } ?: false
     }
-    fun getHttpErrorMessage(errorCode:Int): String{
+    fun getHttpErrorMessage(errorCode:Int,context: Context): String{
         when (errorCode) {
             400 -> {
-                return "Invalid request. Please try again later."
+                return context.getString(R.string.invalid_request_please_try_again)
             }
             401 -> {
-                return "You are not authorized."
+                return context.getString(R.string.you_are_not_authorized)
 
             }
             403 -> {
-                return "You don't have access."
+                return context.getString(R.string.you_dont_have_access)
             }
             404 -> {
-                return "User not found."
+                return context.getString(R.string.user_not_found_here)
             }
             408 -> {
-                return "Request timeout."
+                return context.getString(R.string.request_timeout)
             }
             500 -> {
-                return "Something went wrong on server. Please try again later."
+                return context.getString(R.string.something_went_wrong_on_server)
             }
             502 -> {
-                return "Bad Gateway."
+                return context.getString(R.string.bad_gateway)
             }
             503 -> {
-                return "Service is unavailable. Please try again later."
+                return context.getString(R.string.service_not_available)
             }
             else -> return ""
         }

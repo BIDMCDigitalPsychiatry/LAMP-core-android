@@ -31,25 +31,6 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
                     MagnetData(x, y, z)
                 val data = DeviceMotionData( MotionData(null,null,null),magnetData,
                     AttitudeData(null,null,null),GravityData(null,null,null), RotationData(null,null,null))
-                        /*DimensionData(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    magnetData,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,null,null,null,null,null,null,null, null
-                )*/
                 val sensorEventData =
                     SensorEvent(
                         data,

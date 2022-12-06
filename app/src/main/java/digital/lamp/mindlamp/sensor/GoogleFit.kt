@@ -16,6 +16,7 @@ import com.google.android.gms.fitness.result.SessionReadResponse
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import digital.lamp.lamp_kotlin.lamp_core.models.*
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.utils.DebugLogs
@@ -33,17 +34,16 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
 
     private var sensorEventDataList: ArrayList<SensorEvent> = arrayListOf()
     val SLEEP_STAGES = arrayOf(
-            "Unused",
-            "Awake (during sleep)",
-            "Sleep",
-            "Out-of-bed",
-            "Light sleep",
-            "Deep sleep",
-            "REM sleep"
+            context.getString(R.string.unused),
+            context.getString(R.string.awake_during_sleep),
+            context.getString(R.string.sleep),
+            context.getString(R.string.out_of_bed),
+            context.getString(R.string.light_sleep),
+            context.getString(R.string.deep_sleep),
+            context.getString(R.string.rem_sleep)
     )
 
     init {
-
         //Fitness options
         val fitnessOptions: FitnessOptions by lazy {
             FitnessOptions.builder()
@@ -92,32 +92,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                 .addOnFailureListener { exception ->
                     LampLog.e(TAG, "Problem in reading data : $exception")
                 }
-
-       /* Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptions))
-                .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)
-                .addOnSuccessListener { result ->
-                    val dataSource = result.dataSource
-                    val source = dataSource.appPackageName
-                    val totalSteps =
-                            result.dataPoints.firstOrNull()?.getValue(Field.FIELD_STEPS)
-                    totalSteps?.let {
-                    val sensorEvenData: SensorEvent =  getStepsData(it,source)
-                        oSensorSpecList.forEach {
-                            if (it.spec == Sensors.STEPS.sensor_name) {
-                                sensorEventDataList.add(sensorEvenData)
-                            }
-                        }
-                        if (oSensorSpecList.isEmpty()) {
-                            sensorEventDataList.add(sensorEvenData)
-                        }
-                    }
-
-                }
-                .addOnFailureListener { e ->
-                    Log.i(TAG, "There was a problem getting steps.", e)
-                }*/
-
-
 
     }
 
@@ -303,7 +277,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     }
 
 
-
     /**
      * Calculates the duration of a session in minutes.
      *
@@ -341,9 +314,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
             }
         }
@@ -358,7 +328,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
             //Checking with Data Type
             when (dp.dataType.name) {
 
-
                 "com.google.calories.expended" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Calories Expended : " + dp.getValue(field))
@@ -368,19 +337,10 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.activity.segment" -> {
                     val field = dp.dataType.fields[0]
                     LampLog.e(TAG, "Activity Segment : " + dp.getValue(field))
-                    /*val sensorEvenData: SensorEvent = getSegmentData(dp.getValue(field).asInt(),)
-                    oSensorSpecList.forEach {
-                        if(it.spec == Sensors.SEGMENT.sensor_name){
-                            sensorEventDataList.add(sensorEvenData)
-                        }
-                    }*/
                 }
 
                 "com.google.distance.delta" -> {
@@ -392,9 +352,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.calories.bmr" -> {
                     val field = dp.dataType.fields[0]
@@ -405,9 +362,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.heart_rate.bpm" -> {
                     LampLog.e(TAG, "bpm")
@@ -418,9 +372,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                  /*  if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.body.fat.percentage" -> {
                     val field = dp.dataType.fields[0]
@@ -431,9 +382,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                  /*  if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
 
                 "com.google.speed" -> {
@@ -445,9 +393,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.hydration" -> {
                     val field = dp.dataType.fields[0]
@@ -458,9 +403,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                    /*if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.nutrition" -> {
                     val field = dp.dataType.fields[0]
@@ -471,9 +413,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
+
                 }
                 "com.google.blood_glucose" -> {
                     val field = dp.dataType.fields[0]
@@ -484,9 +424,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.blood_pressure" -> {
                     val field1 = dp.dataType.fields[0]
@@ -497,9 +434,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.oxygen_saturation" -> {
                     val field = dp.dataType.fields[0]
@@ -510,9 +444,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                    /*if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
                 "com.google.body.temperature" -> {
                     val field = dp.dataType.fields[0]
@@ -523,9 +454,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
 
                 "com.google.step_count.cadence" -> {
@@ -536,9 +464,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             sensorEventDataList.add(sensorEvenData)
                         }
                     }
-                   /* if (oSensorSpecList.isEmpty()) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }*/
                 }
             }
         }
@@ -551,9 +476,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val endTime = System.currentTimeMillis()
         val startTime: Long =  AppState.session.lastGooglefitDataTimestamp
         AppState.session.lastGooglefitDataTimestamp = endTime
-
         DebugLogs.writeToFile("queryFitnessData StartTime $startTime EndTime $endTime")
-
 
         return DataReadRequest.Builder()
                 .read(DataType.TYPE_STEP_COUNT_DELTA)
@@ -767,8 +690,4 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, System.currentTimeMillis().toDouble())
     }
 
-   /* private fun getActivityString(activity:Int): String{
-        when(activity == 0)
-            return
-    }*/
 }
