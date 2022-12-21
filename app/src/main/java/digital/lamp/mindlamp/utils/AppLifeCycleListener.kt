@@ -12,17 +12,6 @@ class AppLifeCycleListener : DefaultLifecycleObserver {
 
     var isOnForground: Boolean = false
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onMoveToForeground() {
-
-        isOnForground = true
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onMoveToBackground() {
-        isOnForground = false
-    }
-
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
         isOnForground = true

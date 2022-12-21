@@ -27,11 +27,11 @@ class App: Application(), Configuration.Provider {
         app = this
 
      //   ANRWatchDog().start()
-        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
+      /*  StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
                 .detectAll()
                 .penaltyLog()
                .penaltyDeath()
-                .build())
+                .build())*/
         // Initializing Shared pref
         val directBootContext: Context = this.createDeviceProtectedStorageContext()
 

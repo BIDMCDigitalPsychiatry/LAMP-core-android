@@ -13,7 +13,7 @@
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     android:drawableStart="@drawable/ic_back"
-    android:text="Back"
+    android:text="@string/back"
     android:id="@+id/btnBack"
     android:gravity="center"
     android:layout_marginTop="10dp"

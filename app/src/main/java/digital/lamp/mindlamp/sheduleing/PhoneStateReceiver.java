@@ -70,11 +70,8 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                 //Went to idle-  this is the end of a call.  What type depends on previous state(s)
                 if (lastState == TelephonyManager.CALL_STATE_RINGING) {
                     //Ring but no pickup-  a miss
-                    // onMissedCall(context, savedNumber, callStartTime);
                 } else if (isIncoming) {
-                    // onIncomingCallEnded(context, savedNumber, callStartTime, new Date());
                 } else {
-                    //  onOutgoingCallEnded(context, savedNumber, callStartTime, new Date());
                 }
                 break;
         }

@@ -36,7 +36,6 @@ class AccelerometerSensor constructor(
                 UserAgent(),
                 AppState.session.userId
             )
-
         } else {
 
             val logEventRequest = LogEventRequest(

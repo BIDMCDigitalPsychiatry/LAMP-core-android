@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.sensor
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -95,6 +96,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
 
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun readStepCount(context: Context, oSensorSpecList: ArrayList<SensorSpecs>) {
         val fitnessOptionsStep: GoogleSignInOptionsExtension = FitnessOptions.builder()
                 .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ).build()
@@ -183,76 +185,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         client.readSession(sessionReadRequest)
                 .addOnSuccessListener { dumpSleepSessions(it,oSensorSpecList) }
                 .addOnFailureListener { LampLog.e(TAG, "Unable to read sleep sessions", it) }
-    }
-
-    private fun readActivitySessions(context: Context,oSensorSpecList: ArrayList<SensorSpecs>) {
-
-        val calendar = Calendar.getInstance()
-        val now = Date()
-        calendar.time = now
-        val endTime = System.currentTimeMillis()
-        val startTime: Long = AppState.session.lastSleepDataTimestamp
-
-
-        //Set fitnessOptions
-        val fitnessOptionssleep = FitnessOptions.builder()
-                .accessSleepSessions(FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
-                .build()
-        val client = Fitness.getSessionsClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptionssleep))
-
-        val sessionReadRequest = SessionReadRequest.Builder()
-                .read(DataType.TYPE_ACTIVITY_SEGMENT)
-                // By default, only activity sessions are included, not sleep sessions. Specifying
-                // includeSleepSessions also sets the behaviour to *exclude* activity sessions.
-                .includeActivitySessions()
-                .readSessionsFromAllApps()
-                .enableServerQueries()
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build()
-
-        client.readSession(sessionReadRequest)
-                .addOnSuccessListener {
-                    if(it.sessions.isNotEmpty()) {
-                    val endTimeList = it.sessions.map { it.getEndTime(TimeUnit.MILLISECONDS) }
-                    AppState.session.lastSleepDataTimestamp = Collections.max(endTimeList)
-                    for (session in it.sessions) {
-                        dumpSleepSession(session, it.getDataSet(session), oSensorSpecList)
-                    }
-                } /*dumpSleepSessions(it,oSensorSpecList)*/ }
-                .addOnFailureListener { LampLog.e(TAG, "Unable to read activity sessions", it) }
-    }
-
-
-    private fun dumpActivityDataSets(dataSets: List<DataSet>,session: Session,oSensorSpecList: ArrayList<SensorSpecs>) {
-        for (dataSet in dataSets) {
-            val dataSource = dataSet.dataSource
-            val source = dataSource.appPackageName
-            if(dataSet.dataPoints.isEmpty()){
-                val sensorEvenData: SensorEvent = getSegmentData(null,source,null,calculateSessionDuration(session))
-                oSensorSpecList.forEach {
-                    if (it.spec == Sensors.SEGMENT.sensor_name) {
-                        sensorEventDataList.add(sensorEvenData)
-                    }
-                }
-
-            }else {
-                for (dataPoint in dataSet.dataPoints) {
-                    val sleepStageOrdinal = dataPoint.getValue(Field.FIELD_ACTIVITY).asInt()
-                    val sleepStage = SLEEP_STAGES[sleepStageOrdinal]
-
-                    val durationMillis = dataPoint.getEndTime(TimeUnit.MILLISECONDS) - dataPoint.getStartTime(TimeUnit.MILLISECONDS)
-
-                    val sensorEvenData: SensorEvent = getSleepData(sleepStageOrdinal,source,sleepStage,durationMillis)
-                    oSensorSpecList.forEach {
-                        if (it.spec == Sensors.SLEEP.sensor_name) {
-                            sensorEventDataList.add(sensorEvenData)
-                        }
-                    }
-
-                }
-            }
-        }
     }
 
 
@@ -500,32 +432,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                 .build()
     }
 
-
-    private fun getSegmentData(activity: Int?,source:String?, representation:String?,duration:Long): SensorEvent {
-        val dimensionData =
-                DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        representation,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null, null, null,
-                        null,
-                        activity, null, null,source,duration
-                )
-        return SensorEvent(dimensionData, Sensors.SEGMENT.sensor_name, System.currentTimeMillis().toDouble())
-    }
     //3
     private fun getSleepData(sleep: Int?,source:String?, representation:String?,duration:Long): SensorEvent {
         val dimensionData =
@@ -596,10 +502,6 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                 )
         return SensorEvent(dimensionData, Sensors.NUTRITION.sensor_name, System.currentTimeMillis().toDouble())
     }
-
-
-
-
 
     //13
     private fun getSpeedData(speed: Value,source:String?): SensorEvent {

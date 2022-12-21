@@ -32,8 +32,6 @@ class App : Application(), LifecycleObserver {
             AppKeys.APP_PREF_NAME
 
         )
-
-        // Setup handler for uncaught exceptions.
         // Setup handler for uncaught exceptions.
         Thread.setDefaultUncaughtExceptionHandler { thread, e ->
             handleUncaughtException(

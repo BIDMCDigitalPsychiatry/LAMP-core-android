@@ -42,12 +42,6 @@ public class NetworkUtils {
         }
     }
 
-    public static boolean isGPSEnabled(Context mContext) {
-        LocationManager locationManager = (LocationManager)
-                mContext.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
     public static int getBatteryPercentage(Context context) {
 
         if (Build.VERSION.SDK_INT >= 21) {

@@ -180,23 +180,6 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
-    fun showRationaleDialog() {
-        android.app.AlertDialog.Builder(this)
-            .setTitle(R.string.location_permission)
-            .setMessage(R.string.app_disclosure)
-            .setPositiveButton(R.string.settings, DialogInterface.OnClickListener { dialog, which ->
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                val uri = Uri.fromParts("package", getPackageName(), null)
-                intent.data = uri
-                startActivityForResult(intent, REQUEST_PERMISSION_SETTING)
-            })
-            .setNegativeButton(
-                R.string.ok,
-                DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() })
-            .create()
-            .show()
-    }
-
     private fun requestPermissionAsPerVersion(locationRequestCode: Int) {
         when {
             Build.VERSION.SDK_INT <= Build.VERSION_CODES.P -> {
