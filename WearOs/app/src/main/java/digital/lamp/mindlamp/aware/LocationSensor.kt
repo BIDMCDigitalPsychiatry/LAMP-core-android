@@ -45,11 +45,6 @@ class LocationSensor constructor(
                 UserAgent(),
                 AppState.session.userId
             )
-           /* dataViewModel.addLogEvent(
-                Utils.getApplicationName(context),
-                context.getString(R.string.warning),
-                logEventRequest
-            )*/
 
         } else {
             val logEventRequest = LogEventRequest(
@@ -57,11 +52,6 @@ class LocationSensor constructor(
                 UserAgent(),
                 AppState.session.userId
             )
-            /*dataViewModel.addLogEvent(
-                Utils.getApplicationName(context),
-                context.getString(R.string.error),
-                logEventRequest
-            )*/
         }
 
 

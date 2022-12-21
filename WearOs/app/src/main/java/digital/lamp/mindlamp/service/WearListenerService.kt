@@ -36,9 +36,6 @@ class WearListenerService : WearableListenerService() {
             if (dataEvent.type == DataEvent.TYPE_CHANGED) {
                 val item = dataEvent.dataItem
                 if (item.uri.path == "/updateItems") {
-//                    val dataMap = DataMapItem.fromDataItem(item).dataMap
-                    /* val dataMapItems =
-                         dataMap.getDataMapArrayList("timestamp")*/
 
                 } else if (item.uri.path == "/getSensorVals") {
 

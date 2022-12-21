@@ -42,7 +42,6 @@ class WearLoginActivity : FragmentActivity() {
 
         mLifecycleRegistry = LifecycleRegistry(this);
         mLifecycleRegistry!!.markState(Lifecycle.State.CREATED);
-//        dataViewModel = ViewModelProviders.of(this@WearLoginActivity).get(DataViewModel::class.java)
         dataViewModel = ViewModelProvider(this@WearLoginActivity).get(DataViewModel::class.java)
 
         imgicon.setOnClickListener {
@@ -97,12 +96,6 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
-
-                            /* txtusername.text.toString()
-                                 .trim() + ":" + txtpwd.text.toString().trim()
-                         ).toString()
-                             .trim()*/
-
                             AppState.session.userId = Utils.toBase64(
                                 txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
                                     .trim()

@@ -13,9 +13,6 @@ import retrofit2.http.*
 
 interface RestApi {
 
-    /*@POST("participant/{participant_id}/sensor_event")
-    fun addSensorEvent(@Path("participant_id") participantId:String, @Body sensorEventDataList: ArrayList<SensorEventData>) : Response<ResponseBody>
-*/
     @PUT(WebConstant.ADD_LOG_DATA)
     fun addLogEvent(@Query("origin") origin:String, @Query("level") level:String, @Body logEventRequest: LogEventRequest) : Call<ResponseBody>
 

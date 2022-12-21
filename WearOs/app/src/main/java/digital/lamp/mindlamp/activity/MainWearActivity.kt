@@ -71,7 +71,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         FirebaseApp.initializeApp(this);
         initialize()
         // Enables Always-on
-//        setAmbientEnabled()
 
         try {
             unregisterReceiver(br)
@@ -458,13 +457,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
                 dataViewModel?.addNotificationEvent(AppState.session.username, request)
 
-/*
-                Log.d("myTag", "post response to server")
-                dataViewModel!!.addNotificationEvent(
-                    AppState.session.username,
-                    lst
-                )*/
-
                 sensorEventDataList.clear()
             } else {
 
@@ -481,7 +473,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             Handler().postDelayed({
 
-//                if (isfrompush) {
                 if (NetworkUtils.isNetworkAvailable(this@MainWearActivity)) {
 
                     populatesensorList()
@@ -500,17 +491,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                         Toast.LENGTH_LONG
                     ).show()
                 }
-                /*} else {
-                    SendToDataLayerThread(
-                        "/updatedValues",
-                        "",
-                        valuesMap,
-                        googleApiClient
-                    ).run()
 
-
-                }
-*/
             }, INTERVAL)
 
         }
