@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="channel_description">MindLamp 활동 데이터 수집</string>
+
+    <string name="app_disclosure">해당 어플은 종료된 상태이거나, 사용하지 않는 경우에도 치료 및 연구 목적으로 위치 데이터를 파악합니다.또한 귀하의 정보는 HIPAA(미국 의료정보보호법)를 준수하며 개인적인 정보는 식별되지 않고 담당의/ 연구팀만 접근 가능한 암호화된 형식으로 저장됩니다.</string>
+    <string name="local_notification_text">대기 중인 mindLAMP 활동이 있습니다: %s.</string>
+    <string name="notification_action">어플 실행</string>
+
+    <string name="location_status_background_allowed">항상 허용합니다.</string>
+    <string name="location_status_allowed">앱을 사용하는 동안만 허용합니다.</string>
+    <string name="location_status_denied">거부됨.</string>
+    <string name="location_permission">위치 접근 허용이 필요합니다.</string>
+
+    <string name="ok">Ok</string>
+    <string name="gps_enable">현재 장치에서 위치정보가 확인되지 않습니다. 위치 접근을 허용해주십시오.</string>
+    <string name="unexpected_error">문제가 발생하였습니다. 나중에 다시 시도해주세요.</string>
+    <string name="txt_no_internet">인터넷 연결이 끊겼습니다.</string>
+    <string name="txt_unable_to_connect">서버와 연결이 끊겼습니다. 나중에 다시 시도해주십시오.</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">이 앱에 대한 서비스 사용 권한이 필요합니다.</string>
+    <string name="cancel">취소</string>
+    <string name="server_unreachable">서버에 연결할 수 없습니다.</string>
+    <string name="user_not_found">사용자를 찾을 수 없습니다.</string>
+    <string name="something_went_wrong">문제가 발생하였습니다. 나중에 다시 시도해주세요.</string>
+    <string name="something_went_wrong_on_server">S문제가 발생하였습니다. 나중에 다시 시도해주세요. </string>
+
+    <string name="invalid_request_please_try_again">잘못된 요청. 나중에 다시 시도 해주십시오.</string>
+    <string name="you_are_not_authorized">권한이 없습니다.</string>
+    <string name="you_dont_have_access">접근 권한이 없습니다.</string>
+    <string name="user_not_found_here">사용자를 찾을 수 없습니다.</string>
+    <string name="request_timeout">요청 시간이 초과되었습니다.</string>
+    <string name="bad_gateway">서버 오류입니다.</string>
+
+    <string name="service_not_available">서비스를 이용할 수 없습니다. 나중에 다시 시도해주십시오.</string>
+    <string name="active_data_collection">MindLamp 활동 데이터 수집 </string>
+    <string name="server_un_rechable">서버에 연결할 수 없습니다.</string>
+    <string name="you_are_not_connected">인터넷 연결이 끊겼습니다.</string>
+    <string name="server_not_reachable">서버에 연결할 수 없습니다.</string>
+    <string name="mindlamp_service">Mindlamp 서비스 </string>
+    <string name="back">뒤쪽에</string>
+</resources>
