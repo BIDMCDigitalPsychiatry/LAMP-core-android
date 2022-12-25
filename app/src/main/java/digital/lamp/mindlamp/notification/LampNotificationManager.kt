@@ -86,7 +86,7 @@ object LampNotificationManager {
                         .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
                         .addAction(
                             R.drawable.ic_noti_icon,
-                            actionList[0].name,
+                           /* actionList[0].name,*/context.getString(R.string.notification_action),
                             actionPendingIntent
                         )
                         .setContentIntent(actionPendingIntent)
