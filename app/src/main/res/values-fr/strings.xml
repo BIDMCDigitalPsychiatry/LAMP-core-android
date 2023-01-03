@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="channel_description">MindLamp collecte active de données</string>
+    <string name="app_disclosure">Cette application collecte des données de localisation à des fins d\'utilisation clinique et de recherche, même lorsque l\'application est fermée ou non utilisée. Vos données sont conformes à la loi HIPAA et sont anonymisées. Elles sont stockées dans un format sécurisé et crypté, accessible uniquement à votre clinicien et/ou aux coordinateurs de l\'étude de recherche.</string>
+    <string name="location_status_background_allowed">Autoriser tout le temps</string>
+    <string name="location_status_allowed">Autoriser uniquement pendant l\'utilisation de l\'application</string>
+    <string name="location_status_denied">Refuser</string>
+    <string name="notification_action">Ouvrir l\'application</string>
+    <string name="local_notification_text">Une activité mindLAMP vous attend : %s.</string>
+    <string name="location_permission">Permission de localisation requise</string>
+    <string name="ok">Ok</string>
+    <string name="gps_enable">La localisation est actuellement désactivée sur votre appareil. Veuillez l\'activer.</string>
+    <string name="unexpected_error">Un problème est survenu. Veuillez réessayer plus tard.</string>
+    <string name="txt_no_internet">Vous n\'êtes pas connecté à internet.</string>
+    <string name="txt_unable_to_connect">Impossible de se connecter au serveur. Veuillez réessayer plus tard.</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">Des autorisations de service sont requises pour cette application</string>
+    <string name="cancel">Annuler</string>
+    <string name="kb">KB</string>
+    <string name="mb">MB</string>
+    <string name="you_are_not_authorized">Vous n\'êtes pas autorisé.</string>
+    <string name="you_dont_have_access">Vous n\'avez pas accès.</string>
+    <string name="user_not_found_here">Utilisateur non trouvé.</string>
+    <string name="request_timeout">Délai d\'attente de la demande.</string>
+    <string name="bad_gateway">Mauvaise passerelle.</string>
+    <string name="service_not_available">Le service n\'est pas disponible. Veuillez réessayer plus tard.</string>
+    <string name="active_data_collection">MindLamp collecte active de données</string>
+    <string name="server_not_reachable">Le serveur n\'est pas atteignable.</string>
+    <string name="back">arrière</string>
+    <string name="mindlamp_service">Service MindLamp</string>
+    <string name="you_are_not_connected">Vous n\'êtes pas connecté à internet.</string>
+    <string name="server_un_rechable">Le serveur n\'est pas atteignable.</string>
+    <string name="something_went_wrong">Un problème est survenu. Veuillez réessayer plus tard.</string>
+    <string name="something_went_wrong_on_server">Un problème est survenu. Veuillez réessayer plus tard.</string>
+    <string name="user_not_found">Utilisateur non trouvé.</string>
+    <string name="server_unreachable">Le serveur n\'est pas atteignable.</string>
+    <string name="invalid_request_please_try_again">Requête invalide. Veuillez réessayer plus tard.</string>
+</resources>
