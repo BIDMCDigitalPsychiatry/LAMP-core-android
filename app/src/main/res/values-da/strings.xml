@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="channel_description">mindLAMP Active Data Collection</string>
+    <string name="app_disclosure">Denne app indsamler lokationsdata til klinisk brug og forskningsundersøgelser, selv når appen er lukket eller ikke er i brug.
+Dine data er HIPAA-kompatible og anonymiserede.
+Det er gemt i et sikret, krypteret format, som kun er tilgængeligt for din kliniker og/eller forskningskoordinatorer.</string>
+    <string name="location_status_background_allowed">Tillad altid</string>
+    <string name="location_status_allowed">Tillad kun mens appen er i brug</string>
+    <string name="location_status_denied">Afvist</string>
+    <string name="notification_action">Åbn app</string>
+    <string name="local_notification_text">Du har en mindLAMP-aktivitet, der venter på dig:%s.</string>
+    <string name="location_permission">Adgang til at bruge din lokalitet er påkrævet</string>
+    <string name="ok">Ok</string>
+    <string name="gps_enable">Lokalitetstjenester er i øjeblikket deaktiveret på din enhed. Aktiver det venligst.</string>
+    <string name="unexpected_error">Noget gik galt. Prøv igen senere.</string>
+    <string name="txt_no_internet">Du er ikke forbundet til internettet.</string>
+    <string name="txt_unable_to_connect">Kunne ikke oprette forbindelse til serveren. Prøv igen senere.</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">Tjenestetilladelser er påkrævet for denne app</string>
+    <string name="cancel">Annuller</string>
+    <string name="kb">KB</string>
+    <string name="mb">MB</string>
+    <string name="you_are_not_authorized">Du er ikke autoriseret.</string>
+    <string name="you_dont_have_access">Du har ikke adgang.</string>
+    <string name="user_not_found_here">Bruger ikke fundet.</string>
+    <string name="request_timeout">Bed om en pause.</string>
+    <string name="bad_gateway">HTTP-fejl 502.</string>
+    <string name="service_not_available">Tjenesten er ikke tilgængelig. Prøv igen senere.</string>
+    <string name="active_data_collection">mindLAMP Active Data Collection</string>
+    <string name="server_not_reachable">Serveren er ikke tilgængelig.</string>
+    <string name="back">tilbage</string>
+    <string name="mindlamp_service">mindLAMP tjeneste</string>
+    <string name="you_are_not_connected">Du er ikke forbundet til internettet.</string>
+    <string name="server_un_rechable">Serveren er ikke tilgængelig.</string>
+    <string name="something_went_wrong">Noget gik galt. Prøv igen senere.</string>
+    <string name="something_went_wrong_on_server">Noget gik galt. Prøv igen senere.</string>
+    <string name="user_not_found">Bruger ikke fundet.</string>
+    <string name="server_unreachable">Serveren er ikke tilgængelig.</string>
+    <string name="invalid_request_please_try_again">Ugyldig forespørgsel. Prøv igen senere.</string>
+</resources>
