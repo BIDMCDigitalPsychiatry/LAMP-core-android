@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "sensor_table")
 data class SensorSpecs(
-    @NonNull
     @PrimaryKey(autoGenerate = true)
     var identity:Int?,
     var id: String?,

@@ -27,79 +27,82 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class LocationData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
+class LocationData constructor(
+    sensorListener: SensorListener,
+    context: Context,
+    frequency: Double?
+) {
     companion object {
         private val TAG = LocationData::class.java.simpleName
     }
-   init {
-       try {
-           //Location Settings
-           Lamp.startLocations(context)
-           frequency?.let {
-               val interval = (1 / frequency!!)*1000
-               Locations.setInterval(interval.toLong())
-           }
-           //Location Observer
-           Locations.setSensorObserver{ data ->
+
+    init {
+        try {
+            //Location Settings
+            Lamp.startLocations(context)
+            frequency?.let {
+                val interval = (1 / frequency!!) * 1000
+                Locations.setInterval(interval.toLong())
+            }
+            //Location Observer
+            Locations.setSensorObserver { data ->
                 LampLog.e(data.toString())
-               if(data != null) {
-                   val dimensionData =
-                       DimensionData(
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           data.longitude,
-                           data.latitude,
-                           data.altitude,
-                           data.accuracy,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null,
-                           null, null, null, null, null,null,null
-                       )
-                   val sensorEventData =
-                       SensorEvent(
-                           dimensionData,
-                           Sensors.GPS.sensor_name, System.currentTimeMillis().toDouble()
-                       )
-                   LampLog.e("Location : ${data.latitude} : ${data.longitude}")
-                   sensorListener.getLocationData(sensorEventData)
-               }
-               else {
-                   val logEventRequest = LogEventRequest()
-                   logEventRequest.message = context.getString(R.string.log_location_null)
+                if (data != null) {
+                    val dimensionData =
+                        DimensionData(
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            data.longitude,
+                            data.latitude,
+                            data.altitude,
+                            data.accuracy,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null, null, null, null, null, null, null
+                        )
+                    val sensorEventData =
+                        SensorEvent(
+                            dimensionData,
+                            Sensors.GPS.sensor_name, System.currentTimeMillis().toDouble()
+                        )
+                    LampLog.e("Location : ${data.latitude} : ${data.longitude}")
+                    sensorListener.getLocationData(sensorEventData)
+                } else {
+                    val logEventRequest = LogEventRequest()
+                    logEventRequest.message = context.getString(R.string.log_location_null)
 
-               }
-           }
-       }catch (ex : Exception){
-           ex.printStackTrace()
-           val logEventRequest = LogEventRequest()
-           logEventRequest.message = context.getString(R.string.log_location_error)
-           invokeLogData(context)
+                }
+            }
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            val logEventRequest = LogEventRequest()
+            logEventRequest.message = context.getString(R.string.log_location_error)
+            invokeLogData(context)
 
-       }
-   }
+        }
+    }
 
     private fun invokeLogData(context: Context) {
         if (NetworkUtils.isNetworkAvailable(context) && NetworkUtils.getBatteryPercentage(context) > 15) {
 
-            val sensorSpecsList : ArrayList<SensorSpecs> = arrayListOf()
-//            val basic = "Basic ${Utils.toBase64(
-//                "U7832470994@lamp.com:U7832470994")}"
-
-            val basic = "Basic ${Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                    "https://"
-                ).removePrefix("http://")
-            )}"
+            val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
+            val basic = "Basic ${
+                Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                        "https://"
+                    ).removePrefix("http://")
+                )
+            }"
 
             GlobalScope.launch(Dispatchers.IO) {
                 try {
@@ -109,7 +112,7 @@ class LocationData constructor(sensorListener: SensorListener, context: Context,
                     )
                     val oSensorSpec: SensorSpec =
                         Gson().fromJson(state.toString(), SensorSpec::class.java)
-                }catch (e:Exception){
+                } catch (e: Exception) {
 
                 }
             }

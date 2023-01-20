@@ -7,7 +7,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 @Entity(tableName = "analytics_table")
 data class Analytics(
-    @NonNull
     @PrimaryKey(autoGenerate = true)
     var id:Int?,
     @ColumnInfo(name = "analytics_data")

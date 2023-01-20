@@ -4,8 +4,6 @@ class WebConstant {
     companion object {
         const val SOCKET_TIME_OUT = 60L
         //Headers
-//        var UN = ""
-//        var PWD = ""
         var USERID = ""
         /**
          * Codes

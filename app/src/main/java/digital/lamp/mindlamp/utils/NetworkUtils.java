@@ -26,26 +26,20 @@ public class NetworkUtils {
         return false;
     }
 
-    public static boolean isWifiNetworkAvailable(Context context){
+    public static boolean isWifiNetworkAvailable(Context context) {
         WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
         if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
 
             WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
 
-            if( wifiInfo.getNetworkId() == -1 ){
+            if (wifiInfo.getNetworkId() == -1) {
                 return false; // Not connected to an access point
             }
             return true; // Connected to an access point
-        }
-        else {
+        } else {
             return false; // Wi-Fi adapter is OFF
         }
-    }
-    public static boolean isGPSEnabled (Context mContext){
-        LocationManager locationManager = (LocationManager)
-                mContext.getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
     public static int getBatteryPercentage(Context context) {
@@ -64,7 +58,6 @@ public class NetworkUtils {
             int scale = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1) : -1;
 
             double batteryPct = level / (double) scale;
-
             return (int) (batteryPct * 100);
         }
     }

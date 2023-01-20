@@ -14,37 +14,36 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
  * Created by ZCO Engineering Dept. on 24,February,2021
  */
 class ActivityRepeatReceiver : BroadcastReceiver() {
-    companion object{
+    companion object {
         private val TAG = ActivityRepeatReceiver::class.java.simpleName
     }
+
     override fun onReceive(context: Context, intent: Intent) {
 
-        val id = intent.getIntExtra("id",0)
-        LampLog.e(TAG,"Receiver Fired :: $id")
+        val id = intent.getIntExtra("id", 0)
+        LampLog.e(TAG, "Receiver Fired :: $id")
         val action: String? = intent.action
-        if(Intent.ACTION_BOOT_COMPLETED == action){
+        if (Intent.ACTION_BOOT_COMPLETED == action) {
             LampLog.e("Receiver Triggered From Boot")
-        }
-        else {
+        } else {
             if (AppState.session.isLoggedIn && context.isServiceRunning(LampForegroundService::class.java)) {
-                if(id == AppConstants.REPEAT_DAILY) {
+                if (id == AppConstants.REPEAT_DAILY) {
                     //Perform action Repeat Daily
-                        val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
+                    val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                         putExtra("inputExtra", "Foreground Service Example in Android")
                         putExtra("set_alarm", false)
                         putExtra("set_activity_schedule", true)
-                        putExtra("notification_id",id)
+                        putExtra("notification_id", id)
                     }
                     ContextCompat.startForegroundService(context, serviceIntent)
 
-                }
-                else {
+                } else {
                     //Perform action for alarm trigger for firing local notification
                     val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
                         putExtra("inputExtra", "Foreground Service Example in Android")
                         putExtra("set_alarm", false)
                         putExtra("set_activity_schedule", true)
-                        putExtra("notification_id",id)
+                        putExtra("notification_id", id)
                     }
                     ContextCompat.startForegroundService(context, serviceIntent)
                 }

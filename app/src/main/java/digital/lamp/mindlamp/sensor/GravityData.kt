@@ -31,25 +31,6 @@ class GravityData constructor(sensorListener: SensorListener, context: Context, 
                 val gravityData = GravityData(x,y,z)
                 val dimensionData = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),
                     AttitudeData(null,null,null),gravityData,  RotationData(null,null,null))
-                  /* DimensionData(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        gravityData,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,null,null,null,null,null,null,null, null
-                    )*/
                 val sensorEventData =
                     SensorEvent(
                         dimensionData,

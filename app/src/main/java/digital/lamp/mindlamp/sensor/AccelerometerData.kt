@@ -13,14 +13,19 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
-class AccelerometerData constructor(sensorListener: SensorListener, context: Context, frequency: Double?, private var sensorSpec: String) {
+class AccelerometerData constructor(
+    sensorListener: SensorListener,
+    context: Context,
+    frequency: Double?,
+    private var sensorSpec: String
+) {
     init {
         try {
 
             //Accelerometer settings
             Lamp.startAccelerometer(context)//start sensor
             frequency?.let {
-                val interval = (1 / frequency!!)*1000
+                val interval = (1 / frequency!!) * 1000
                 Log.e("AccelerometerData", "$interval")
                 Accelerometer.setInterval(interval.toLong())
             }
@@ -32,43 +37,28 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
 
                 val motionData = MotionData(x, y, z)
 
-                       /* DimensionData(
-                                null,
-                                null,
-                                null,
-                                null,
-                                motionData,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null, null, null, null, null, null, null,
-                                null,
-                                null
-                        )*/
                 when (sensorSpec) {
                     Sensors.DEVICE_MOTION.sensor_name -> {
-                        val deviceMotionData = DeviceMotionData( motionData,MagnetData(null,null,null),
-                                AttitudeData(null,null,null),GravityData(null,null,null), RotationData(null,null,null))
+                        val deviceMotionData = DeviceMotionData(
+                            motionData,
+                            MagnetData(null, null, null),
+                            AttitudeData(null, null, null),
+                            GravityData(null, null, null),
+                            RotationData(null, null, null)
+                        )
                         val sensorEventData =
-                                SensorEvent(
-                                        deviceMotionData,
-                                        Sensors.DEVICE_MOTION.sensor_name, System.currentTimeMillis().toDouble()
-                                )
+                            SensorEvent(
+                                deviceMotionData,
+                                Sensors.DEVICE_MOTION.sensor_name,
+                                System.currentTimeMillis().toDouble()
+                            )
 
                         sensorListener.getAccelerometerData(sensorEventData)
                     }
 
                     Sensors.ACCELEROMETER.sensor_name -> {
                         val dimensionData =
-                                DimensionData(
+                            DimensionData(
                                 x,
                                 y,
                                 z,
@@ -88,55 +78,63 @@ class AccelerometerData constructor(sensorListener: SensorListener, context: Con
                                 null, null, null, null, null, null, null,
                                 null,
                                 null
-                        )
+                            )
                         val sensorEventDataAccelerometer =
-                                SensorEvent(
-                                        dimensionData,
-                                        Sensors.ACCELEROMETER.sensor_name, System.currentTimeMillis().toDouble()
-                                )
+                            SensorEvent(
+                                dimensionData,
+                                Sensors.ACCELEROMETER.sensor_name,
+                                System.currentTimeMillis().toDouble()
+                            )
 
                         LampLog.e("Accelerometer : $x : $y : $z")
 
                         sensorListener.getAccelerometerData(sensorEventDataAccelerometer)
                     }
                     else -> {
-                        val deviceMotionData = DeviceMotionData( motionData,MagnetData(null,null,null),
-                                AttitudeData(null,null,null),GravityData(null,null,null), RotationData(null,null,null))
+                        val deviceMotionData = DeviceMotionData(
+                            motionData,
+                            MagnetData(null, null, null),
+                            AttitudeData(null, null, null),
+                            GravityData(null, null, null),
+                            RotationData(null, null, null)
+                        )
                         val sensorEventData =
-                                SensorEvent(
-                                        deviceMotionData,
-                                        Sensors.DEVICE_MOTION.sensor_name, System.currentTimeMillis().toDouble()
-                                )
+                            SensorEvent(
+                                deviceMotionData,
+                                Sensors.DEVICE_MOTION.sensor_name,
+                                System.currentTimeMillis().toDouble()
+                            )
 
                         sensorListener.getAccelerometerData(sensorEventData)
 
                         val dimensionData =
-                                DimensionData(
-                                        x,
-                                        y,
-                                        z,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null, null, null, null, null, null, null,
-                                        null,
-                                        null
-                                )
+                            DimensionData(
+                                x,
+                                y,
+                                z,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null, null, null, null, null, null, null,
+                                null,
+                                null
+                            )
                         val sensorEventDataAccelerometer =
-                                SensorEvent(
-                                        dimensionData,
-                                        Sensors.ACCELEROMETER.sensor_name, System.currentTimeMillis().toDouble()
-                                )
+                            SensorEvent(
+                                dimensionData,
+                                Sensors.ACCELEROMETER.sensor_name,
+                                System.currentTimeMillis().toDouble()
+                            )
 
                         LampLog.e("Accelerometer : $x : $y : $z")
 

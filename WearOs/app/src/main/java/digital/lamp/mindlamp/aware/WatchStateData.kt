@@ -55,16 +55,6 @@ class WatchStateData constructor(
         )
         requestedsensors.putStringArray("reqeustedsensors", arraysensors)
 
-        Handler().post({
-
-            /* SendToDataLayerThread(
-                 "/getSensorVals",
-                 "",
-                 requestedsensors,
-                 googleApiClient
-             ).run()*/
-        })
-
 
     }
 

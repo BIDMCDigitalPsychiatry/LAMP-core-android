@@ -8,7 +8,6 @@ import digital.lamp.lamp_kotlin.lamp_core.models.DurationIntervalLegacy
 
 @Entity(tableName = "activity_table")
 data class ActivitySchedule(
-    @NonNull
     @PrimaryKey(autoGenerate = true)
     var identity:Int?,
     val id: String?,

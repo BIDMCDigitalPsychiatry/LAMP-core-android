@@ -97,7 +97,6 @@ class PeriodicDataSyncWorker(
                 }
             }
             LampLog.e("DB : ${list.size} and Sensor PeriodicDataSyncWorker: ${sensorEventDataList.size}")
-            //   DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList,context,false)
             if (googleFitSensorEventDataList.isNotEmpty())

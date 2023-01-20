@@ -37,11 +37,6 @@ class LinearAccelerometerSensor constructor(
                 UserAgent(),
                 AppState.session.userId
             )
-            /*dataViewModel.addLogEvent(
-                Utils.getApplicationName(context),
-                context.getString(R.string.warning),
-                logEventRequest
-            )*/
 
         } else {
 
@@ -50,11 +45,7 @@ class LinearAccelerometerSensor constructor(
                 UserAgent(),
                 AppState.session.userId
             )
-            /*dataViewModel.addLogEvent(
-                Utils.getApplicationName(context),
-                context.getString(R.string.error),
-                logEventRequest
-            )*/
+
         }
     }
 

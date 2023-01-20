@@ -44,6 +44,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -52,6 +53,7 @@ import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
+import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
@@ -65,12 +67,9 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
 
@@ -94,8 +93,10 @@ class HomeActivity : AppCompatActivity() {
         private const val REQUEST_LOCATION_REQUEST_CODE = 1011
         private const val REQUEST_PERMISSION_SETTING = 1012
         private const val REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE = 1013
-        var permList = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        var permList = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        )
         var backgroundPermission = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         var locationPermission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
 
@@ -103,33 +104,33 @@ class HomeActivity : AppCompatActivity() {
 
     private val fitnessOptions: FitnessOptions by lazy {
         FitnessOptions.builder()
-                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
-                .build()
+            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
+            .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
+            .build()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,8 +141,6 @@ class HomeActivity : AppCompatActivity() {
         oActivityDao = AppDatabase.getInstance(this).activityDao()
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
 
-
-
         val filter = IntentFilter()
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
@@ -151,22 +150,11 @@ class HomeActivity : AppCompatActivity() {
             populateOnDisclosureARAlert()
         } else {
             if (checkAndRequestPermissions(this)) {
-           //     if (checkLocationPermission()) {
-             //       AppState.session.isLocationPermissionAllowed =true
-                    //Fit SignIn Auth
-              //      fitSignIn()
-                    initializeWebview()
-              /*  } else {
-                    requestLocationPermission()
-                }*/
+                initializeWebview()
             }
         }
         handleNotification(intent)
 
-//        AppState.session.isLoggedIn = true
-//        allocateActivitySchedules()
-//        startLampService()
-//        throw RuntimeException("Test Crash") // Force a crash
     }
 
     private fun checkLocationPermission(): Boolean {
@@ -186,34 +174,9 @@ class HomeActivity : AppCompatActivity() {
     private fun requestLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             var rationale = false
-            //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // rationale = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-            //   }
-            /* if (rationale) {
-                 //Never ask again is not checked
-                 requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-             } else {
-                 //User checked never ask again
-                 showRationaleDialog()
-             }*/
         }
 
-    }
-
-    fun showRationaleDialog() {
-        android.app.AlertDialog.Builder(this)
-                .setTitle(R.string.location_permission)
-                .setMessage(R.string.app_disclosure)
-                .setPositiveButton(R.string.settings, DialogInterface.OnClickListener { dialog, which ->
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    val uri = Uri.fromParts("package", getPackageName(), null)
-                    intent.data = uri
-                    startActivityForResult(intent, REQUEST_PERMISSION_SETTING)
-                })
-                .setNegativeButton(R.string.ok, DialogInterface.OnClickListener { dialog, which -> dialog.dismiss() })
-                .create()
-                .show()
     }
 
     private fun requestPermissionAsPerVersion(locationRequestCode: Int) {
@@ -232,9 +195,13 @@ class HomeActivity : AppCompatActivity() {
 
     @TargetApi(28)
     fun checkLocationPermissionAPI28(locationRequestCode: Int) {
-        if (!PermissionCheck.checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
+        if (!PermissionCheck.checkSinglePermission(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                this
+            )
+        ) {
             val permList = arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
             )
             requestPermissions(permList, locationRequestCode)
         }
@@ -244,7 +211,8 @@ class HomeActivity : AppCompatActivity() {
     private fun checkLocationPermissionAPI29(locationRequestCode: Int) {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) &&
 
-                checkSinglePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION, this)) {
+            checkSinglePermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION, this)
+        ) {
             return
         }
         requestPermissions(permList, locationRequestCode)
@@ -254,26 +222,14 @@ class HomeActivity : AppCompatActivity() {
     private fun checkBackgroundLocationPermissionAPI30() {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
             if (checkSinglePermission(
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                            this
-                    )
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    this
+                )
             ) {
                 return
             }
             requestPermissions(backgroundPermission, REQUEST_LOCATION_REQUEST_CODE)
-            /*DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 false")
-            val rationale =
-                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            if (rationale) {
-                DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale true")
-                //Never ask again is not checked
-                //  requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-                showRationaleDialog()
-            } else {
-                DebugLogs.writeToFile("checkBackgroundLocationPermissionAPI30 rationale false")
-                //User checked never ask again
-                //showRationaleDialog()
-            }*/
+
         } else {
             requestPermissions(locationPermission, REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE)
         }
@@ -288,7 +244,7 @@ class HomeActivity : AppCompatActivity() {
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = true
-        webView.settings.allowContentAccess =true
+        webView.settings.allowContentAccess = true
         webView.settings.javaScriptCanOpenWindowsAutomatically = true
         webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         progressBar.visibility = View.VISIBLE
@@ -299,17 +255,13 @@ class HomeActivity : AppCompatActivity() {
         var url = ""
         if (AppState.session.isLoggedIn) {
             url = BuildConfig.MAIN_PAGE_URL + Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
-                            .removePrefix(
-                                    "http://"
-                            )
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
+                    .removePrefix(
+                        "http://"
+                    )
             )
             webView.loadUrl(url)
 
-            //Start Foreground service for retrieving data
-           /* if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                startLampService()
-            }*/
         } else {
 
             url = BuildConfig.BASE_URL_WEB
@@ -328,12 +280,13 @@ class HomeActivity : AppCompatActivity() {
                     view.context.startActivity(intent)
                     true
                 } catch (e: java.lang.Exception) {
-                    Log.i(TAG, "shouldOverrideUrlLoading Exception:$e")
                     true
                 }
             }
 
         }
+
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.grant(request.resources)
@@ -342,62 +295,43 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<out String>,
-            grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             REQUEST_ID_MULTIPLE_PERMISSIONS -> {
                 val perms = HashMap<String, Int>()
                 // Initialize the map with both permissions
-                /* perms[Manifest.permission.ACCESS_FINE_LOCATION] = PackageManager.PERMISSION_GRANTED*/
                 perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
-                /* perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] = PackageManager.PERMISSION_GRANTED*/
 
                 if (grantResults.isNotEmpty()) {
                     for (i in permissions.indices)
                         perms[permissions[i]] = grantResults[i]
                     // Check for both permissions
-                    if (/*perms[Manifest.permission.ACCESS_FINE_LOCATION] == PackageManager.PERMISSION_GRANTED
-                            && */perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED
-                    /* && perms[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == PackageManager.PERMISSION_GRANTED*/
-
-                    ) {
-                       // if (checkLocationPermission()) {
-                            //Fit SignIn Auth
-                       //     fitSignIn()
-                            initializeWebview()
-                       // } else {
-                       //     requestLocationPermission()
-                       // }
+                    if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
+                        initializeWebview()
                         //else any one or both the permissions are not granted
                     } else {
                         //Now further we check if used denied permanently or not
-                        if (/*ActivityCompat.shouldShowRequestPermissionRationale(
-                                        this,
-                                        Manifest.permission.ACCESS_FINE_LOCATION
-                                )
-                                ||*/ ActivityCompat.shouldShowRequestPermissionRationale(
-                                        this,
-                                        Manifest.permission.ACTIVITY_RECOGNITION
-                                ) /*|| ActivityCompat.shouldShowRequestPermissionRationale(
-                                        this,
-                                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                                )*/
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                this,
+                                Manifest.permission.ACTIVITY_RECOGNITION
+                            )
                         ) {
                             // case 4 User has denied permission but not permanently
-                            showDialogOK("Service Permissions are required for this app",
-                                    DialogInterface.OnClickListener { _, which ->
-                                        when (which) {
-                                            DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
-                                                    this
-                                            )
-                                            DialogInterface.BUTTON_NEGATIVE ->
-                                                // proceed with logic by disabling the related features or quit the app.
-                                                finish()
-                                        }
-                                    })
+                            showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app),
+                                DialogInterface.OnClickListener { _, which ->
+                                    when (which) {
+                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
+                                            this
+                                        )
+                                        DialogInterface.BUTTON_NEGATIVE ->
+                                            // proceed with logic by disabling the related features or quit the app.
+                                            finish()
+                                    }
+                                })
                         } else {
                             // case 5. Permission denied permanently.
                             // You can open Permission setting's page from here now.
@@ -412,26 +346,25 @@ class HomeActivity : AppCompatActivity() {
             }
             REQUEST_LOCATION_REQUEST_CODE -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    AppState.session.isLocationPermissionAllowed =true
+                    AppState.session.isLocationPermissionAllowed = true
                     checkGoogleFit()
-                   // initializeWebview()
-                }else{
+                } else {
                     checkGoogleFit()
                 }
             }
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
             }
-            AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS->{
+            AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS -> {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     AppState.session.isTelephonyPermissionAllowed = true
                 }
-                    val specList = mSensorSpecsList.map { it.spec }
-                        if( specList.contains(Sensors.GPS.sensor_name)){
-                            checkLocation()
-                        }else{
-                            checkGoogleFit()
-                        }
+                val specList = mSensorSpecsList.map { it.spec }
+                if (specList.contains(Sensors.GPS.sensor_name)) {
+                    checkLocation()
+                } else {
+                    checkGoogleFit()
+                }
 
             }
         }
@@ -442,7 +375,6 @@ class HomeActivity : AppCompatActivity() {
             AppState.session.isLocationPermissionAllowed = true
             //Fit SignIn Auth
             checkGoogleFit()
-            //  initializeWebview()
         } else {
             AppState.session.isLocationPermissionAllowed = false
             requestLocationPermission()
@@ -452,31 +384,31 @@ class HomeActivity : AppCompatActivity() {
     private fun checkGoogleFit() {
         val specList = mSensorSpecsList.map { it.spec }
 
-            if (specList.contains(Sensors.SLEEP.sensor_name) ||
-                specList.contains(Sensors.NUTRITION.sensor_name) ||
-                specList.contains(Sensors.STEPS.sensor_name) ||
-                specList.contains( Sensors.HEART_RATE.sensor_name) ||
-                specList.contains(Sensors.BLOOD_GLUCOSE.sensor_name) ||
-                specList.contains(Sensors.BLOOD_PRESSURE.sensor_name) ||
-                specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
-                specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
-            ) {
-                fitSignIn()
-            }else{
-                checkGPSPermission()
-                if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
-                }
+        if (specList.contains(Sensors.SLEEP.sensor_name) ||
+            specList.contains(Sensors.NUTRITION.sensor_name) ||
+            specList.contains(Sensors.STEPS.sensor_name) ||
+            specList.contains(Sensors.HEART_RATE.sensor_name) ||
+            specList.contains(Sensors.BLOOD_GLUCOSE.sensor_name) ||
+            specList.contains(Sensors.BLOOD_PRESSURE.sensor_name) ||
+            specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
+            specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
+        ) {
+            fitSignIn()
+        } else {
+            checkGPSPermission()
+            if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                startLampService()
             }
+        }
     }
 
     private fun showDialogOK(message: String, okListener: DialogInterface.OnClickListener) {
         AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton("OK", okListener)
-                .setNegativeButton("Cancel", okListener)
-                .create()
-                .show()
+            .setMessage(message)
+            .setPositiveButton(getString(R.string.ok), okListener)
+            .setNegativeButton(getString(R.string.cancel), okListener)
+            .create()
+            .show()
     }
 
 
@@ -497,7 +429,8 @@ class HomeActivity : AppCompatActivity() {
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent =
+            PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_IMMUTABLE)
         alarmManager.cancel(pendingIntent)
     }
 
@@ -511,9 +444,9 @@ class HomeActivity : AppCompatActivity() {
                 val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
                 if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
                     homeActivity.onAuthenticationStateChanged(
-                            AuthenticationState.StoredCredentials(
-                                    loginResponse
-                            )
+                        AuthenticationState.StoredCredentials(
+                            loginResponse
+                        )
                     )
                 } else if (loginResponse.deleteCache) {
                     homeActivity.onAuthenticationStateChanged(AuthenticationState.SignedOut)
@@ -542,16 +475,16 @@ class HomeActivity : AppCompatActivity() {
         tokenData.device_type = "Android"
         tokenData.user_agent = Utils.getUserAgent()
         val sendTokenRequest = SensorEvent(
-                tokenData,
-                "lamp.analytics",
-                System.currentTimeMillis().toDouble()
+            tokenData,
+            "lamp.analytics",
+            System.currentTimeMillis().toDouble()
         )
 
         val basic = "Basic ${
             Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                    ).removePrefix("http://")
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                    "https://"
+                ).removePrefix("http://")
             )
         }"
 
@@ -561,9 +494,9 @@ class HomeActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                        AppState.session.userId,
-                        sendTokenRequest,
-                        basic
+                    AppState.session.userId,
+                    sendTokenRequest,
+                    basic
                 )
                 if (state.isNotEmpty()) {
                     //Code for drop DB
@@ -588,15 +521,11 @@ class HomeActivity : AppCompatActivity() {
         AppState.session.token = oLoginResponse.authorizationToken
         AppState.session.userId = oLoginResponse.identityObject.id
         if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
-                        "http://"
-                )) {
+                "http://"
+            )
+        ) {
             AppState.session.serverAddress = "https://" + oLoginResponse.serverAddress
         } else AppState.session.serverAddress = oLoginResponse.serverAddress
-
-        //Start Foreground service for retrieving data
-      /*   if (!this.isServiceRunning(LampForegroundService::class.java)) {
-            startLampService()
-        }*/
 
         //Updating current user token
         retrieveCurrentToken()
@@ -611,10 +540,10 @@ class HomeActivity : AppCompatActivity() {
             accessGoogleFit()
         } else {
             GoogleSignIn.requestPermissions(
-                    this,
-                    REQUEST_OAUTH_REQUEST_CODE,
-                    getGoogleAccount(),
-                    fitnessOptions
+                this,
+                REQUEST_OAUTH_REQUEST_CODE,
+                getGoogleAccount(),
+                fitnessOptions
             )
         }
     }
@@ -643,7 +572,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun accessGoogleFit() {
-        AppState.session.isGoogleFitConnected= true
+        AppState.session.isGoogleFitConnected = true
         LampLog.e(TAG, "Google Fit Connected")
         trackSingleEvent("Fit_Success")
         DebugLogs.writeToFile("Google Fit Connected")
@@ -652,7 +581,6 @@ class HomeActivity : AppCompatActivity() {
                 checkGPSPermission()
             }
         }
-//        Toast.makeText(this,"Google Fit Connected.",Toast.LENGTH_SHORT).show()
     }
 
     private fun retrieveCurrentToken() {
@@ -668,27 +596,28 @@ class HomeActivity : AppCompatActivity() {
                 tokenData.device_type = "Android"
                 tokenData.user_agent = Utils.getUserAgent()
                 val sendTokenRequest = SensorEvent(
-                        tokenData,
-                        "lamp.analytics",
-                        System.currentTimeMillis().toDouble()
+                    tokenData,
+                    "lamp.analytics",
+                    System.currentTimeMillis().toDouble()
                 )
 
                 val basic = "Basic ${
                     Utils.toBase64(
-                            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                                    "https://"
-                            ).removePrefix("http://")
+                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                            "https://"
+                        ).removePrefix("http://")
                     )
                 }"
 
                 GlobalScope.launch {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
                     try {
-                        val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                        val state =
+                            SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                                 AppState.session.userId,
                                 sendTokenRequest,
                                 basic
-                        )
+                            )
                         LampLog.e(TAG, " Token Send Response -  $state")
                     } catch (e: Exception) {
                         DebugLogs.writeToFile("Exception SensorEventAPI HomeActivity retrieveCurrentToken:${e.printStackTrace()}\n ${e.message}")
@@ -699,46 +628,6 @@ class HomeActivity : AppCompatActivity() {
             }
 
         }
-        /*   FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
-               if (!it.isSuccessful) {
-                   return@addOnCompleteListener
-               }
-               // Get new Instance ID token
-               val token = it.result?.token
-               Log.e(TAG, "FCM Token : $token")
-               DebugLogs.writeToFile("Token : $token")
-
-               val tokenData = TokenData()
-               tokenData.action = "login"
-               tokenData.device_token = token.toString()
-               tokenData.device_type = "Android"
-               val sendTokenRequest = SensorEvent(
-                       tokenData,
-                       "lamp.analytics",
-                       System.currentTimeMillis().toDouble()
-               )
-
-               val basic = "Basic ${
-                   Utils.toBase64(
-                           AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                                   "https://"
-                           ).removePrefix("http://")
-                   )
-               }"
-
-               GlobalScope.launch {
-                   TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
-
-                   val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                           AppState.session.userId,
-                           sendTokenRequest,
-                           basic
-                   )
-                   LampLog.e(TAG, " Token Send Response -  $state")
-               }
-               //Setting User Attributes for Firebase
-               firebaseAnalytics.setUserProperty("user_fcm_token", token)
-           }*/
     }
 
     private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
@@ -760,8 +649,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
-            getGoogleAccount(),
-            fitnessOptions
+        getGoogleAccount(),
+        fitnessOptions
     )
 
     /**
@@ -780,8 +669,6 @@ class HomeActivity : AppCompatActivity() {
             dialog.cancel()
             AppState.session.showDisclosureAlert = false
             if (checkAndRequestPermissions(this)) {
-                //Fit SignIn Auth
-              //  fitSignIn()
                 initializeWebview()
             }
         }
@@ -793,7 +680,7 @@ class HomeActivity : AppCompatActivity() {
             setTitle(getString(R.string.app_name))
             setMessage(getString(R.string.app_disclosure))
             setCancelable(false)
-            setPositiveButton("OK", DialogInterface.OnClickListener(function = positiveButtonClick))
+            setPositiveButton(getString(R.string.ok), DialogInterface.OnClickListener(function = positiveButtonClick))
             show()
         }
     }
@@ -808,16 +695,20 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-       handleNotification(intent)
+        handleNotification(intent)
     }
 
-    private fun handleNotification(intent: Intent?){
+    private fun handleNotification(intent: Intent?) {
         hideKeyboard()
-        if(intent?.hasExtra("survey_path")==true){
+        if (intent?.hasExtra("survey_path") == true) {
             val surveyUrl = intent.getStringExtra("survey_path")
             val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
 
-            val oSurveyUrl = BuildConfig.BASE_URL_WEB.dropLast(1)+surveyUrl+"?a="+Utils.toBase64(AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
+            val oSurveyUrl =
+                BuildConfig.BASE_URL_WEB.dropLast(1) + surveyUrl + "?a=" + Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
+                        .removePrefix("http://")
+                )
 
             DebugLogs.writeToFile("URL : $oSurveyUrl")
 
@@ -842,121 +733,129 @@ class HomeActivity : AppCompatActivity() {
 
         }
     }
+
     private fun hideKeyboard() {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(webView.getWindowToken(), 0)
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(webView.getWindowToken(), 0)
     }
 
     private fun invokeSensorSpecData() {
 
         if (NetworkUtils.isNetworkAvailable(this)) {
-            if(NetworkUtils.getBatteryPercentage(this) > 15) {
-            val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            if (NetworkUtils.getBatteryPercentage(this) > 15) {
+                val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
+                val basic = "Basic ${
+                    Utils.toBase64(
+                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                            "https://"
+                        ).removePrefix("http://")
+                    )
+                }"
 
-            GlobalScope.launch(Dispatchers.IO) {
-                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
-                try {
-                    val state = SensorAPI(AppState.session.serverAddress).sensorAll(
-                        AppState.session.userId,
-                        basic
-                    )
-                    val oSensorSpec: SensorSpec? = Gson().fromJson(
-                        state.toString(),
-                        SensorSpec::class.java
-                    )
-                    if (oSensorSpec?.data?.isNotEmpty() == true) {
-                        AppState.session.isCellularUploadAllowed =
-                            oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
-                    }
-                    oSensorSpec?.data?.forEach { sensor ->
-                        val sensorSpecs = SensorSpecs(
-                            null,
-                            sensor.id,
-                            sensor.spec,
-                            sensor.name,
-                            sensor.settings?.frequency,
-                            sensor.settings?.cellular_upload
+                GlobalScope.launch(Dispatchers.IO) {
+                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+                    try {
+                        val state = SensorAPI(AppState.session.serverAddress).sensorAll(
+                            AppState.session.userId,
+                            basic
                         )
-                        sensorSpecsList.add(sensorSpecs)
-                    }
-                    oSensorDao.deleteSensorList()
-                    oSensorDao.insertAllSensors(sensorSpecsList)
-                    mSensorSpecsList = sensorSpecsList
-                    val specList = mSensorSpecsList.map { it.spec }
-                    GlobalScope.launch(Dispatchers.Main) {
+                        val oSensorSpec: SensorSpec? = Gson().fromJson(
+                            state.toString(),
+                            SensorSpec::class.java
+                        )
+                        if (oSensorSpec?.data?.isNotEmpty() == true) {
+                            AppState.session.isCellularUploadAllowed =
+                                oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
+                        }
+                        oSensorSpec?.data?.forEach { sensor ->
+                            val sensorSpecs = SensorSpecs(
+                                null,
+                                sensor.id,
+                                sensor.spec,
+                                sensor.name,
+                                sensor.settings?.frequency,
+                                sensor.settings?.cellular_upload
+                            )
+                            sensorSpecsList.add(sensorSpecs)
+                        }
+                        oSensorDao.deleteSensorList()
+                        oSensorDao.insertAllSensors(sensorSpecsList)
+                        mSensorSpecsList = sensorSpecsList
+                        val specList = mSensorSpecsList.map { it.spec }
+                        GlobalScope.launch(Dispatchers.Main) {
                             if (specList.contains(Sensors.TELEPHONY.sensor_name)) {
-                                if(checkTelephonyPermission(this@HomeActivity)){
+                                if (checkTelephonyPermission(this@HomeActivity)) {
                                     AppState.session.isTelephonyPermissionAllowed = true
-                                    if(specList.contains(Sensors.GPS.sensor_name)){
+                                    if (specList.contains(Sensors.GPS.sensor_name)) {
                                         checkLocation()
-                                    }else{
+                                    } else {
                                         checkGoogleFit()
                                     }
                                 }
 
-                            }else if( specList.contains( Sensors.GPS.sensor_name)){
+                            } else if (specList.contains(Sensors.GPS.sensor_name)) {
                                 checkLocation()
-                               }
-                            else{
+                            } else {
                                 checkGoogleFit()
                             }
+                        }
+                        LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
+                    } catch (e: SSLHandshakeException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+
+                            showApiErrorAlert(getString(R.string.server_unreachable))
+                        }
+                    } catch (e: ClientException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.user_not_found), e.statusCode)
+                        }
+
+
+                    } catch (e: ServerException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.something_went_wrong))
+
+                        }
+                    } catch (e: UnsupportedOperationException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+
+                            showApiErrorAlert(getString(R.string.something_went_wrong_on_server))
+                        }
+                    } catch (e: HttpException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            var message = Utils.getHttpErrorMessage(e.code(),this@HomeActivity)
+                            if (message.isEmpty())
+                                message = e.message()
+                            showApiErrorAlert(message, e.code())
+                        }
+                    } catch (e: SocketTimeoutException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.txt_unable_to_connect))
+                        }
+                    } catch (e: NetworkErrorException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.txt_unable_to_connect))
+                        }
+
+                    } catch (e: UnknownHostException) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.txt_unable_to_connect))
+                        }
+
                     }
-                    LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
-                } catch (e:SSLHandshakeException){
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        showApiErrorAlert("Server is unreachable.")
+                    catch (e:Exception){
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.txt_unable_to_connect))
+                        }
                     }
-                }
-                catch (e: ClientException){
-                    GlobalScope.launch(Dispatchers.Main) {
-                        showApiErrorAlert("User not found", e.statusCode) }
-
-
-                }catch (e: ServerException){
-                    GlobalScope.launch(Dispatchers.Main) {
-                        showApiErrorAlert("Something went wrong. Please try again later.")
-
-                    }
-                }catch (e: UnsupportedOperationException){
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        showApiErrorAlert("Something went wrong on server. Please try again later.")
-                    }
-                }catch (e: HttpException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        var message = Utils.getHttpErrorMessage(e.code())
-                        if(message.isEmpty())
-                            message = e.message()
-                        showApiErrorAlert(message, e.code())
-                    }
-                } catch (e: SocketTimeoutException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                         showApiErrorAlert(getString(R.string.txt_unable_to_connect)) }
-                } catch (e: NetworkErrorException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        showApiErrorAlert(getString(R.string.txt_unable_to_connect)) }
-
-                }catch (e: UnknownHostException){
-                    GlobalScope.launch(Dispatchers.Main) {
-                        showApiErrorAlert(getString(R.string.txt_unable_to_connect)) }
-
                 }
             }
-        }
-            }else{
+        } else {
 
             GlobalScope.launch(Dispatchers.Main) {
 
                 GlobalScope.launch(Dispatchers.Main) {
-                     showApiErrorAlert(getString(R.string.txt_no_internet))
+                    showApiErrorAlert(getString(R.string.txt_no_internet))
                 }
             }
         }
@@ -981,17 +880,20 @@ class HomeActivity : AppCompatActivity() {
                     setTitle(getString(R.string.app_name))
                     setMessage(getString(R.string.gps_enable))
                     setCancelable(false)
-                    setPositiveButton("OK", DialogInterface.OnClickListener(function = positiveButtonClick))
+                    setPositiveButton(
+                        getString(R.string.ok),
+                        DialogInterface.OnClickListener(function = positiveButtonClick)
+                    )
                     show()
                 }
             }
         }
     }
 
-    private fun showApiErrorAlert(message: String, errorCode:Int =0) {
-        if(!isFinishing) {
+    private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
+        if (!isFinishing) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
-                if(errorCode== 404){
+                if (errorCode == 404) {
                     GlobalScope.launch(Dispatchers.IO) {
                         AppState.session.clearData()
                         val oSensorDao = AppDatabase.getInstance(this@HomeActivity).sensorDao()
@@ -1016,11 +918,27 @@ class HomeActivity : AppCompatActivity() {
                 setMessage(message)
                 setCancelable(false)
                 setPositiveButton(
-                    "OK",
+                    getString(R.string.ok),
                     DialogInterface.OnClickListener(function = positiveButtonClick)
                 )
                 show()
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        val netwokStatus = NetworkConnectionLiveData(this)
+        netwokStatus.observe(this){
+            if (it){
+                Log.e("eee","net connected")
+            }else{
+                Log.e("eee","no net connected")
+                GlobalScope.launch(Dispatchers.Main) {
+                    showApiErrorAlert(getString(R.string.txt_no_internet))
+                }
+            }
+        }
+    }
+
 }

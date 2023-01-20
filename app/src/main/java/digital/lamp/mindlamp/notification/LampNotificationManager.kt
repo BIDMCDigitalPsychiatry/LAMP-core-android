@@ -44,7 +44,7 @@ object LampNotificationManager {
         }
 
         return NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
-                .setContentTitle("MindLamp Service")
+                .setContentTitle(context.getString(R.string.mindlamp_service))
                 .setContentText(message)
                 .setSound(null)
                 .setVibrate(longArrayOf(0L))
@@ -58,19 +58,6 @@ object LampNotificationManager {
         actionList: List<ActionData>
     ) {
 
-       /* //Notification with open App Button with value
-        val notificationIntent = Intent(context, HomeActivity::class.java)
-        val notificationId = remoteMessage.data["notificationId"]?.get(0)?.toInt()
-        notificationIntent.putExtra("survey_path", remoteMessage.data["page"])
-        notificationIntent.putExtra("notification_id", notificationId)
-        notificationIntent.putExtra("remote_message", remoteMessage.data.toString())
-
-        val pendingIntent = notificationId?.let {
-            PendingIntent.getActivity(
-                    context,
-                    it, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        }*/
         val index= remoteMessage.data["notificationId"]?.toInt()?:0
         val actionIntent = Intent(context, HomeActivity::class.java)
         actionIntent.putExtra("survey_path", actionList[0].page)
@@ -87,7 +74,10 @@ object LampNotificationManager {
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
-                        .setContentText(remoteMessage.data["message"])
+                        .setContentText(String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        ))
                         .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
@@ -99,7 +89,7 @@ object LampNotificationManager {
                         .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
                         .addAction(
                             R.drawable.ic_noti_icon,
-                            actionList[0].name,
+                           /* actionList[0].name,*/context.getString(R.string.notification_action),
                             actionPendingIntent
                         )
                         .setContentIntent(actionPendingIntent)
@@ -138,7 +128,10 @@ object LampNotificationManager {
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
-                        .setContentText(remoteMessage.data["message"])
+                        .setContentText(String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        ))
                         .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
@@ -178,7 +171,10 @@ object LampNotificationManager {
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
-                        .setContentText(remoteMessage.data["message"])
+                        .setContentText(String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        ))
                         .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
