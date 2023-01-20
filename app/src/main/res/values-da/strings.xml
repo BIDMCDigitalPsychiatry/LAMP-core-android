@@ -8,7 +8,7 @@ Det er gemt i et sikret, krypteret format, som kun er tilgængeligt for din klin
     <string name="location_status_allowed">Tillad kun mens appen er i brug</string>
     <string name="location_status_denied">Afvist</string>
     <string name="notification_action">Åbn app</string>
-    <string name="local_notification_text">Du har en mindLAMP-aktivitet, der venter på dig:%s.</string>
+    <string name="local_notification_text">Du har en mindLAMP-aktivitet, der venter på dig:%s</string>
     <string name="location_permission">Adgang til at bruge din lokalitet er påkrævet</string>
     <string name="ok">Ok</string>
     <string name="gps_enable">Lokalitetstjenester er i øjeblikket deaktiveret på din enhed. Aktiver det venligst.</string>

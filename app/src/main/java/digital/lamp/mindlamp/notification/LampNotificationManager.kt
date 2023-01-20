@@ -74,7 +74,10 @@ object LampNotificationManager {
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
-                        .setContentText(remoteMessage.data["message"])
+                        .setContentText(String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        ))
                         .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
@@ -125,7 +128,10 @@ object LampNotificationManager {
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
-                        .setContentText(remoteMessage.data["message"])
+                        .setContentText(String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        ))
                         .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(
@@ -165,7 +171,10 @@ object LampNotificationManager {
         val notification =
                 NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                         .setContentTitle(remoteMessage.data["title"])
-                        .setContentText(remoteMessage.data["message"])
+                        .setContentText(String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        ))
                         .setSmallIcon(R.drawable.ic_noti_icon)
                         .setLargeIcon(
                             BitmapFactory.decodeResource(

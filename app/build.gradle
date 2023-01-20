@@ -18,7 +18,6 @@ android {
         buildConfigField 'boolean', 'DO_LOG', 'true'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk.abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
-        resConfigs("en","ko")
 
     }
     buildTypes {

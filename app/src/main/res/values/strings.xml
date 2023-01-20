@@ -18,7 +18,7 @@
     <string name="log_activity_error" translatable="false">Aware error CRASH : Activity Transition data could not be retrieved.</string>
     <string name="channel_description">MindLamp Active Data Collection</string>
     <string name="app_disclosure">This app collects location data for clinical use and research studies even when the app is closed or not in use. Your data is HIPAA-compliant and de-identified. It is stored in a secured, encrypted format accessible only to your clinician and/or research study coordinators.</string>
-    <string name="local_notification_text">You have a mindLAMP activity waiting for you: %s.</string>
+    <string name="local_notification_text">You have a mindLAMP activity waiting for you: %s</string>
     <string name="notification_action">Open App</string>
     <string name="location_status_background_allowed">Allow all the time</string>
     <string name="location_status_allowed">Allow only while using the app</string>

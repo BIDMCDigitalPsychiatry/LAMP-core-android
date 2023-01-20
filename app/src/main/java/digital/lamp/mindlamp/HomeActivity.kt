@@ -44,6 +44,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -52,6 +53,7 @@ import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
+import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
@@ -65,12 +67,9 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
 
@@ -286,6 +285,8 @@ class HomeActivity : AppCompatActivity() {
             }
 
         }
+
+
         webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.grant(request.resources)
@@ -842,6 +843,11 @@ class HomeActivity : AppCompatActivity() {
                         }
 
                     }
+                    catch (e:Exception){
+                        GlobalScope.launch(Dispatchers.Main) {
+                            showApiErrorAlert(getString(R.string.txt_unable_to_connect))
+                        }
+                    }
                 }
             }
         } else {
@@ -919,4 +925,20 @@ class HomeActivity : AppCompatActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        val netwokStatus = NetworkConnectionLiveData(this)
+        netwokStatus.observe(this){
+            if (it){
+                Log.e("eee","net connected")
+            }else{
+                Log.e("eee","no net connected")
+                GlobalScope.launch(Dispatchers.Main) {
+                    showApiErrorAlert(getString(R.string.txt_no_internet))
+                }
+            }
+        }
+    }
+
 }
