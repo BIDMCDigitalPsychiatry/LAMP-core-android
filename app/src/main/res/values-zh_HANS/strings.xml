@@ -42,7 +42,7 @@
 
     <string name="kb" translatable="false">KB</string>
     <string name="mb" translatable="false">MB</string>
-    <string name="invalid_request_please_try_again">Invalid request. Please try again later.</string>
+    <string name="invalid_request_please_try_again">无效的请求。 请稍后再试。</string>
     <string name="you_are_not_authorized">您没有权限</string>
     <string name="you_dont_have_access">您无权访问</string>
     <string name="user_not_found_here">找不到用户。</string>
@@ -61,6 +61,6 @@
     <string name="you_are_not_connected">您已离线</string>
     <string name="server_not_reachable">服务器无法访问</string>
     <string name="mindlamp_service">MindLamp 服务</string>
-    <string name="back">Back</string>
+    <string name="back" translatable="false">Back</string>
 
 </resources>
