@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">mindLAMP</string>
+
+    <string name="log_accelerometer_null" translatable="false">Aware error NULL : Accelerometer data does not exist.</string>
+    <string name="log_accelerometer_error" translatable="false">Aware error CRASH : Accelerometer data could not be retrieved.</string>
+    <string name="log_gyroscope_null" translatable="false">Aware error NULL : Gyroscope data does not exist.</string>
+    <string name="log_gyroscope_error" translatable="false">Aware error CRASH : Gyroscope data could not be retrieved.</string>
+    <string name="log_location_null" translatable="false">Aware error NULL : Location data does not exist.</string>
+    <string name="log_location_error" translatable="false">Aware error CRASH : Location data could not be retrieved.</string>
+    <string name="log_magnetometer_null" translatable="false">Aware error NULL : Magnetometer data does not exist.</string>
+    <string name="log_magnetometer_error" translatable="false">Aware error CRASH : Magnetometer data could not be retrieved.</string>
+    <string name="log_rotation_null" translatable="false">Aware error NULL : Rotation data does not exist.</string>
+    <string name="log_rotation_error" translatable="false">Aware error CRASH : Rotation data could not be retrieved.</string>
+    <string name="log_screen_state_error" translatable="false">Aware error CRASH : ScreenState data could not be retrieved.</string>
+    <string name="log_wifi_null" translatable="false">Aware error NULL : Wifi data does not exist.</string>
+    <string name="log_wifi_error" translatable="false">Aware error CRASH : Wifi data could not be retrieved.</string>
+    <string name="log_activity_null" translatable="false">Aware error NULL : Activity Transition data does not exist.</string>
+    <string name="log_activity_error" translatable="false">Aware error CRASH : Activity Transition data could not be retrieved.</string>
+    <string name="channel_description">MindLamp積極收集數據</string>
+    <string name="app_disclosure">即使在app關閉或未使用時，此app仍會收集位置數據以供臨床使用和研究。
+您的數據符合 HIPAA 標準且已去除身份信息。
+它以安全的加密格式存儲，只有您的臨床醫生和/或研究協調員可以訪問。</string>
+    <string name="local_notification_text">正有一項mindLAMP等候您: %s</string>
+    <string name="notification_action">打開App</string>
+    <string name="location_status_background_allowed">永遠允許</string>
+    <string name="location_status_allowed">使用App時允許</string>
+    <string name="location_status_denied">不允許</string>
+
+    <string name="location_permission">定位服務現時為關閉。請開啟它。</string>
+    <string name="ok">OK</string>
+
+    <string name="gps_enable">定位服務現時為關閉。請開啟它。</string>
+    <string name="unexpected_error">頁面發生錯誤。請稍後再試。</string>
+    <string name="txt_no_internet">您已離線</string>
+    <string name="txt_unable_to_connect">無法連接伺服器，請稍後再試</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">此app須獲取服務權限</string>
+    <string name="cancel">取消</string>
+    <string name="server_unreachable">伺服器無法訪問</string>
+    <string name="user_not_found">未能找到用戶</string>
+    <string name="something_went_wrong">頁面發生錯誤。請稍後再試。</string>
+    <string name="something_went_wrong_on_server">頁面發生錯誤。請稍後再試。</string>
+
+    <string name="kb" translatable="false">KB</string>
+    <string name="mb" translatable="false">MB</string>
+    <string name="invalid_request_please_try_again">Invalid request. Please try again later.</string>
+    <string name="you_are_not_authorized">您沒有權限</string>
+    <string name="you_dont_have_access">您無權訪問</string>
+    <string name="user_not_found_here">未能找到用戶</string>
+    <string name="request_timeout">請求超時</string>
+    <string name="bad_gateway">錯誤網關</string>
+    <string name="service_not_available">服務不可用。請稍後再試。</string>
+    <string name="unused" translatable="false">Unused</string>
+    <string name="awake_during_sleep" translatable="false">Awake (during sleep)</string>
+    <string name="sleep" translatable="false">Sleep</string>
+    <string name="out_of_bed" translatable="false">Out-of-bed</string>
+    <string name="light_sleep" translatable="false">Light sleep</string>
+    <string name="deep_sleep" translatable="false">Deep sleep</string>
+    <string name="rem_sleep" translatable="false">REM sleep</string>
+    <string name="active_data_collection">MindLamp積極收集數據</string>
+    <string name="server_un_rechable">服务器无法访问</string>
+    <string name="you_are_not_connected">您已離線</string>
+    <string name="server_not_reachable">伺服器無法訪問</string>
+    <string name="mindlamp_service">MindLamp 服務</string>
+    <string name="back">Back</string>
+
+</resources>
