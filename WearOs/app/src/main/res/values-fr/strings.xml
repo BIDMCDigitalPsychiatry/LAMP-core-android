@@ -12,7 +12,7 @@
     <string name="internet_error">Impossible de se connecter au serveur. Veuillez réessayer plus tard.</string>
 
 
-    <string name="un_hint">Nom d'utilisateur</string>
+    <string name="un_hint">Nom d\'utilisateur</string>
     <string name="pwd_hint">Mot de passe</string>
     <string name="url_hint">URL</string>
     <string name="logout">Se déconnecter</string>
@@ -21,6 +21,6 @@
     <string name="permission_error">Des autorisations de service sont requises pour cette application.</string>
     <string name="cancel">Annuler</string>
     <string name="ok">Ok</string>
-    <string name="authentication_failed">Échec de l'authentification!</string>
+    <string name="authentication_failed">Échec de l\'authentification!</string>
 
 </resources>
