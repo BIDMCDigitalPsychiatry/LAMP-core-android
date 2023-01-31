@@ -1,0 +1,26 @@
+<resources>
+    <string name="title_activity_main_wear">mindLAMP</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="app_name">mindLAMP</string>
+
+    <string name="txt_login">Login</string>
+    <string name="txt_go">G\u00e5</string>
+    <string name="server_error">Serveren reagerer ikke i øjeblikket. Prøv igen senere.</string>
+    <string name="internet_error">Kunne ikke oprette forbindelse til serveren. Prøv igen senere.</string>
+
+
+    <string name="un_hint">Brugernavn</string>
+    <string name="pwd_hint">Adgangskode</string>
+    <string name="url_hint">Url</string>
+    <string name="logout">Log ud</string>
+
+
+    <string name="permission_error">Tjenestetilladelser er påkrævet for denne app. </string>
+    <string name="cancel">Annuller</string>
+    <string name="ok">Ok</string>
+    <string name="authentication_failed">Godkendelse mislykkedes!</string>
+
+</resources>

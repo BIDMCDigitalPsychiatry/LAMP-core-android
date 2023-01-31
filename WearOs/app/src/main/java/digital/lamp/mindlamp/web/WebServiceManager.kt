@@ -30,7 +30,7 @@ class WebServiceManager {
             )
         } catch (ignored: java.lang.Exception) {
 
-            Log.d("exception", ignored.message)
+            ignored.message?.let { Log.d("exception", it) }
         }
     }
 
@@ -56,7 +56,7 @@ class WebServiceManager {
             )
         } catch (ignored: java.lang.Exception) {
 
-            Log.d("exception", ignored.message)
+            ignored.message?.let { Log.d("exception", it) }
         }
     }
 
@@ -82,7 +82,7 @@ class WebServiceManager {
             )
         } catch (ignored: java.lang.Exception) {
 
-            Log.d("exception", ignored.message)
+            ignored.message?.let { Log.d("exception", it) }
         }
     }
 
@@ -108,7 +108,7 @@ class WebServiceManager {
             )
         } catch (ignored: java.lang.Exception) {
 
-            Log.d("exception", ignored.message)
+            ignored.message?.let { Log.d("exception", it) }
         }
     }
 
@@ -134,7 +134,7 @@ class WebServiceManager {
             )
         } catch (ignored: java.lang.Exception) {
 
-            Log.d("exception", ignored.message)
+            ignored.message?.let { Log.d("exception", it) }
         }
     }
 
