@@ -50,7 +50,8 @@
 
         <activity
             android:name=".activity.SplashActivity"
-            android:label="@string/title_activity_main_wear">
+            android:label="@string/title_activity_main_wear"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -81,7 +82,8 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".service.WearListenerService">
+        <service android:name=".service.WearListenerService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
