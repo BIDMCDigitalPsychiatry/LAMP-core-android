@@ -1,0 +1,89 @@
+<resources>
+    <string name="app_name">mindLAMP</string>
+
+    <string name="log_accelerometer_null" translatable="false">Aware error NULL : Accelerometer data does not exist.</string>
+    <string name="log_accelerometer_error" translatable="false">Aware error CRASH : Accelerometer data could not be retrieved.</string>
+    <string name="log_gyroscope_null" translatable="false">Aware error NULL : Gyroscope data does not exist.</string>
+    <string name="log_gyroscope_error" translatable="false">Aware error CRASH : Gyroscope data could not be retrieved.</string>
+    <string name="log_location_null" translatable="false">Aware error NULL : Location data does not exist.</string>
+    <string name="log_location_error" translatable="false">Aware error CRASH : Location data could not be retrieved.</string>
+    <string name="log_magnetometer_null" translatable="false">Aware error NULL : Magnetometer data does not exist.</string>
+    <string name="log_magnetometer_error" translatable="false">Aware error CRASH : Magnetometer data could not be retrieved.</string>
+    <string name="log_rotation_null" translatable="false">Aware error NULL : Rotation data does not exist.</string>
+    <string name="log_rotation_error" translatable="false">Aware error CRASH : Rotation data could not be retrieved.</string>
+    <string name="log_screen_state_error" translatable="false">Aware error CRASH : ScreenState data could not be retrieved.</string>
+    <string name="log_wifi_null" translatable="false">Aware error NULL : Wifi data does not exist.</string>
+    <string name="log_wifi_error" translatable="false">Aware error CRASH : Wifi data could not be retrieved.</string>
+    <string name="log_activity_null" translatable="false">Aware error NULL : Activity Transition data does not exist.</string>
+    <string name="log_activity_error" translatable="false">Aware error CRASH : Activity Transition data could not be retrieved.</string>
+    <string name="channel_description">MindLamp aktive Datenerhebung</string>
+    <string name="app_disclosure">Diese App sammelt Standortdaten für klinische Zwecke und Forschungsstudien, auch wenn die App geschlossen ist oder nicht verwendet wird.
+Ihre Daten sind HIPAA-konform und nicht identifizierbar.
+Sie werden in einem gesicherten, verschlüsselten Format gespeichert, auf das nur Ihr*e Arzt*in und/oder die Koordinatoren der Forschungsstudien Zugriff haben.</string>
+    <string name="local_notification_text">Sie haben eine mindLAMP-Aktivität, die auf Sie wartet: %s</string>
+    <string name="notification_action">App öffnen
+</string>
+    <string name="location_status_background_allowed">Immer zulassen
+</string>
+    <string name="location_status_allowed">Nur während der Nutzung der App zulassen
+</string>
+    <string name="location_status_denied">Ablehnen
+</string>
+
+    <string name="location_permission">Standordberechtigung erforderlich
+</string>
+    <string name="ok">Ok
+</string>
+
+    <string name="gps_enable">Der Standort ist derzeit auf Ihrem Gerät deaktiviert. Bitte aktivieren Sie ihn.
+</string>
+    <string name="unexpected_error">Etwas ist schief gelaufen. Bitte versuchen Sie es nochmal.
+</string>
+    <string name="txt_no_internet">Sie sind nicht mit dem Internet verbunden.
+</string>
+    <string name="txt_unable_to_connect">Die Verbindung zum Server konnte nicht hergestellt werden. Bitte versuchen Sie es später noch einmal.
+</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">Für diese App sind Serviceberechtigungen erforderlich.</string>
+    <string name="cancel">Abbrechen
+</string>
+    <string name="server_unreachable">Der Server ist nicht erreichbar.
+</string>
+    <string name="user_not_found">Benutzer*in wurde nicht gefunden.
+</string>
+    <string name="something_went_wrong">Etwas ist schief gelaufen. Bitte versuchen Sie es nochmal.
+</string>
+    <string name="something_went_wrong_on_server">Etwas ist schief gelaufen. Bitte versuchen Sie es nochmal.</string>
+
+    <string name="kb" translatable="false">KB</string>
+    <string name="mb" translatable="false">MB</string>
+    <string name="invalid_request_please_try_again">Ungültige Anfrage. Bitte versuchen Sie es später noch einmal.</string>
+    <string name="you_are_not_authorized">Sie sind dazu nicht berechtigt.
+</string>
+    <string name="you_dont_have_access">Sie haben keinen Zugang.
+</string>
+    <string name="user_not_found_here">Benutzer*in wurde nicht gefunden.
+</string>
+    <string name="request_timeout">Zeitüberschreitung bei der Anfrage
+</string>
+    <string name="bad_gateway">"Schlechter Zugang/ Bad Gateway"
+</string>
+    <string name="service_not_available">Service ist nicht verfügbar. Bitte versuchen Sie es später noch einmal.</string>
+    <string name="unused" translatable="false">Unused</string>
+    <string name="awake_during_sleep" translatable="false">Awake (during sleep)</string>
+    <string name="sleep" translatable="false">Sleep</string>
+    <string name="out_of_bed" translatable="false">Out-of-bed</string>
+    <string name="light_sleep" translatable="false">Light sleep</string>
+    <string name="deep_sleep" translatable="false">Deep sleep</string>
+    <string name="rem_sleep" translatable="false">REM sleep</string>
+    <string name="active_data_collection">MindLamp aktive Datenerhebung
+</string>
+    <string name="server_un_rechable">Der Server ist nicht erreichbar.
+</string>
+    <string name="you_are_not_connected">Sie sind nicht mit dem Internet verbunden.
+</string>
+    <string name="server_not_reachable">Der Server ist nicht erreichbar.
+</string>
+    <string name="mindlamp_service">MindLamp Service</string>
+    <string name="back">Back</string>
+
+</resources>

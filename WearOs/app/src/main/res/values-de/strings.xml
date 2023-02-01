@@ -1,25 +1,22 @@
 <resources>
     <string name="title_activity_main_wear">mindLAMP</string>
-    <!--
-    This string is used for square devices and overridden by hello_world in
-    values-round/strings.xml for round devices.
-    -->
+
     <string name="app_name">mindLAMP</string>
 
     <string name="sensor_register_error" translatable="false">Sensor is not supported!!</string>
     <string name="txt_done" translatable="false">Done!</string>
-    <string name="txt_login">Login</string>
-    <string name="txt_go">Go</string>
+    <string name="txt_login">Anmelden</string>
+    <string name="txt_go">Los</string>
     <string name="url_error" translatable="false">Please enter a valid URL.</string>
-    <string name="server_error">Currently server is not responding. Please try again later.</string>
-    <string name="internet_error">Unable to connect to the server. Please try again later.</string>
+    <string name="server_error">Der Server antwortet derzeit nicht. Bitte versuchen Sie es später noch einmal.</string>
+    <string name="internet_error">Die Verbindung zum Server konnte nicht hergestellt werden. Bitte versuchen Sie es später noch einmal.</string>
 
 
-    <string name="un_hint">Username</string>
-    <string name="pwd_hint">Password</string>
-    <string name="url_hint">Url</string>
+    <string name="un_hint">Benutzername</string>
+    <string name="pwd_hint">Passwort</string>
+    <string name="url_hint">Die Internetadresse</string>
     <string name="loading" translatable="false">Loading....</string>
-    <string name="logout">Logout</string>
+    <string name="logout">Abmelden</string>
 
 
     <string name="log_accelerometer_null" translatable="false">Aware error NULL : Accelerometer data does not exist.</string>
@@ -52,10 +49,10 @@
     <string name="info" translatable="false">info</string>
     <string name="battery_low" translatable="false">Battery is low.</string>
     <string name="app_crash" translatable="false">The app has crashed.</string>
-    <string name="permission_error">Service Permissions are required for this app</string>
-    <string name="cancel">Cancel</string>
-    <string name="ok">OK</string>
-    <string name="authentication_failed">Authentication Failed!</string>
+    <string name="permission_error">Für diese App sind Serviceberechtigungen erforderlich.</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="ok">Ok</string>
+    <string name="authentication_failed">Authentifizierung fehlgeschlagen!</string>
     <string name="speech_prompt" translatable="false">Please speak URL</string>
 
 </resources>
