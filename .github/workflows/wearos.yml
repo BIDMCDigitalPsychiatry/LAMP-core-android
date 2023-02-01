@@ -103,7 +103,7 @@ jobs:
         run: |
           echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
           echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
-          echo "::set-output name=LATEST_TAG::$(git describe --tags `git rev-list --tags --max-count=1`)"
+          echo "::set-output name=LATEST_TAG::$(date +'%Y.%-m.%-d')"
           echo "::set-output name=COMMIT_NUM::$(git rev-list --count master)"
       -
         uses: chkfung/android-version-actions@v1.1
@@ -141,6 +141,6 @@ jobs:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
           releaseFile: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
-          track: beta
+          track: internal
           status: completed
 
