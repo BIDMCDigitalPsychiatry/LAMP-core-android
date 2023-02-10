@@ -1,4 +1,8 @@
 name: wearos
+jdk: 
+-
+openjdk11
+
 on:
   push:
     branches: [master]
