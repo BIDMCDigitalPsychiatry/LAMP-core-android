@@ -11,7 +11,9 @@ import androidx.fragment.app.FragmentActivity
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.activity.MainWearActivity
 import digital.lamp.mindlamp.appstate.AppState
-import kotlinx.android.synthetic.main.activity_pre_login_wear.*
+import digital.lamp.mindlamp.databinding.ActivityMainWearBinding
+import digital.lamp.mindlamp.databinding.ActivityPreLoginWearBinding
+
 import org.json.JSONException
 
 
@@ -20,12 +22,15 @@ import org.json.JSONException
  */
 class PreLoginActivity : FragmentActivity() {
 
+    private lateinit var binding: ActivityPreLoginWearBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pre_login_wear)
+        binding = ActivityPreLoginWearBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
-        btnlogin.setOnClickListener(object : View.OnClickListener {
+        binding.btnlogin.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
 

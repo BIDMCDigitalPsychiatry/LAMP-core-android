@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
-import kotlinx.android.synthetic.main.activity_serverurl.*
+import digital.lamp.mindlamp.databinding.ActivityServerurlBinding
 import java.util.*
 
 
@@ -19,19 +19,22 @@ import java.util.*
  */
 class SeverUrlActivity : FragmentActivity() {
 
+    private lateinit var binding: ActivityServerurlBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_serverurl)
 
-        txtserverurl.setText(AppState.session.urlvalue)
+        binding = ActivityServerurlBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+        binding. txtserverurl.setText(AppState.session.urlvalue)
 
-        imgservericon.setOnClickListener(object : View.OnClickListener {
+        binding.imgservericon.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
 
                 //if user has edited or is viewing it then save it
-                AppState.session.urlvalue = txtserverurl.text.toString().trim()
+                AppState.session.urlvalue = binding.txtserverurl.text.toString().trim()
                 finish()
             }
         })

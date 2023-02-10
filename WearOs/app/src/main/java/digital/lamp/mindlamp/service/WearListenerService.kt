@@ -40,8 +40,8 @@ class WearListenerService : WearableListenerService() {
                 } else if (item.uri.path == "/getSensorVals") {
 
                     val dataMap = DataMapItem.fromDataItem(item).dataMap
-                    val requestedSensors: Array<String> =
-                        dataMap.get("reqeustedsensors") as Array<String>
+                    val requestedSensors: Array<String>? =
+                        dataMap.get("reqeustedsensors")
                     Log.v("myTag", "Message received on watch is:")
                     // Broadcast message to wearable activity for display
                     val messageIntent = Intent()
@@ -55,7 +55,7 @@ class WearListenerService : WearableListenerService() {
         super.onDataChanged(dataEventBuffer)
     }
 
-    override fun onPeerDisconnected(node: Node?) {
+    override fun onPeerDisconnected(node: Node) {
         super.onPeerDisconnected(node)
     }
 }
