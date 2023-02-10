@@ -73,7 +73,7 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          releaseFiles: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
           status: completed
   wearospush:
@@ -144,7 +144,7 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
+          releaseFiles: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
           track: internal
           status: completed
           
