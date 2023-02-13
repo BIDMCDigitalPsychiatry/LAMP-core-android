@@ -74,7 +74,7 @@ jobs:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
           releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
-          track: beta
+          track: internal
           status: completed
   push:
     if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
@@ -133,6 +133,6 @@ jobs:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
           releaseFile: app/build/outputs/bundle/qaRelease/app-qa-release.aab
-          track: beta
+          track: internal
           status: completed
 
