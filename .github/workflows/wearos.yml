@@ -1,7 +1,4 @@
-name: wearos
-jdk: 
--
-openjdk11
+name: wearos 
 
 on:
   push:
