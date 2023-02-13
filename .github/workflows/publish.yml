@@ -73,7 +73,7 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          releaseFiles: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: internal
           status: completed
   push:
@@ -132,7 +132,7 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: app/build/outputs/bundle/qaRelease/app-qa-release.aab
+          releaseFiles: app/build/outputs/bundle/qaRelease/app-qa-release.aab
           track: internal
           status: completed
 
