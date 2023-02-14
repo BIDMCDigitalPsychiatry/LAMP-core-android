@@ -110,7 +110,7 @@ jobs:
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: WearOs/app/build.gradle
-          versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
+          versionCode: "840"
           versionName: "${{steps.setup.outputs.LATEST_TAG}}"
 
       - name: Make gradlew executable
