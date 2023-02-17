@@ -15,8 +15,8 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion 25
         targetSdkVersion 33
-        versionCode 16
-        versionName "1.0"
+        versionCode 841
+        versionName "2.0"
 
     }
     buildTypes {
@@ -93,7 +93,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
 
     //Firebase
-    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+    implementation platform('com.google.firebase:firebase-bom:31.2.1')
 
     /*implementation 'com.google.firebase:firebase-database:19.3.1'
     implementation 'com.google.firebase:firebase-auth:19.3.2'
@@ -101,7 +101,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:17.4.4'
     implementation 'com.google.firebase:firebase-messaging:20.2.3'*/
     implementation 'androidx.fragment:fragment-ktx:1.5.5'
-    implementation 'com.google.firebase:firebase-common-ktx:20.3.0'
+    //since bom is used no need to specify other firebase dependencies
+    //implementation 'com.google.firebase:firebase-common-ktx:20.3.0'
     implementation 'com.google.firebase:firebase-messaging-ktx:23.1.1'
 
     compileOnly 'com.google.android.wearable:wearable:2.9.0'
@@ -117,6 +118,6 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
 
-  // apply plugin: "com.google.gms.google-services"
+ apply plugin: "com.google.gms.google-services"
 
 }
