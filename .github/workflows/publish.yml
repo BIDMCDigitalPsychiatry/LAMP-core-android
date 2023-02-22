@@ -133,6 +133,6 @@ jobs:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
           releaseFiles: app/build/outputs/bundle/qaRelease/app-qa-release.aab
-          track: beta
+          track: internal
           status: completed
 
