@@ -136,7 +136,7 @@ class GoogleFit constructor(
                                 }
                                 val steps = dataPoints[i].getValue(Field.FIELD_STEPS)
                                 steps?.let { steps ->
-                                    val sensorEvenData: SensorEvent = getStepsData(steps, source)
+                                    val sensorEvenData: SensorEvent = getStepsData(steps, source,maxTime)
                                     oSensorSpecList.forEach {
                                         if (it.spec == Sensors.STEPS.sensor_name) {
                                             sensorList.add(sensorEvenData)
@@ -148,14 +148,15 @@ class GoogleFit constructor(
                                 }
 
                             }
+                            if (endTimestamp > 0)
+                                AppState.session.lastStepDataTimestamp = endTimestamp + 1
                             if (sensorList.isNotEmpty()) {
                                 sensorListener.getGoogleFitData(sensorList)
                             }
 
                         }
                     }
-                    if (endTimestamp > 0)
-                        AppState.session.lastStepDataTimestamp = endTimestamp + 1
+
                 }
             }
     }
@@ -502,7 +503,7 @@ class GoogleFit constructor(
     }
 
     //5
-    private fun getStepsData(steps: Value, source: Any?): SensorEvent {
+    private fun getStepsData(steps: Value, source: Any?,endTime:Long): SensorEvent {
         val dimensionData =
             StepsData(
                 "count", steps.asInt(), "step_count", source
@@ -510,7 +511,7 @@ class GoogleFit constructor(
         return SensorEvent(
             dimensionData,
             Sensors.STEPS.sensor_name,
-            System.currentTimeMillis().toDouble()
+            endTime.toDouble()
         )
     }
 
