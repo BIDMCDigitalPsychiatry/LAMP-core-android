@@ -506,7 +506,7 @@ class GoogleFit constructor(
     private fun getStepsData(steps: Value, source: Any?,endTime:Long): SensorEvent {
         val dimensionData =
             StepsData(
-                "count", steps.asInt(), "step_count", source
+                "count", 14, "step_count", source
             )
         return SensorEvent(
             dimensionData,
