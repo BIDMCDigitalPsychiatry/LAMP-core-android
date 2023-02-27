@@ -1,4 +1,5 @@
-name: wearos
+name: wearos 
+
 on:
   push:
     branches: [master]
@@ -18,7 +19,7 @@ jobs:
       -
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
       -
         name: "Do a commit for release type"
         run: |
@@ -69,7 +70,7 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          releaseFiles: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: beta
           status: completed
   wearospush:
@@ -85,7 +86,7 @@ jobs:
       -
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 11
 
       - name: "Do a commit for release type"
         run: |
@@ -103,13 +104,13 @@ jobs:
         run: |
           echo $FIREBASE_CONFIG | base64 --decode --ignore-garbage > app/google-services.json
           echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
-          echo "::set-output name=LATEST_TAG::$(git describe --tags `git rev-list --tags --max-count=1`)"
+          echo "::set-output name=LATEST_TAG::$(date +'%Y.%-m.%-d')"
           echo "::set-output name=COMMIT_NUM::$(git rev-list --count master)"
       -
         uses: chkfung/android-version-actions@v1.1
         with:
           gradlePath: WearOs/app/build.gradle
-          versionCode: "${{steps.setup.outputs.COMMIT_NUM}}"
+          versionCode: "840"
           versionName: "${{steps.setup.outputs.LATEST_TAG}}"
 
       - name: Make gradlew executable
@@ -120,7 +121,7 @@ jobs:
           chmod +x build.gradle
           chmod +x gradlew
           ./gradlew clean
-          ./gradlew build
+          ./gradlew build --stacktrace 
           ./gradlew bundleRelease
       -
         uses: r0adkll/sign-android-release@v1
@@ -140,7 +141,8 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: digital.lamp.mindlamp
-          releaseFile: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
-          track: beta
+          releaseFiles: WearOs/app/build/outputs/bundle/qaRelease/app-qa-release.aab
+          track: internal
           status: completed
+          
 
