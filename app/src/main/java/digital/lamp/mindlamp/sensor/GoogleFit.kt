@@ -3,7 +3,6 @@ package digital.lamp.mindlamp.sensor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension
 import com.google.android.gms.fitness.Fitness
@@ -12,10 +11,7 @@ import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.data.DataType.TYPE_STEP_COUNT_DELTA
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
-import com.google.android.gms.fitness.result.DataReadResponse
 import com.google.android.gms.fitness.result.SessionReadResponse
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import digital.lamp.lamp_kotlin.lamp_core.models.*
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
@@ -23,7 +19,6 @@ import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Sensors
-import java.text.DateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -46,6 +41,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
 
     init {
         //Fitness options
+       // DebugLogs.writeToFile("Googlefit: init()")
         val fitnessOptions: FitnessOptions by lazy {
             FitnessOptions.builder()
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -76,9 +72,12 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
             .readData(readRequest)
             .addOnSuccessListener { dataReadResponse ->
                 LampLog.e(TAG, "Success : ${dataReadResponse.dataSets.size}")
+             //   DebugLogs.writeToFile("Googlefit: init() Success dataset size : ${dataReadResponse.dataSets.size}")
                 if (dataReadResponse.dataSets.isNotEmpty()) {
                     dataReadResponse.dataSets.forEach {
                         dumpDataSet(it, oSensorSpecList)
+                   //     DebugLogs.writeToFile("Googlefit: init() dumpDataSet")
+
                     }
                 }
 
@@ -103,6 +102,10 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
 
         val startTime: Long = AppState.session.lastStepDataTimestamp
         val endTime = System.currentTimeMillis()
+      //  DebugLogs.writeToFile("readStepCount :")
+     //   DebugLogs.writeToFileTime("start time",startTime)
+    //    DebugLogs.writeToFileTime("end time",endTime)
+
         Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, fitnessOptionsStep))
             .readData(
                 DataReadRequest.Builder()
@@ -115,13 +118,17 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                     .build()
             ).addOnSuccessListener { result ->
                 LampLog.e(TAG, "Success : ${result.dataSets.size}")
+              //  DebugLogs.writeToFile("Success : result.dataSets.size: ${result.dataSets.size}")
                 val sensorList :  ArrayList<SensorEvent> = arrayListOf()
                 if (result.dataSets.isNotEmpty()) {
-                    result.dataSets.forEach {
-                        val dataPoints = it.dataPoints
+                    result.dataSets.forEach { dataSet ->
+                    //    DebugLogs.writeToFile("Success : result.dataSets.size: ${result.dataSets.size}")
+                        val dataPoints = dataSet.dataPoints
                         if (dataPoints.size > 0) {
-                            val endTimeList = it.dataPoints.map { it.getEndTime(TimeUnit.MILLISECONDS) }
-                            AppState.session.lastStepDataTimestamp = Collections.max(endTimeList)
+                            val endTimeList = dataSet.dataPoints.map { it.getEndTime(TimeUnit.MILLISECONDS) }
+                            AppState.session.lastStepDataTimestamp = Collections.max(endTimeList)+1
+                         //   DebugLogs.writeToFileTime("result.dataSets.forEach: Collections.max(endTimeList) ", Collections.max(endTimeList))
+
                             for (i in 0 until dataPoints.size) {
                                 val dataSource = dataPoints[i].originalDataSource
                                 var source = dataSource.appPackageName
@@ -130,10 +137,11 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                                 }
                                 val steps = dataPoints[i].getValue(Field.FIELD_STEPS)
                                 steps?.let { steps ->
-                                    val sensorEvenData: SensorEvent = getStepsData(steps, source)
+                                    val sensorEvenData: SensorEvent = getStepsData(steps, source, dataPoints[i].getEndTime(TimeUnit.MILLISECONDS))
                                     oSensorSpecList.forEach {
                                         if (it.spec == Sensors.STEPS.sensor_name) {
                                             sensorList.add(sensorEvenData)
+                                            //DebugLogs.writeToFile("added to sensor list:steps:$steps")
                                         }
                                     }
 
@@ -145,6 +153,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
                             if(sensorList.isNotEmpty()){
                                 sensorListener.getGoogleFitData(sensorList)
                             }
+                          //  else{
+                               // DebugLogs.writeToFile("sensorList empty")
+                          //  }
 
                         }
                     }
@@ -253,6 +264,7 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
 
     private fun dumpDataSet(dataSet: DataSet, oSensorSpecList: ArrayList<SensorSpecs>) {
         LampLog.e(TAG, "Data returned for Data type: ${dataSet.dataType.name}")
+        //DebugLogs.writeToFile("Googlefit: dumpDataSet datapointSize : ${dataSet.dataPoints.size}")
         for (dp in dataSet.dataPoints) {
             LampLog.e(TAG, "Type: ${dp.dataType.name}")
             val dataSource = dp.originalDataSource
@@ -453,12 +465,12 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     }
 
     //5
-    private fun getStepsData(steps: Value,source:Any?): SensorEvent {
+    private fun getStepsData(steps: Value,source:Any?,timeStamp:Long): SensorEvent {
         val dimensionData =
             StepsData(
                 "count",  steps.asInt(), "step_count",  source
             )
-        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, System.currentTimeMillis().toDouble())
+        return SensorEvent(dimensionData, Sensors.STEPS.sensor_name, timeStamp.toDouble())
     }
 
     //6
