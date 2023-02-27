@@ -1,9 +1,9 @@
 package digital.lamp.mindlamp.utils
 
-import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.app.App
 import java.io.File
 import java.io.FileWriter
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -11,6 +11,9 @@ import java.util.*
  * Created by ZCo Developer
  */
 object DebugLogs {
+    val simple: DateFormat = SimpleDateFormat(
+        "dd MMM yyyy HH:mm:ss:SSS Z"
+    )
     /**
      * Saving Debugg Logs
      *
@@ -38,6 +41,10 @@ object DebugLogs {
         } catch (e: Exception) {
             LampLog.e(e.toString())
         }
+    }
+    fun writeToFileTime(txt:String,milliSec:Long){
+       val result = Date(milliSec)
+       writeToFile("$txt::$milliSec::"+simple.format(result))
     }
 
 }
