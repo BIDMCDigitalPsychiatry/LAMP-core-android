@@ -4,16 +4,13 @@ import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
 import android.hardware.Sensor
-import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
@@ -21,32 +18,29 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.wearable.DataMap
 import com.google.android.gms.wearable.Wearable
 import com.google.firebase.FirebaseApp
-import com.google.firebase.iid.FirebaseInstanceId
+
+import com.google.firebase.messaging.FirebaseMessaging
 import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.aware.*
 import digital.lamp.mindlamp.broadcastreceiver.SensorBroadcastReceiver
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.databinding.ActivityMainWearBinding
 import digital.lamp.mindlamp.model.*
 import digital.lamp.mindlamp.viewmodels.DataViewModel
 import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
-import digital.lamp.mindlamp.thread.SendToDataLayerThread
 import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.PermissionCheck
 import digital.lamp.mindlamp.utils.Utils
-import kotlinx.android.synthetic.main.activity_login_wear.*
-import kotlinx.android.synthetic.main.activity_login_wear.pgtext
-import kotlinx.android.synthetic.main.activity_login_wear.progressbar
-import kotlinx.android.synthetic.main.activity_main_wear.*
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.*
 import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
 
 @Suppress("DEPRECATION")
 class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks,
@@ -63,11 +57,13 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
     val br: BroadcastReceiver = SensorBroadcastReceiver()
     val messageReceiver: MessageReceiver = MessageReceiver()
     var arrsensorvals = arrayOfNulls<SensorEventData>(14)
+    private lateinit var binding: ActivityMainWearBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_wear)
-
+        binding = ActivityMainWearBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
         FirebaseApp.initializeApp(this);
         initialize()
         // Enables Always-on
@@ -122,7 +118,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
 
     fun initializecontrols() {
-        btnLogout.setOnClickListener {
+        binding.btnLogout.setOnClickListener {
 
             //logout
             AppState.session.clearData()
@@ -161,7 +157,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             object : Observer<WebServiceResponseData> {
                 override fun onChanged(t: WebServiceResponseData?) {
 
-                    Utils.displayProgress(progressbar, pgtext, false, "")
+                    Utils.displayProgress(binding.progressbar, binding.pgtext, false, "")
                     Log.d("ACTIVITY", "on Changed")
                     if (null != t?.responseBase) {
 
@@ -324,24 +320,34 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
 
     private fun retrieveUpdateCurrentToken(un: String) {
-        FirebaseInstanceId.getInstance().instanceId.addOnCompleteListener {
-            if (!it.isSuccessful) {
-                return@addOnCompleteListener
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+
+                return@OnCompleteListener
             }
-            // Get new Instance ID token
-            val token = it.result?.token
-            Log.e("FCM", "FCM Token : $token")
-            val tokenData = TokenData("login", token.toString(), "Google wearOS", UserAgent())
-            val sendTokenRequest =
-                SendTokenRequest(
-                    tokenData,
-                    "lamp.analytics",
-                    System.currentTimeMillis()
-                )
 
-            dataViewModel?.addDeviceToken(un, sendTokenRequest)
+            // Get new FCM registration token
 
-        }
+            task.result.let {
+
+                // Get new Instance ID token
+                val token = it
+                Log.e("FCM", "FCM Token : $token")
+                val tokenData = TokenData("login", token.toString(), "Google wearOS", UserAgent())
+                val sendTokenRequest =
+                    SendTokenRequest(
+                        tokenData,
+                        "lamp.analytics",
+                        System.currentTimeMillis()
+                    )
+
+                dataViewModel?.addDeviceToken(un, sendTokenRequest)
+            }
+        })
+
+
+
+
     }
 
     inner class MessageReceiver : BroadcastReceiver() {

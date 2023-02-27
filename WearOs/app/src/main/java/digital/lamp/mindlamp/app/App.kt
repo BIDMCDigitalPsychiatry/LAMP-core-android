@@ -13,7 +13,6 @@ import digital.lamp.mindlamp.appstate.Pref
 import java.io.PrintWriter
 import java.io.StringWriter
 
-
 class App : Application(), LifecycleObserver {
 
     companion object {

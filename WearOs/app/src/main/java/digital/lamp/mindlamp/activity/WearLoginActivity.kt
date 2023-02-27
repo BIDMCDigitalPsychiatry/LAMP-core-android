@@ -13,16 +13,16 @@ import androidx.lifecycle.ViewModelProvider
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.databinding.ActivityLoginWearBinding
+import digital.lamp.mindlamp.databinding.ActivityPreLoginWearBinding
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.viewmodels.DataViewModel
 import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
 import digital.lamp.mindlamp.web.pojo.response.UserExistResponse
-import kotlinx.android.synthetic.main.activity_login_wear.*
-import kotlinx.android.synthetic.main.activity_login_wear.pgtext
-import kotlinx.android.synthetic.main.activity_login_wear.progressbar
-import kotlinx.android.synthetic.main.activity_main_wear.*
+
+
 
 
 /**
@@ -35,39 +35,42 @@ class WearLoginActivity : FragmentActivity() {
     private var dataViewModel: DataViewModel? = null
     private var toast: Toast? = null;
     private var mLifecycleRegistry: LifecycleRegistry? = null
-
+    private lateinit var binding: ActivityLoginWearBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login_wear)
+        binding = ActivityLoginWearBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         mLifecycleRegistry = LifecycleRegistry(this);
         mLifecycleRegistry!!.markState(Lifecycle.State.CREATED);
         dataViewModel = ViewModelProvider(this@WearLoginActivity).get(DataViewModel::class.java)
 
-        imgicon.setOnClickListener {
+        binding.imgicon.setOnClickListener {
             var mainIntent = Intent(this@WearLoginActivity, SeverUrlActivity::class.java)
             startActivity(mainIntent)
         }
 
-        btndone.setOnClickListener(object : View.OnClickListener {
+
+       binding. btndone.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
 
-                Utils.displayProgress(progressbar, pgtext, true, "")
+                Utils.displayProgress(binding.progressbar, binding.pgtext, true, "")
                 if (NetworkUtils.isNetworkAvailable(this@WearLoginActivity)) {
 
                     WebConstant.USERID =
                         Utils.toBase64(
-                            txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
+                            binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
                                 .trim()
                         ).toString().trim()
 
-                    dataViewModel!!.isUserExists(txtusername.text.toString())
+                    dataViewModel!!.isUserExists("me")
 
 
                 } else {
 
-                    Utils.displayProgress(progressbar, pgtext, false, "")
+                    Utils.displayProgress(binding.progressbar, binding.pgtext, false, "")
                     Toast.makeText(
                         this@WearLoginActivity,
                         getString(R.string.internet_error),
@@ -90,14 +93,14 @@ class WearLoginActivity : FragmentActivity() {
                 override fun onChanged(t: WebServiceResponseData?) {
 
                     Log.d("LOGIN ACTIVITY", "on Changed")
-                    Utils.displayProgress(progressbar, pgtext, false, "")
+                    Utils.displayProgress(binding.progressbar, binding.pgtext, false, "")
 
                     var msg: String = ""
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
                             AppState.session.userId = Utils.toBase64(
-                                txtusername.text.toString().trim() + ":" + txtpwd.text.toString()
+                                binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
                                     .trim()
                             ).toString().trim()
                             AppState.session.username =
