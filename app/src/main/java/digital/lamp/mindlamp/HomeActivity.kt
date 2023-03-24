@@ -44,7 +44,6 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
-import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -70,7 +69,10 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.util.*
 import javax.net.ssl.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 /**
@@ -85,6 +87,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
+    private var isPageLoadedComplete = false
 
 
     companion object {
@@ -267,9 +270,50 @@ class HomeActivity : AppCompatActivity() {
             url = BuildConfig.BASE_URL_WEB
             webView.loadUrl(url)
         }
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    if(isPageLoadedComplete){
+                    }else{
+                        if (progressBar.visibility == View.VISIBLE) {
+                            progressBar.visibility = View.GONE
+                            webView.isEnabled = true
+                            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                                webView.clearCache(true)
+                                webView.clearHistory()
+                                dialog.cancel()
+                                initializeWebview()
+                            }
+                            val negativeButtonClick = { dialog:DialogInterface, _:Int ->
+                                dialog.cancel()
+                                finish()
+                            }
+                            val builder = AlertDialog.Builder(this@HomeActivity)
+
+                            with(builder)
+                            {
+                                setTitle(getString(R.string.app_name))
+                                setMessage(getString(R.string.txt_unable_to_connect))
+                                setCancelable(false)
+                                setPositiveButton(
+                                    getString(R.string.retry),
+                                    DialogInterface.OnClickListener(function = positiveButtonClick)
+                                )
+                                setNegativeButton(
+                                    getString(R.string.cancel),
+                                    DialogInterface.OnClickListener(negativeButtonClick)
+                                )
+                                show()
+                            }
+                        }
+                    }
+                }
+            }
+        }, 20000)
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
+                isPageLoadedComplete = true
                 Log.e(TAG, " : $url")
                 progressBar.visibility = View.GONE;
             }
@@ -940,5 +984,5 @@ class HomeActivity : AppCompatActivity() {
             }
         }
     }
-
 }
+

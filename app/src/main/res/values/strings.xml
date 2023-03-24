@@ -60,5 +60,6 @@
     <string name="server_not_reachable">Server not reachable.</string>
     <string name="mindlamp_service">MindLamp Service</string>
     <string name="back">Back</string>
+    <string name="retry">Retry</string>
 
 </resources>
