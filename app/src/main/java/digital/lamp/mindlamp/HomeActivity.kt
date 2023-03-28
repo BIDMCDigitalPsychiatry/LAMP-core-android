@@ -14,6 +14,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.TrafficStats
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
@@ -22,6 +23,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -62,6 +64,7 @@ import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
+
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -71,8 +74,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.*
 import javax.net.ssl.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 
 /**
@@ -326,6 +327,30 @@ class HomeActivity : AppCompatActivity() {
                 } catch (e: java.lang.Exception) {
                     true
                 }
+            }
+            override fun onReceivedSslError(
+                view: WebView?,
+                handler: SslErrorHandler,
+                error: SslError?
+            ) {
+                Toast.makeText(
+                    this@HomeActivity,
+                    getString(R.string.ssl_error),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            override fun onReceivedError(
+                view: WebView?,
+                errorCod: Int,
+                description: String,
+                failingUrl: String?
+            ) {
+                Toast.makeText(
+                     this@HomeActivity,
+                   getString(R.string.txt_no_internet),
+                    Toast.LENGTH_LONG
+                ).show()
             }
 
         }
