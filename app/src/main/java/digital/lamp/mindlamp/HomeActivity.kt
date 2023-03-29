@@ -46,6 +46,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -271,53 +272,15 @@ class HomeActivity : AppCompatActivity() {
             url = BuildConfig.BASE_URL_WEB
             webView.loadUrl(url)
         }
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                runOnUiThread {
-                    if(isPageLoadedComplete){
-                    }else{
-                        if (progressBar.visibility == View.VISIBLE) {
-                            progressBar.visibility = View.GONE
-                            webView.isEnabled = true
-                            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
-                                webView.clearCache(true)
-                                webView.clearHistory()
-                                dialog.cancel()
-                                initializeWebview()
-                            }
-                            val negativeButtonClick = { dialog:DialogInterface, _:Int ->
-                                dialog.cancel()
-                                finish()
-                            }
-                            val builder = AlertDialog.Builder(this@HomeActivity)
-
-                            with(builder)
-                            {
-                                setTitle(getString(R.string.app_name))
-                                setMessage(getString(R.string.txt_unable_to_connect))
-                                setCancelable(false)
-                                setPositiveButton(
-                                    getString(R.string.retry),
-                                    DialogInterface.OnClickListener(function = positiveButtonClick)
-                                )
-                                setNegativeButton(
-                                    getString(R.string.cancel),
-                                    DialogInterface.OnClickListener(negativeButtonClick)
-                                )
-                                show()
-                            }
-                        }
-                    }
-                }
-            }
-        }, 20000)
-
+        checkTimerForRetry(getString(R.string.txt_unable_to_connect))
         webView.webViewClient = object : WebViewClient() {
+
             override fun onPageFinished(view: WebView, url: String) {
                 isPageLoadedComplete = true
                 Log.e(TAG, " : $url")
                 progressBar.visibility = View.GONE;
             }
+
 
             override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
                 return if (url == null || url.startsWith("http://") || url.startsWith("https://")) false else try {
@@ -333,11 +296,18 @@ class HomeActivity : AppCompatActivity() {
                 handler: SslErrorHandler,
                 error: SslError?
             ) {
-                Toast.makeText(
+                /*Toast.makeText(
                     this@HomeActivity,
                     getString(R.string.ssl_error),
                     Toast.LENGTH_LONG
-                ).show()
+                ).show()*/
+                val mainIntent =
+                    Intent(this@HomeActivity, ExceptionActivity::class.java)
+                mainIntent.putExtra("message", getString(R.string.server_not_reachable))
+                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                if (App.app.isApplicationInForeground())
+                    startActivity(mainIntent)
+
             }
 
             override fun onReceivedError(
@@ -346,21 +316,62 @@ class HomeActivity : AppCompatActivity() {
                 description: String,
                 failingUrl: String?
             ) {
-                Toast.makeText(
-                     this@HomeActivity,
-                   getString(R.string.txt_no_internet),
-                    Toast.LENGTH_LONG
-                ).show()
+                isPageLoadedComplete = false
+                DebugLogs.writeToFile(description)
+                if (description.isNotEmpty())
+                    checkTimerForRetry(getString(R.string.txt_unable_to_connect)+" $description")
             }
 
         }
-
 
         webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.grant(request.resources)
             }
         }
+    }
+
+    private fun checkTimerForRetry(errorMessage:String){
+        Timer().schedule(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    if(isPageLoadedComplete){
+                    }else{
+                        if (progressBar.visibility == View.VISIBLE) {
+                            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                                progressBar.visibility = View.GONE
+                                dialog.cancel()
+                                isPageLoadedComplete = false
+                                webView.isEnabled = true
+                                initializeWebview()
+                            }
+                            val negativeButtonClick = { dialog:DialogInterface, _:Int ->
+                                progressBar.visibility = View.GONE
+                                dialog.cancel()
+                                finish()
+                            }
+                            val builder = AlertDialog.Builder(this@HomeActivity)
+
+                            with(builder)
+                            {
+                                setTitle(getString(R.string.app_name))
+                                setMessage(errorMessage)
+                                setCancelable(false)
+                                setPositiveButton(
+                                    getString(R.string.retry),
+                                    DialogInterface.OnClickListener(function = positiveButtonClick)
+                                )
+                                setNegativeButton(
+                                    getString(R.string.cancel),
+                                    DialogInterface.OnClickListener(negativeButtonClick)
+                                )
+                                show()
+                            }
+                        }
+                    }
+                }
+            }
+        }, 5000)
     }
 
     override fun onRequestPermissionsResult(
