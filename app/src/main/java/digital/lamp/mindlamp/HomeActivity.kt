@@ -371,7 +371,7 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
-        }, 5000)
+        }, 20000)
     }
 
     override fun onRequestPermissionsResult(
