@@ -26,7 +26,7 @@
     <string name="location_status_allowed">使用App時允許</string>
     <string name="location_status_denied">不允許</string>
 
-    <string name="location_permission">定位服務現時為關閉。請開啟它。</string>
+    <string name="location_permission">需要獲取定位服務</string>
     <string name="ok">OK</string>
 
     <string name="gps_enable">定位服務現時為關閉。請開啟它。</string>
@@ -57,10 +57,10 @@
     <string name="deep_sleep" translatable="false">Deep sleep</string>
     <string name="rem_sleep" translatable="false">REM sleep</string>
     <string name="active_data_collection">MindLamp積極收集數據</string>
-    <string name="server_un_rechable">服务器无法访问</string>
+    <string name="server_un_rechable">伺服器無法訪問</string>
     <string name="you_are_not_connected">您已離線</string>
     <string name="server_not_reachable">伺服器無法訪問</string>
     <string name="mindlamp_service">MindLamp 服務</string>
     <string name="back" translatable="false">Back</string>
-
+    <string name="retry">重試</string>
 </resources>

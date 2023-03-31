@@ -36,4 +36,5 @@ Det er gemt i et sikret, krypteret format, som kun er tilgængeligt for din klin
     <string name="user_not_found">Bruger ikke fundet.</string>
     <string name="server_unreachable">Serveren er ikke tilgængelig.</string>
     <string name="invalid_request_please_try_again">Ugyldig forespørgsel. Prøv igen senere.</string>
+    <string name="retry">Prøv igen</string>
 </resources>
