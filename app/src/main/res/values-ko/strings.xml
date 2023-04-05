@@ -33,4 +33,5 @@
     <string name="mindlamp_service">Mindlamp 서비스 </string>
     <string name="back">뒤쪽에</string>
     <string name="invalid_request_please_try_again">잘못된 요청. 나중에 다시 시도 해주십시오.</string>
+    <string name="retry">재시도</string>
 </resources>

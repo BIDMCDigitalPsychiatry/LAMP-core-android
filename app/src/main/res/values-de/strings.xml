@@ -85,5 +85,5 @@ Sie werden in einem gesicherten, verschlüsselten Format gespeichert, auf das nu
 </string>
     <string name="mindlamp_service">MindLamp Service</string>
     <string name="back">Back</string>
-
+    <string name="retry">Versuchen Sie es nochmal</string>
 </resources>
