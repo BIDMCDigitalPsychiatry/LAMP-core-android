@@ -62,6 +62,7 @@ class SessionState {
         lastSyncWorkerTimestamp = 1L
         lastSleepDataTimestamp =1L
         lastGooglefitDataTimestamp = 1L
+        lastStepDataTimestamp=1L
         isCellularUploadAllowed = true
         isLocationPermissionAllowed = false
         isGoogleFitConnected = false
