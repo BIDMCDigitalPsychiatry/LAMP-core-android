@@ -1,14 +1,20 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-android-extensions'
+
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion compile_sdk
-    buildToolsVersion build_tools
-
+    signingConfigs {
+        release {
+            storeFile file('E:\\ProjectFiles\\androidstudio_workspace\\LampAndroidGithub\\WearOs\\app\\key.jks')
+            storePassword ''
+            keyPassword ''
+            keyAlias 'key0'
+        }
+    }
     defaultConfig {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion minimum_sdk
@@ -24,20 +30,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable = false
+            debuggable = true
+            signingConfig signingConfigs.release
         }
     }
 
-    lintOptions {
-        checkReleaseBuilds false
-        // Or, if you prefer, you can continue to check for errors in release builds,
-        // but continue the build even when errors are found:
-        abortOnError false
-    }
 
-    androidExtensions {
-        experimental = true
-    }
+
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
@@ -90,9 +89,19 @@ android {
         }
 
     }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+    buildFeatures {
+        viewBinding true
+    }
+    namespace 'digital.lamp.mindlamp'
 }
 
 dependencies {
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+    implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.4.1'

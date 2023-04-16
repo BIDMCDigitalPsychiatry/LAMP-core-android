@@ -11,8 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
+import digital.lamp.mindlamp.databinding.ActivityExceptionBinding
 import digital.lamp.mindlamp.repository.LampForegroundService
-import kotlinx.android.synthetic.main.activity_exception.*
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -20,12 +21,18 @@ import kotlinx.coroutines.launch
 
 class ExceptionActivity : AppCompatActivity() {
     private var errorCode:Int=0
+    private lateinit var binding: ActivityExceptionBinding
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_exception)
+
+        binding = ActivityExceptionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        buttonOk.setOnClickListener {
+        binding.buttonOk.setOnClickListener {
             if(errorCode == 404) {
                 AppState.session.clearData()
                 stopLampService()
@@ -48,9 +55,9 @@ class ExceptionActivity : AppCompatActivity() {
             System.exit(0)
         }
         if(intent.hasExtra("message")){
-            tvMessage.text = intent.getStringExtra("message")
+            binding.tvMessage.text = intent.getStringExtra("message")
         }else{
-            tvMessage.text = getString(R.string.unexpected_error)
+            binding.tvMessage.text = getString(R.string.unexpected_error)
         }
 
         if(intent.hasExtra("code")){

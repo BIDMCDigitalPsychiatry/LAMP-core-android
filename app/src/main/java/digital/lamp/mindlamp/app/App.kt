@@ -6,6 +6,7 @@ import android.os.StrictMode
 import android.util.Log
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
+import com.github.anrwatchdog.ANRWatchDog
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.appstate.Pref
 import digital.lamp.mindlamp.utils.AppLifeCycleListener
@@ -26,7 +27,7 @@ class App: Application(), Configuration.Provider {
         super.onCreate()
         app = this
 
-     //   ANRWatchDog().start()
+     ANRWatchDog().start()
       /*  StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
                 .detectAll()
                 .penaltyLog()
