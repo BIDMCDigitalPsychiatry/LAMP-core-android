@@ -99,7 +99,8 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
     private fun readStepCount(context: Context, oSensorSpecList: ArrayList<SensorSpecs>) {
         val fitnessOptionsStep: GoogleSignInOptionsExtension = FitnessOptions.builder()
             .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ).build()
-
+        if(AppState.session.lastStepDataTimestamp==1L)
+            AppState.session.lastStepDataTimestamp=System.currentTimeMillis() -60000
         val startTime: Long = AppState.session.lastStepDataTimestamp
         val endTime = System.currentTimeMillis()
       //  DebugLogs.writeToFile("readStepCount :")
@@ -173,6 +174,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val now = Date()
         calendar.time = now
         val endTime = System.currentTimeMillis()
+        if(AppState.session.lastSleepDataTimestamp==1L)
+            AppState.session.lastSleepDataTimestamp=System.currentTimeMillis() -60000  //initialize with a timestamp of 1 minute prior to current time
+
         val startTime: Long = AppState.session.lastSleepDataTimestamp
 
 
@@ -418,6 +422,9 @@ class GoogleFit constructor(private var sensorListener: SensorListener, context:
         val now = Date()
         calendar.time = now
         val endTime = System.currentTimeMillis()
+        if(AppState.session.lastGooglefitDataTimestamp==1L)
+            AppState.session.lastGooglefitDataTimestamp=System.currentTimeMillis() -60000  //initialize with a timestamp of 1 minute prior to current time
+
         val startTime: Long =  AppState.session.lastGooglefitDataTimestamp
         AppState.session.lastGooglefitDataTimestamp = endTime
         DebugLogs.writeToFile("queryFitnessData StartTime $startTime EndTime $endTime")

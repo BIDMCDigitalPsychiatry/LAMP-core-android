@@ -87,6 +87,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var oActivityDao: ActivityDao
     private lateinit var oAnalyticsDao: AnalyticsDao
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private var reloadWebpageTimer: Timer? = null
+    private var wepPageLoadingTimerIsRunning = false
 
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
@@ -98,12 +100,68 @@ class HomeActivity : AppCompatActivity() {
         private const val REQUEST_LOCATION_REQUEST_CODE = 1011
         private const val REQUEST_PERMISSION_SETTING = 1012
         private const val REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE = 1013
+        private const val WEBPAGE_RELOAD_INTERVAL_TIMER = 20 * 1000L
+        private const val WEBPAGE_BEGINNING_DELAY = 30 * 1000L
+
         var permList = arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_BACKGROUND_LOCATION
         )
         var backgroundPermission = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         var locationPermission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+
+    }
+
+    private val myWebViewClient: WebViewClient by lazy {
+        object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                Log.e(TAG, "webview progress${view.progress}")
+                if (view.progress == 100) {
+                    isPageLoadedComplete = true
+                    Log.e(TAG, " : $url")
+                    progressBar.visibility = View.GONE
+                    if (wepPageLoadingTimerIsRunning) {
+                        reloadWebpageTimer?.cancel()
+                    }
+                    wepPageLoadingTimerIsRunning = false
+                }
+            }
+
+            override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
+                return if (url == null || url.startsWith("http://") || url.startsWith("https://")) false else try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    view.context.startActivity(intent)
+                    true
+                } catch (e: java.lang.Exception) {
+                    true
+                }
+            }
+
+            override fun onReceivedSslError(
+                view: WebView?,
+                handler: SslErrorHandler,
+                error: SslError?
+            ) {
+                showApiErrorAlert(getString(R.string.server_unreachable))
+            }
+
+            override fun onReceivedError(
+                view: WebView?,
+                errorCod: Int,
+                description: String,
+                failingUrl: String?
+            ) {
+                isPageLoadedComplete = false
+                DebugLogs.writeToFile(description)
+                if (description.isNotEmpty()) {
+                    showApiErrorAlert(getString(R.string.server_unreachable) +" :$description")
+                }else{
+                    showApiErrorAlert(getString(R.string.server_unreachable))
+                }
+
+            }
+
+        }
 
     }
 
@@ -272,58 +330,10 @@ class HomeActivity : AppCompatActivity() {
             url = BuildConfig.BASE_URL_WEB
             webView.loadUrl(url)
         }
-        checkTimerForRetry(getString(R.string.txt_unable_to_connect))
-        webView.webViewClient = object : WebViewClient() {
 
-            override fun onPageFinished(view: WebView, url: String) {
-                isPageLoadedComplete = true
-                Log.e(TAG, " : $url")
-                progressBar.visibility = View.GONE;
-            }
-
-
-            override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
-                return if (url == null || url.startsWith("http://") || url.startsWith("https://")) false else try {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    view.context.startActivity(intent)
-                    true
-                } catch (e: java.lang.Exception) {
-                    true
-                }
-            }
-            override fun onReceivedSslError(
-                view: WebView?,
-                handler: SslErrorHandler,
-                error: SslError?
-            ) {
-                /*Toast.makeText(
-                    this@HomeActivity,
-                    getString(R.string.ssl_error),
-                    Toast.LENGTH_LONG
-                ).show()*/
-                val mainIntent =
-                    Intent(this@HomeActivity, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", getString(R.string.server_not_reachable))
-                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                if (App.app.isApplicationInForeground())
-                    startActivity(mainIntent)
-
-            }
-
-            override fun onReceivedError(
-                view: WebView?,
-                errorCod: Int,
-                description: String,
-                failingUrl: String?
-            ) {
-                isPageLoadedComplete = false
-                DebugLogs.writeToFile(description)
-                if (description.isNotEmpty())
-                    checkTimerForRetry(getString(R.string.txt_unable_to_connect)+" $description")
-            }
-
-        }
-
+        if (!isPageLoadedComplete)
+            startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
+        webView.webViewClient = myWebViewClient
         webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.grant(request.resources)
@@ -331,21 +341,23 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkTimerForRetry(errorMessage:String){
-        Timer().schedule(object : TimerTask() {
+    private fun startTimerForReloadWebpage(errorMessage: String) {
+        reloadWebpageTimer?.cancel()
+        reloadWebpageTimer?.purge()
+
+        val actionTask: TimerTask = object : TimerTask() {
             override fun run() {
                 runOnUiThread {
-                    if(isPageLoadedComplete){
-                    }else{
+                    if (isPageLoadedComplete) {
+                    } else {
                         if (progressBar.visibility == View.VISIBLE) {
                             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
-                                progressBar.visibility = View.GONE
-                                dialog.cancel()
-                                isPageLoadedComplete = false
-                                webView.isEnabled = true
-                                initializeWebview()
+                                if (!isPageLoadedComplete) {
+                                    webView.loadUrl("javascript:window.location.reload( true )")
+                                }
+
                             }
-                            val negativeButtonClick = { dialog:DialogInterface, _:Int ->
+                            val negativeButtonClick = { dialog: DialogInterface, _: Int ->
                                 progressBar.visibility = View.GONE
                                 dialog.cancel()
                                 finish()
@@ -371,7 +383,15 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
-        }, 20000)
+        }
+
+        wepPageLoadingTimerIsRunning = true
+        reloadWebpageTimer = Timer()
+        reloadWebpageTimer!!.scheduleAtFixedRate(
+            actionTask,
+            WEBPAGE_BEGINNING_DELAY,
+            WEBPAGE_RELOAD_INTERVAL_TIMER
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -760,7 +780,10 @@ class HomeActivity : AppCompatActivity() {
             setTitle(getString(R.string.app_name))
             setMessage(getString(R.string.app_disclosure))
             setCancelable(false)
-            setPositiveButton(getString(R.string.ok), DialogInterface.OnClickListener(function = positiveButtonClick))
+            setPositiveButton(
+                getString(R.string.ok),
+                DialogInterface.OnClickListener(function = positiveButtonClick)
+            )
             show()
         }
     }
@@ -903,7 +926,7 @@ class HomeActivity : AppCompatActivity() {
                         }
                     } catch (e: HttpException) {
                         GlobalScope.launch(Dispatchers.Main) {
-                            var message = Utils.getHttpErrorMessage(e.code(),this@HomeActivity)
+                            var message = Utils.getHttpErrorMessage(e.code(), this@HomeActivity)
                             if (message.isEmpty())
                                 message = e.message()
                             showApiErrorAlert(message, e.code())
@@ -922,8 +945,7 @@ class HomeActivity : AppCompatActivity() {
                             showApiErrorAlert(getString(R.string.txt_unable_to_connect))
                         }
 
-                    }
-                    catch (e:Exception){
+                    } catch (e: Exception) {
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.txt_unable_to_connect))
                         }
@@ -1009,11 +1031,11 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val netwokStatus = NetworkConnectionLiveData(this)
-        netwokStatus.observe(this){
-            if (it){
-                Log.e("eee","net connected")
-            }else{
-                Log.e("eee","no net connected")
+        netwokStatus.observe(this) {
+            if (it) {
+                Log.e("eee", "net connected")
+            } else {
+                Log.e("eee", "no net connected")
                 GlobalScope.launch(Dispatchers.Main) {
                     showApiErrorAlert(getString(R.string.txt_no_internet))
                 }
