@@ -41,7 +41,7 @@ class NotificationActionActivity : AppCompatActivity() {
         binding.webviewOverview.settings.javaScriptEnabled = true
         binding.  webviewOverview.settings.domStorageEnabled = true
         binding. webviewOverview.settings.allowFileAccess = true
-        binding.webviewOverview.loadUrl(oSurveyUrl);
+        binding.webviewOverview.loadUrl(oSurveyUrl)
 
         binding.webviewOverview.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {

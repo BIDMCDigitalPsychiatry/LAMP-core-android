@@ -10,7 +10,7 @@ android {
     signingConfigs {
         release {
             storeFile file('E:\\ProjectFiles\\androidstudio_workspace\\LampAndroidGithub\\WearOs\\app\\key.jks')
-            storePassword ''
+            storePassword ' '
             keyPassword ''
             keyAlias 'key0'
         }
@@ -38,12 +38,12 @@ android {
 
 
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = 11
+        targetCompatibility = 11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 
 
@@ -101,16 +101,16 @@ android {
 
 dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
-    implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
+   // implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.10.0'
 
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.8.0'
 
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
 
 
 //    // Retrofit
@@ -118,13 +118,17 @@ dependencies {
 //    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
 //    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
 
     //Coroutines
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+   //  implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation("androidx.lifecycle:lifecycle-process:$lifecycle_version")
+
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    // Annotation processor
+    kapt("androidx.lifecycle:lifecycle-compiler:$lifecycle_version")
 
     //Room Database
     implementation "androidx.room:room-runtime:$room_version"
@@ -141,9 +145,9 @@ dependencies {
 
     //fitness and auth
     implementation "com.google.android.gms:play-services-fitness:21.1.0"
-    implementation "com.google.android.gms:play-services-auth:20.2.0"
+    implementation "com.google.android.gms:play-services-auth:20.5.0"
 
-    implementation 'androidx.work:work-runtime-ktx:2.7.1'
+    implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
 
 

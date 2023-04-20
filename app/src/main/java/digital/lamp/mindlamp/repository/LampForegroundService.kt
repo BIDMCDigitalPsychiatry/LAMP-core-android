@@ -11,7 +11,7 @@ import android.content.Intent
 import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
-import androidx.work.PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -252,7 +252,7 @@ class LampForegroundService : Service(),
         workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
         val periodicWork =
             PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
-                MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS
+                15 * 60 * 1000L, TimeUnit.MILLISECONDS
             )
                 .addTag(SYNC_WORK_MANAGER_TAG)
                 .build()
