@@ -7,14 +7,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion compile_sdk
-    signingConfigs {
-        release {
-            storeFile file('E:\\ProjectFiles\\androidstudio_workspace\\LampAndroidGithub\\WearOs\\app\\key.jks')
-            storePassword ' '
-            keyPassword ''
-            keyAlias 'key0'
-        }
-    }
+
     defaultConfig {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion minimum_sdk
@@ -30,8 +23,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable = true
-            signingConfig signingConfigs.release
+            debuggable = false
+
         }
     }
 
