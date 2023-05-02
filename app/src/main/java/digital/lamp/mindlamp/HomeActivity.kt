@@ -53,6 +53,8 @@ import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.SensorSpecs
+import digital.lamp.mindlamp.databinding.ActivityHomeBinding
+import digital.lamp.mindlamp.databinding.ActivityWebviewOverviewBinding
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
@@ -66,7 +68,6 @@ import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 
-import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -93,6 +94,7 @@ class HomeActivity : AppCompatActivity() {
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
 
+    private lateinit var binding: ActivityHomeBinding
 
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
@@ -119,7 +121,7 @@ class HomeActivity : AppCompatActivity() {
                 if (view.progress == 100) {
                     isPageLoadedComplete = true
                     Log.e(TAG, " : $url")
-                    progressBar.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     if (wepPageLoadingTimerIsRunning) {
                         reloadWebpageTimer?.cancel()
                     }
@@ -133,6 +135,7 @@ class HomeActivity : AppCompatActivity() {
                     view.context.startActivity(intent)
                     true
                 } catch (e: java.lang.Exception) {
+                    LampLog.printStackTrace(e)
                     true
                 }
             }
@@ -154,8 +157,8 @@ class HomeActivity : AppCompatActivity() {
                 isPageLoadedComplete = false
                 DebugLogs.writeToFile(description)
                 if (description.isNotEmpty()) {
-                    showApiErrorAlert(getString(R.string.server_unreachable) +" :$description")
-                }else{
+                    showApiErrorAlert(getString(R.string.server_unreachable) + " :$description")
+                } else {
                     showApiErrorAlert(getString(R.string.server_unreachable))
                 }
 
@@ -198,7 +201,9 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oActivityDao = AppDatabase.getInstance(this).activityDao()
@@ -209,7 +214,7 @@ class HomeActivity : AppCompatActivity() {
         registerReceiver(PowerSaveModeReceiver(), filter)
 
         if (AppState.session.showDisclosureAlert) {
-            progressBar.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
             if (checkAndRequestPermissions(this)) {
@@ -300,20 +305,20 @@ class HomeActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
-        webView.clearCache(true)
-        webView.clearHistory()
+        binding.webView.clearCache(true)
+        binding.webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
-        webView.settings.javaScriptEnabled = true
-        webView.settings.mediaPlaybackRequiresUserGesture = false
-        webView.settings.domStorageEnabled = true
-        webView.settings.allowFileAccess = true
-        webView.settings.allowContentAccess = true
-        webView.settings.javaScriptCanOpenWindowsAutomatically = true
-        webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-        progressBar.visibility = View.VISIBLE
+        binding.webView.settings.javaScriptEnabled = true
+        binding.webView.settings.mediaPlaybackRequiresUserGesture = false
+        binding.webView.settings.domStorageEnabled = true
+        binding.webView.settings.allowFileAccess = true
+        binding.webView.settings.allowContentAccess = true
+        binding.webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        binding.webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        binding.progressBar.visibility = View.VISIBLE
 
-        webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
-        webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
+        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
+        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
 
         var url = ""
         if (AppState.session.isLoggedIn) {
@@ -323,18 +328,18 @@ class HomeActivity : AppCompatActivity() {
                         "http://"
                     )
             )
-            webView.loadUrl(url)
+            binding.webView.loadUrl(url)
 
         } else {
 
             url = BuildConfig.BASE_URL_WEB
-            webView.loadUrl(url)
+            binding.webView.loadUrl(url)
         }
 
         if (!isPageLoadedComplete)
             startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
-        webView.webViewClient = myWebViewClient
-        webView.webChromeClient = object : WebChromeClient() {
+        binding.webView.webViewClient = myWebViewClient
+        binding.webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.grant(request.resources)
             }
@@ -350,15 +355,15 @@ class HomeActivity : AppCompatActivity() {
                 runOnUiThread {
                     if (isPageLoadedComplete) {
                     } else {
-                        if (progressBar.visibility == View.VISIBLE) {
+                        if (binding.progressBar.visibility == View.VISIBLE) {
                             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                                 if (!isPageLoadedComplete) {
-                                    webView.loadUrl("javascript:window.location.reload( true )")
+                                    binding.webView.loadUrl("javascript:window.location.reload( true )")
                                 }
 
                             }
                             val negativeButtonClick = { dialog: DialogInterface, _: Int ->
-                                progressBar.visibility = View.GONE
+                                binding.progressBar.visibility = View.GONE
                                 dialog.cancel()
                                 finish()
                             }
@@ -552,7 +557,7 @@ class HomeActivity : AppCompatActivity() {
                     homeActivity.onAuthenticationStateChanged(AuthenticationState.SignedOut)
                 }
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                LampLog.printStackTrace(ex)
             }
 
         }
@@ -604,6 +609,7 @@ class HomeActivity : AppCompatActivity() {
                     LampLog.e(TAG, " Logout Response -  $state")
                 }
             } catch (e: Exception) {
+                LampLog.printStackTrace(e)
                 AppState.session.clearData()
             }
 
@@ -721,6 +727,7 @@ class HomeActivity : AppCompatActivity() {
                         LampLog.e(TAG, " Token Send Response -  $state")
                     } catch (e: Exception) {
                         DebugLogs.writeToFile("Exception SensorEventAPI HomeActivity retrieveCurrentToken:${e.printStackTrace()}\n ${e.message}")
+                        LampLog.printStackTrace(e)
                     }
                 }
                 //Setting User Attributes for Firebase
@@ -789,8 +796,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (webView.copyBackForwardList().getCurrentIndex() > 0) {
-            webView.goBack()
+        if (binding.webView.copyBackForwardList().getCurrentIndex() > 0) {
+            binding.webView.goBack()
         } else {
             super.onBackPressed() // finishes activity
         }
@@ -818,15 +825,15 @@ class HomeActivity : AppCompatActivity() {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.cancel(notificationId)
 
-            webView.clearCache(true)
-            webView.clearHistory()
-            webView.settings.javaScriptEnabled = true
-            webView.settings.domStorageEnabled = true
-            webView.settings.allowFileAccess = true
-            webView.clearHistory()
-            webView.loadUrl(oSurveyUrl);
+            binding.webView.clearCache(true)
+            binding.webView.clearHistory()
+            binding.webView.settings.javaScriptEnabled = true
+            binding.webView.settings.domStorageEnabled = true
+            binding.webView.settings.allowFileAccess = true
+            binding.webView.clearHistory()
+            binding.webView.loadUrl(oSurveyUrl);
 
-            webView.webChromeClient = object : WebChromeClient() {
+            binding.webView.webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest) {
                     request.grant(request.resources)
                 }
@@ -839,7 +846,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(webView.getWindowToken(), 0)
+        imm.hideSoftInputFromWindow(binding.webView.getWindowToken(), 0)
     }
 
     private fun invokeSensorSpecData() {
@@ -909,22 +916,26 @@ class HomeActivity : AppCompatActivity() {
                             showApiErrorAlert(getString(R.string.server_unreachable))
                         }
                     } catch (e: ClientException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.user_not_found), e.statusCode)
                         }
 
 
                     } catch (e: ServerException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.something_went_wrong))
 
                         }
                     } catch (e: UnsupportedOperationException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
 
                             showApiErrorAlert(getString(R.string.something_went_wrong_on_server))
                         }
                     } catch (e: HttpException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             var message = Utils.getHttpErrorMessage(e.code(), this@HomeActivity)
                             if (message.isEmpty())
@@ -932,20 +943,24 @@ class HomeActivity : AppCompatActivity() {
                             showApiErrorAlert(message, e.code())
                         }
                     } catch (e: SocketTimeoutException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.txt_unable_to_connect))
                         }
                     } catch (e: NetworkErrorException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.txt_unable_to_connect))
                         }
 
                     } catch (e: UnknownHostException) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.txt_unable_to_connect))
                         }
 
                     } catch (e: Exception) {
+                        LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.txt_unable_to_connect))
                         }

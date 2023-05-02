@@ -11,6 +11,7 @@ import java.util.*
  * Created by ZCo Developer
  */
 object DebugLogs {
+    private val MAX_FILE_SIZE: Long=1024*1024
     val simple: DateFormat = SimpleDateFormat(
         "dd MMM yyyy HH:mm:ss:SSS Z"
     )
@@ -22,9 +23,20 @@ object DebugLogs {
     fun writeToFile(txt: String?) {
         try {
             val sd = App.app.getExternalFilesDir(null)!!
-            val logfile = File(sd, "LampLog.txt")
+            var logfile = File(sd, "LampLog.txt")
 
             if (!logfile.exists()) {
+                logfile.createNewFile()
+            }
+            else if (logfile.length()>MAX_FILE_SIZE) {
+                val logfileBackup = File(sd, "LampLog_backup.txt")
+
+                if (logfileBackup.exists()) {
+                    logfileBackup.delete()
+                }
+                logfile.renameTo(logfileBackup)
+
+                logfile = File(sd, "LampLog.txt")
                 logfile.createNewFile()
             }
 

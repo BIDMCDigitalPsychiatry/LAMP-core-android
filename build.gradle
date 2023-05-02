@@ -4,13 +4,13 @@ buildscript {
 
     ext {
         kotlin_version = '1.4.10'
-        retrofit_version = '2.8.1'
+        retrofit_version = '2.9.0'
         okhttp_version = '4.4.0'
-        lifecycle_version = '2.2.0'
-        room_version = "2.4.2"
+        lifecycle_version = '2.6.1'
+        room_version = "2.5.1"
 
-        compile_sdk = 31
-        target_sdk = 31
+        compile_sdk = 33
+        target_sdk = 33
         minimum_sdk = 26
         build_tools = "30.0.2"
         play_services_location = '17.0.0'
@@ -22,12 +22,13 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.3'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.30"
-        classpath 'com.google.gms:google-services:4.3.10'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.5.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0'
+        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.4'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+
     }
 }
 

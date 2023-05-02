@@ -36,7 +36,13 @@ internal object LampLog {
         }
 
     }
+    fun printStackTrace(e:Exception) {
 
+        if (DOLOG) {
+           e.printStackTrace()
+        }
+
+    }
     fun e(tag: String, message: String?, throwable: Throwable) {
         if (message == null)
             return

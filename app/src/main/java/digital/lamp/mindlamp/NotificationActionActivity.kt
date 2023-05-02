@@ -10,18 +10,21 @@ import android.webkit.WebChromeClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.databinding.ActivityWebviewOverviewBinding
 import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.Utils
-import kotlinx.android.synthetic.main.activity_webview_overview.*
-import kotlinx.android.synthetic.main.custom_webview_layout.*
+
 
 
 class NotificationActionActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityWebviewOverviewBinding
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_webview_overview)
+
+        binding = ActivityWebviewOverviewBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val surveyUrl = intent.getStringExtra("survey_path")
         val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
@@ -33,14 +36,14 @@ class NotificationActionActivity : AppCompatActivity() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(notificationId)
 
-        webviewOverview.clearCache(true)
-        webviewOverview.clearHistory()
-        webviewOverview.settings.javaScriptEnabled = true
-        webviewOverview.settings.domStorageEnabled = true
-        webviewOverview.settings.allowFileAccess = true
-        webviewOverview.loadUrl(oSurveyUrl);
+        binding.webviewOverview.clearCache(true)
+        binding. webviewOverview.clearHistory()
+        binding.webviewOverview.settings.javaScriptEnabled = true
+        binding.  webviewOverview.settings.domStorageEnabled = true
+        binding. webviewOverview.settings.allowFileAccess = true
+        binding.webviewOverview.loadUrl(oSurveyUrl)
 
-        webviewOverview.webChromeClient = object : WebChromeClient() {
+        binding.webviewOverview.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
                 request.grant(request.resources)
             }
@@ -48,7 +51,7 @@ class NotificationActionActivity : AppCompatActivity() {
 
         NotificationManagerCompat.from(this).cancel(notificationId)
 
-        btnBack.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             onBackPressed()
         }
     }

@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import digital.lamp.mindlamp.databinding.ActivityHomeBinding
+import digital.lamp.mindlamp.databinding.ActivitySplashBinding
 import org.json.JSONException
 
 
@@ -15,10 +17,11 @@ class SplashActivity : AppCompatActivity() {
 
 
     private var moveToHome : Boolean =  true
-
+    private lateinit var binding: ActivitySplashBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         Handler().postDelayed({
             /* Create an Intent that will start the Menu-Activity. */
