@@ -1,12 +1,7 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Magnetometer
-import com.aware.Rotation
-import com.aware.providers.Magnetometer_Provider
-import com.aware.providers.Rotation_Provider
+
 import lamp.mindlamp.sensormodule.R
 import lamp.mindlamp.sensormodule.aware.AwareMagnetometerListener
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
@@ -21,7 +16,7 @@ class Magnetometer constructor(awareListener: AwareMagnetometerListener, context
     init {
         try {
             //Rotation Sensor Settings
-            Aware.setSetting(
+        /*    Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_MAGNETOMETER,
                 200000
@@ -71,7 +66,7 @@ class Magnetometer constructor(awareListener: AwareMagnetometerListener, context
 
                     awareListener.getMagneticData(Constants.FAILURE, sensorEventData)
                 }
-            }
+            } */
         } catch (ex: Exception) {
             val sensorEventData =
                 SensorEventData(

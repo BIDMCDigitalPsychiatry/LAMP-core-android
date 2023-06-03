@@ -10,11 +10,15 @@ import android.os.Handler
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -24,25 +28,28 @@ import com.google.android.gms.wearable.Wearable
 import com.google.firebase.FirebaseApp
 
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import digital.lamp.mindlamp.R
+import digital.lamp.mindlamp.app.TAG
 import digital.lamp.mindlamp.aware.*
 import digital.lamp.mindlamp.broadcastreceiver.SensorBroadcastReceiver
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.databinding.ActivityMainWearBinding
+import digital.lamp.mindlamp.health_services.HealthServiceViewModel
 import digital.lamp.mindlamp.model.*
+import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.viewmodels.DataViewModel
 import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
-import digital.lamp.mindlamp.utils.AppConstants
-import digital.lamp.mindlamp.utils.NetworkUtils
-import digital.lamp.mindlamp.utils.PermissionCheck
-import digital.lamp.mindlamp.utils.Utils
 
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.*
 import java.util.*
 
 @Suppress("DEPRECATION")
+@AndroidEntryPoint
 class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, SensorAwareListener {
 
@@ -58,7 +65,8 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
     val messageReceiver: MessageReceiver = MessageReceiver()
     var arrsensorvals = arrayOfNulls<SensorEventData>(14)
     private lateinit var binding: ActivityMainWearBinding
-
+    private val viewModel: HealthServiceViewModel by viewModels()
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainWearBinding.inflate(layoutInflater)
@@ -74,6 +82,19 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             e.printStackTrace()
         }
 
+        permissionLauncher= registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+                when (result) {
+                    true -> {
+                     LampLog.d("New watch", "Body sensors permission granted")
+                      //  viewModel.togglePassiveData(true)
+                    }
+                    false -> {
+                        LampLog.d("New watch", "Body sensors permission not granted")
+                       // viewModel.togglePassiveData(false)
+                    }
+                }
+            }
+        permissionLauncher.launch(android.Manifest.permission.BODY_SENSORS)
         registerReceiver(
             br,
             IntentFilter("com.from.notification")
@@ -85,15 +106,18 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             .addConnectionCallbacks(this)
             .addOnConnectionFailedListener(this)
             .build()
-
-
         initializecontrols()
         val messageFilter = IntentFilter(Intent.ACTION_SEND)
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter)
 
         dataViewModel = ViewModelProviders.of(this@MainWearActivity).get(DataViewModel::class.java)
 
-        setObserver()
+         lifecycleScope.launchWhenStarted {
+            viewModel.latestHeartRate.collect {
+               Log.d(TAG,"Health data received heart rate: "+ it.toString())
+
+            }
+        }
 
         if (!PermissionCheck.checkAndRequestReadWritePermission(this@MainWearActivity))
             PermissionCheck.requestPermissionScreen(this@MainWearActivity)
@@ -353,6 +377,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
     inner class MessageReceiver : BroadcastReceiver() {
 
         fun fillvalues(item: Int) {
+            LampLog.d("NewWatch","MainWearActivity:MessageReceiver")
             if (item == Sensor.TYPE_ACCELEROMETER) {
                 AccelerometerSensor(
                     this@MainWearActivity,

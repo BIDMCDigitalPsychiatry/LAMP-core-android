@@ -1,10 +1,7 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.providers.Accelerometer_Provider
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
@@ -17,7 +14,7 @@ class Accelerometer constructor(awareListener: AwareAccelerometerListener, conte
     init {
         try {
             //Accelerometer settings
-            Aware.setSetting(
+        /*    Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_ACCELEROMETER,
                 200000
@@ -68,8 +65,11 @@ class Accelerometer constructor(awareListener: AwareAccelerometerListener, conte
                     awareListener.getAccelerometerData(Constants.FAILURE,sensorEventData)
 
                 }
+                }
+                */
 
-            }
+
+
 
 
 

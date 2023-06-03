@@ -1,11 +1,7 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Proximity
-import com.aware.providers.*
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
@@ -18,7 +14,7 @@ class Proximity constructor(awareListener: AwareProximityListener, context: Cont
     init {
         try {
             //Lux settings
-            Aware.setSetting(
+         /*   Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_PROXIMITY,
                 200000
@@ -66,7 +62,7 @@ class Proximity constructor(awareListener: AwareProximityListener, context: Cont
                     awareListener.getProximityData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            }*/
         } catch (ex: Exception) {
             ex.printStackTrace()
 

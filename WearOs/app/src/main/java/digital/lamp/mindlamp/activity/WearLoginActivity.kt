@@ -52,7 +52,7 @@ class WearLoginActivity : FragmentActivity() {
         }
 
 
-       binding. btndone.setOnClickListener(object : View.OnClickListener {
+        binding. btndone.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
 
@@ -61,7 +61,7 @@ class WearLoginActivity : FragmentActivity() {
 
                     WebConstant.USERID =
                         Utils.toBase64(
-                            binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+                            "U8917110983@lamp.com" + ":" +"U8917110983"
                                 .trim()
                         ).toString().trim()
 
@@ -100,7 +100,7 @@ class WearLoginActivity : FragmentActivity() {
 
                         WebConstant.CODE_SUCCESS -> {
                             AppState.session.userId = Utils.toBase64(
-                                binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+                                "U8917110983@lamp.com" + ":" + "U8917110983"
                                     .trim()
                             ).toString().trim()
                             AppState.session.username =

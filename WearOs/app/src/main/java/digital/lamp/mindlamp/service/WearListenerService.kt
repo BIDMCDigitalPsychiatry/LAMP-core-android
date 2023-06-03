@@ -12,13 +12,14 @@ class WearListenerService : WearableListenerService() {
         super.onCreate()
     }
     override fun onMessageReceived(messageEvent: MessageEvent) {
+        Log.v("NewWatch", "WearListenerService:onMessageReceived")
         if (messageEvent.path == "/message_path") {
             val message = String(messageEvent.data)
             Log.v(
-                "myTag",
+                "NewWatch",
                 "Message path received on watch is: " + messageEvent.path
             )
-            Log.v("myTag", "Message received on watch is: $message")
+            Log.v("NewWatch", "Message received on watch is: $message")
 
             // Broadcast message to wearable activity for display
             val messageIntent = Intent()

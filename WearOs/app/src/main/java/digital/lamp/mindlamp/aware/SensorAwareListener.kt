@@ -45,4 +45,5 @@ interface SensorAwareListener {
 
     //Callback to baromter Data
     fun getPressureData(sensorEventData: SensorEventData)
+    //fun getHeartRateData(sensorEventData: SensorEventData)
 }

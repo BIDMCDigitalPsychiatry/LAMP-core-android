@@ -1,9 +1,7 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.providers.Gyroscope_Provider
+
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LogEventRequest

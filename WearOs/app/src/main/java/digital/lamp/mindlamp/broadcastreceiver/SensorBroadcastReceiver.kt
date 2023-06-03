@@ -12,7 +12,7 @@ private const val TAG = "SensorBroadcastReceiver"
 class SensorBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-
+        Log.v("NewWatch", "SensorBroadcastReceiver:onReceive")
         val messageIntent = Intent()
         messageIntent.action = Intent.ACTION_SEND
         messageIntent.putExtra("title", intent.getStringExtra("title"))

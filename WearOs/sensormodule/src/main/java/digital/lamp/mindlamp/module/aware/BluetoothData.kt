@@ -3,9 +3,7 @@ package lamp.mindlamp.sensormodule.aware
 import android.content.ContentValues
 import android.content.Context
 import android.os.Handler
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Bluetooth
+
 
 /**
  * Created by ZCO Engineering Dept. on 07,February,2020
@@ -15,7 +13,7 @@ class BluetoothData constructor(awareListener: AwareBlueToothListener, context: 
     init {
 
         //Bluetooth sensor settings
-        Aware.setSetting(
+     /*   Aware.setSetting(
             context,
             Aware_Preferences.FREQUENCY_BLUETOOTH,
             60
@@ -49,7 +47,7 @@ class BluetoothData constructor(awareListener: AwareBlueToothListener, context: 
         })
         Handler().postDelayed({
             Aware.stopBluetooth(context)
-        }, 3000)
+        }, 3000)*/
     }
 
 }

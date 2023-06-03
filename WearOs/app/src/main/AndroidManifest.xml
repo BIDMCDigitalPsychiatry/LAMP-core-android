@@ -9,23 +9,16 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <!-- For receiving heart rate data. -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
 
-    <permission
-        android:name="com.aware.READ_CONTEXT_DATA"
-        android:description="@string/read_permission"
-        android:icon="@drawable/ic_launcher_settings"
-        android:label="Read AWARE&apos;s Context data"
-        android:protectionLevel="signature" />
-    <permission
-        android:name="com.aware.WRITE_CONTEXT_DATA"
-        android:description="@string/write_permission"
-        android:icon="@drawable/ic_launcher_settings"
-        android:label="Write to AWARE&apos;s Context data"
-        android:protectionLevel="signature" />
 
     <uses-feature
         android:name="android.hardware.type.watch"
         android:required="true" />
+    <queries>
+        <package android:name="com.google.android.wearable.healthservices" />
+    </queries>
 
     <application
         android:name="digital.lamp.mindlamp.app.App"
@@ -94,8 +87,19 @@
                 <!--<action android:name="com.google.android.gms.wearable.BIND_LISTENER" />-->
             </intent-filter>
         </service>
-        <service android:exported="false" android:name="com.aware.utils.Aware_Accounts"></service>
 
+        <service android:name=".health_services.HealthServiceDataService"
+            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING"
+            android:exported="true" />
+
+        <!-- Receiver that re-registers for background data after a device restart. -->
+        <receiver
+            android:name=".health_services.StartupReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

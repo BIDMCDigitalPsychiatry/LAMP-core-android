@@ -1,11 +1,7 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.LinearAccelerometer
-import com.aware.providers.*
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
@@ -18,7 +14,7 @@ class LinearAcceleration constructor(awareListener: AwareLinearAccelerometerList
     init {
         try {
             //Linear settings
-            Aware.setSetting(
+        /*    Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_LINEAR_ACCELEROMETER,
                 200000
@@ -71,7 +67,7 @@ class LinearAcceleration constructor(awareListener: AwareLinearAccelerometerList
                     awareListener.getLinearAccelerometerData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            } */
         } catch (ex: Exception) {
             ex.printStackTrace()
 

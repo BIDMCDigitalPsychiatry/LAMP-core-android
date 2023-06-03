@@ -1,7 +1,7 @@
 package digital.lamp.mindlamp.aware
 
 import android.content.Context
-import com.aware.LinearAccelerometer
+
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.model.LogEventRequest

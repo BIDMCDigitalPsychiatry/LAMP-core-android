@@ -4,9 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.os.Handler
 import android.util.Log
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.WiFi
+
 import lamp.mindlamp.sensormodule.aware.AwareWifiListener
 import lamp.mindlamp.sensormodule.aware.Magnetometer
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
@@ -21,7 +19,7 @@ class WifiData constructor(awareListener: AwareWifiListener, context: Context, s
     init {
         try {
             //Wifi sensor settings
-            Aware.setSetting(
+        /*    Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_WIFI,
                 5
@@ -80,7 +78,7 @@ class WifiData constructor(awareListener: AwareWifiListener, context: Context, s
 
                 override fun onWiFiDisabled() {
                 }
-            })
+            })*/
         } catch (ex: Exception) {
             ex.printStackTrace()
             val sensorEventData =

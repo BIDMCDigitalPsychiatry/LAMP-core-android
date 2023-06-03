@@ -656,6 +656,7 @@ class WatchStateData constructor(
             context: Context,
             intent: Intent
         ) {
+            Log.v("NewWatch", "WatchStateData:MessageReceiver:onReceive")
             var vals: CustomMap = intent.getSerializableExtra("sensorvalues") as CustomMap
             LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver)
             sensorEventDataList.clear() //first clear all

@@ -1,11 +1,7 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Gravity
-import com.aware.Gravity.setSensorObserver
-import com.aware.providers.*
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
@@ -22,7 +18,7 @@ class Gravity constructor(
     init {
         try {
             //gravity settings
-            Aware.setSetting(
+      /*      Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_GRAVITY,
                 200000
@@ -72,7 +68,7 @@ class Gravity constructor(
                     awareListener.getGravityData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            }*/
         } catch (ex: Exception) {
             ex.printStackTrace()
 

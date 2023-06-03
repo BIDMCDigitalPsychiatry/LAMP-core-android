@@ -1,14 +1,7 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Temperature
-import com.aware.providers.Accelerometer_Provider
-import com.aware.providers.Barometer_Provider
-import com.aware.providers.Light_Provider
-import com.aware.providers.Temperature_Provider
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
@@ -21,7 +14,7 @@ class Temperature constructor(awareListener: AwareTemperatureListener, context: 
     init {
         try {
             //Lux settings
-            Aware.setSetting(
+         /*   Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_TEMPERATURE,
                 200000
@@ -69,7 +62,7 @@ class Temperature constructor(awareListener: AwareTemperatureListener, context: 
                     awareListener.getTemperatureData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            }*/
         } catch (ex: Exception) {
             ex.printStackTrace()
 
