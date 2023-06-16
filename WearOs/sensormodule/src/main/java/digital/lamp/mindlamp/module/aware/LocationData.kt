@@ -1,14 +1,8 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import android.util.Log
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Locations
-import com.aware.providers.Locations_Provider
-import lamp.mindlamp.sensormodule.aware.AwareLocationListener
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 import java.lang.Exception
 
@@ -20,7 +14,7 @@ class LocationData constructor(awareListener: AwareLocationListener, context: Co
     init {
         try {
             //Location Settings
-            Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_GPS, true)
+       /*     Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_GPS, true)
             Aware.setSetting(context, Aware_Preferences.FREQUENCY_LOCATION_GPS, 0)
             Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_NETWORK, true)
             Aware.setSetting(context, Aware_Preferences.STATUS_LOCATION_PASSIVE, true)
@@ -69,7 +63,7 @@ class LocationData constructor(awareListener: AwareLocationListener, context: Co
             }
             android.os.Handler().postDelayed({
                 Aware.stopLocations(context)
-            }, 3000)
+            }, 3000) */
         } catch (ex: Exception) {
             val sensorEventData =
                 SensorEventData(

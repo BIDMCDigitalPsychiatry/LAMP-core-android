@@ -1,14 +1,8 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Barometer
-import com.aware.providers.Accelerometer_Provider
-import com.aware.providers.Barometer_Provider
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 
@@ -19,7 +13,7 @@ class Pressure constructor(awareListener: AwareBaromterListener, context: Contex
     init {
         try {
             //Barometer settings
-            Aware.setSetting(
+         /*   Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_BAROMETER,
                 200000
@@ -67,7 +61,7 @@ class Pressure constructor(awareListener: AwareBaromterListener, context: Contex
                     awareListener.getBarometerData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            }*/
         } catch (ex: Exception) {
             ex.printStackTrace()
 

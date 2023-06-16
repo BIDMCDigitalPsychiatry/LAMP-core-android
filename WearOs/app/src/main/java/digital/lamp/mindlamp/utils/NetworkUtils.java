@@ -1,5 +1,7 @@
 package digital.lamp.mindlamp.utils;
 
+import static android.content.Context.BATTERY_SERVICE;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -9,8 +11,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.os.Build;
-
-import static android.content.Context.BATTERY_SERVICE;
 
 public class NetworkUtils {
     public static boolean isNetworkAvailable(Context context) {

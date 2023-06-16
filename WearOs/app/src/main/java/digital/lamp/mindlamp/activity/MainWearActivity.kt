@@ -1,20 +1,24 @@
 package digital.lamp.mindlamp.activity
 
 import android.Manifest
+import android.app.ActivityManager
 import android.content.*
 import android.content.pm.PackageManager
-import android.hardware.Sensor
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -22,29 +26,29 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.wearable.DataMap
 import com.google.android.gms.wearable.Wearable
 import com.google.firebase.FirebaseApp
-
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.R
-import digital.lamp.mindlamp.aware.*
-import digital.lamp.mindlamp.broadcastreceiver.SensorBroadcastReceiver
+import digital.lamp.mindlamp.app.TAG
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.broadcastreceiver.SensorBroadcastReceiver
 import digital.lamp.mindlamp.databinding.ActivityMainWearBinding
 import digital.lamp.mindlamp.model.*
+import digital.lamp.mindlamp.sensor.health_services.HealthServiceViewModel
+import digital.lamp.mindlamp.service.LampForegroundService
+import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.viewmodels.DataViewModel
 import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
-import digital.lamp.mindlamp.utils.AppConstants
-import digital.lamp.mindlamp.utils.NetworkUtils
-import digital.lamp.mindlamp.utils.PermissionCheck
-import digital.lamp.mindlamp.utils.Utils
-
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.*
 import java.util.*
 
 @Suppress("DEPRECATION")
+@AndroidEntryPoint
 class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener, SensorAwareListener {
+    GoogleApiClient.OnConnectionFailedListener  {
 
     var googleApiClient: GoogleApiClient? = null
     var isconnected: Boolean = false
@@ -52,21 +56,22 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
     private val LOG_TAG: String = "NETWORK"
     private var toast: Toast? = null;
     private var sensorEventDataList: ArrayList<SensorEventData> = ArrayList<SensorEventData>()
-    private var arraySensors: ArrayList<Int> = arrayListOf()
+
     private var dataViewModel: DataViewModel? = null
     val br: BroadcastReceiver = SensorBroadcastReceiver()
     val messageReceiver: MessageReceiver = MessageReceiver()
-    var arrsensorvals = arrayOfNulls<SensorEventData>(14)
-    private lateinit var binding: ActivityMainWearBinding
 
+    private lateinit var binding: ActivityMainWearBinding
+    private val viewModel: HealthServiceViewModel by viewModels()
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainWearBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
         FirebaseApp.initializeApp(this);
-        initialize()
-        // Enables Always-on
+
+
 
         try {
             unregisterReceiver(br)
@@ -74,10 +79,99 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             e.printStackTrace()
         }
 
+        permissionLauncher= registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+                when (result) {
+                    true -> {
+                     LampLog.d("New watch", "Body sensors permission granted")
+                      //  viewModel.togglePassiveData(true)
+                    }
+                    false -> {
+                        LampLog.d("New watch", "Body sensors permission not granted")
+                       // viewModel.togglePassiveData(false)
+                    }
+                }
+            }
+        permissionLauncher.launch(android.Manifest.permission.BODY_SENSORS)
+        var permissionLauncher2: ActivityResultLauncher<String>  = registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+            when (result) {
+                true -> {
+                    LampLog.d("New watch", "Body sensors permission granted")
+                    //  viewModel.togglePassiveData(true)
+                }
+                false -> {
+                    LampLog.d("New watch", "Body sensors permission not granted")
+                    // viewModel.togglePassiveData(false)
+                }
+            }
+        }
+        permissionLauncher2.launch(android.Manifest.permission.BODY_SENSORS_BACKGROUND)
         registerReceiver(
             br,
             IntentFilter("com.from.notification")
         );
+
+        val locationPermissionRequest = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    // Precise location access granted.\
+
+                }
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    // Only approximate location access granted.
+
+                } else -> {
+                // No location access granted.
+            }
+            }
+        }
+        when {
+            ContextCompat.checkSelfPermission(
+                this
+
+                ,
+                Manifest.permission.ACCESS_FINE_LOCATION
+
+
+            ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // You can use the API that requires the permission.
+
+            }
+
+
+
+
+
+            ActivityCompat. shouldShowRequestPermissionRationale(this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+                ) || ActivityCompat.shouldShowRequestPermissionRationale(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+            -> {
+            // In an educational UI, explain to the user why your app requires this
+            // permission for a specific feature to behave as expected, and what
+            // features are disabled if it's declined. In this UI, include a
+            // "cancel" or "no thanks" button that lets the user continue
+            // using your app without granting the permission.
+          //  showInContextUI(...)
+                this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+
+            }
+            else -> {
+                // You can directly ask for the permission.
+                // The registered ActivityResultCallback gets the result of this request.
+                locationPermissionRequest.launch(
+                    arrayOf( Manifest.permission.ACCESS_FINE_LOCATION,  Manifest.permission.ACCESS_COARSE_LOCATION)
+
+                )
+            }
+        }
 
         // Build a new GoogleApiClient that includes the Wearable API
         googleApiClient = GoogleApiClient.Builder(this)
@@ -85,15 +179,18 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             .addConnectionCallbacks(this)
             .addOnConnectionFailedListener(this)
             .build()
-
-
         initializecontrols()
         val messageFilter = IntentFilter(Intent.ACTION_SEND)
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, messageFilter)
 
         dataViewModel = ViewModelProviders.of(this@MainWearActivity).get(DataViewModel::class.java)
 
-        setObserver()
+         lifecycleScope.launchWhenStarted {
+            viewModel.latestHeartRate.collect {
+               Log.d(TAG,"Health data received heart rate: "+ it.toString())
+
+            }
+        }
 
         if (!PermissionCheck.checkAndRequestReadWritePermission(this@MainWearActivity))
             PermissionCheck.requestPermissionScreen(this@MainWearActivity)
@@ -113,14 +210,47 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                 ).show()
             }
         }
-
+        if (!this.isServiceRunning(LampForegroundService::class.java)) {
+            startLampService()
+        }
     }
 
+    @Suppress("DEPRECATION")
+    fun <T> Context.isServiceRunning(service: Class<T>): Boolean {
+        return (getSystemService(ACTIVITY_SERVICE) as ActivityManager)
+            .getRunningServices(Integer.MAX_VALUE)
+            .any { it -> it.service.className == service.name }
+    }
+    private fun startLampService() {
+        val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
 
+            putExtra("set_alarm", false)
+            putExtra("set_activity_schedule", false)
+            putExtra("notification_id", 0)
+        }
+        ContextCompat.startForegroundService(this, serviceIntent)
+    }
     fun initializecontrols() {
         binding.btnLogout.setOnClickListener {
+           try {
+               Lamp.stopLAMP(this)
+           }
+           catch (e:Exception){
+               LampLog.e("lampException",e.message,e)
+           }
+            try {
+                stopService(Intent(this, LampForegroundService::class.java))
+            }
+             catch (e:Exception){
+            LampLog.e("lampException",e.message,e)
+            }
+            try{
+                viewModel.unregister()
+            }
+        catch (e:Exception){
+            LampLog.e("lampException","viewModel.unregister() "+e.message,e)
+        }
 
-            //logout
             AppState.session.clearData()
             val intent = Intent(this@MainWearActivity, WearLoginActivity::class.java)
             startActivity(intent)
@@ -129,27 +259,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         }
     }
 
-    fun initialize() {
 
-        arraySensors.add(Sensor.TYPE_ACCELEROMETER)
-        arraySensors.add(Sensor.TYPE_GYROSCOPE)
-        arraySensors.add(Sensor.TYPE_GRAVITY)
-        arraySensors.add(Sensor.TYPE_LINEAR_ACCELERATION)
-        arraySensors.add(Sensor.TYPE_ROTATION_VECTOR)
-        arraySensors.add(Sensor.TYPE_RELATIVE_HUMIDITY)
-        arraySensors.add(Sensor.TYPE_AMBIENT_TEMPERATURE)
-        arraySensors.add(Sensor.TYPE_STEP_DETECTOR)
-        arraySensors.add(Sensor.TYPE_STEP_COUNTER)
-        arraySensors.add(Sensor.TYPE_HEART_RATE)
-        arraySensors.add(Sensor.TYPE_PRESSURE)
-        arraySensors.add(Sensor.TYPE_LIGHT)
-        arraySensors.add(Sensor.TYPE_PROXIMITY)
-        arraySensors.add(Sensor.TYPE_POSE_6DOF)
-        arraySensors.add(Sensor.TYPE_STATIONARY_DETECT)
-        arraySensors.add(Sensor.TYPE_MOTION_DETECT)
-        arraySensors.add(Sensor.TYPE_HEART_BEAT)
-        arraySensors.add(Sensor.TYPE_LOW_LATENCY_OFFBODY_DETECT)
-    }
 
     fun setObserver() {
         dataViewModel?.webServiceResponseLiveData?.observe(
@@ -208,110 +318,13 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
     }
 
-    override fun getWatchData(sensorEventData: ArrayList<SensorEventData>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getTemperatureData(sensorEventData: SensorEventData) {
-
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Temp Set")
-        arrsensorvals[0] = sensorEventData
-    }
-
-    override fun getProximityData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Proximity Set")
-        arrsensorvals[1] = sensorEventData
-    }
-
-    override fun getGravityeData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Gravity Set")
-        arrsensorvals[2] = sensorEventData
-    }
-
-    override fun getLuxData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Lux Set")
-        arrsensorvals[3] = sensorEventData
-    }
-
-    override fun getLinearyAccelerationData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[4] = sensorEventData
-    }
-
-    override fun getPressureData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "LA Set")
-        arrsensorvals[5] = sensorEventData
-    }
-
-    override fun getAccelerometerData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[6] = sensorEventData
-    }
-
-    override fun getRotationData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Rotation Set")
-        arrsensorvals[7] = sensorEventData
-    }
-
-    override fun getMagneticData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Magnet Set")
-        arrsensorvals[8] = sensorEventData
-    }
-
-    override fun getGyroscopeData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        Log.d("myTag", "Gyro Set")
-        arrsensorvals[9] = sensorEventData
-    }
-
-    override fun getLocationData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[10] = sensorEventData
-    }
-
-    override fun getWifiData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[11] = sensorEventData
-    }
-
-    override fun getScreenState(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[12] = sensorEventData
-    }
-
-    override fun getSmsData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[13] = sensorEventData
-    }
-
-    override fun getBluetoothData(sensorEventData: SensorEventData) {
-        //we are using this approach bcz else we ill get concurrent modification exception
-        arrsensorvals[14] = sensorEventData
-    }
 
     override fun onConnectionSuspended(p0: Int) {
 
         Log.d("SENSOR", "Accuracy changed ")
     }
 
-    fun populatesensorList() {
 
-        arrsensorvals.forEachIndexed { index, item ->
-            if (item != null) {
-                sensorEventDataList.add(item)
-
-
-            }
-
-        }
-    }
 
     override fun onConnectionFailed(p0: ConnectionResult) {
         Log.d("SENSOR", "Accuracy changed ")
@@ -352,62 +365,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
     inner class MessageReceiver : BroadcastReceiver() {
 
-        fun fillvalues(item: Int) {
-            if (item == Sensor.TYPE_ACCELEROMETER) {
-                AccelerometerSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            } else if (item == Sensor.TYPE_GYROSCOPE)
-                GyroscopeSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            else if (item == Sensor.TYPE_MAGNETIC_FIELD)
-                MagnetometerSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            else if (item == Sensor.TYPE_PRESSURE)
-                BarometerSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            else if (item == Sensor.TYPE_LIGHT)
-                LightSensor(this@MainWearActivity, this@MainWearActivity, dataViewModel!!)
-            else if (item == Sensor.TYPE_AMBIENT_TEMPERATURE)
-                TemperatureSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            else if (item == Sensor.TYPE_PROXIMITY)
-                ProximitySensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            else if (item == Sensor.TYPE_GRAVITY)
-                GravitySensor(this@MainWearActivity, this@MainWearActivity, dataViewModel!!)
-            else if (item == Sensor.TYPE_LINEAR_ACCELERATION)
-                LinearAccelerometerSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-            else if (item == Sensor.TYPE_ROTATION_VECTOR)
-                RotationSensor(
-                    this@MainWearActivity,
-                    this@MainWearActivity,
-                    dataViewModel!!
-                )
-
-
-        }
 
         fun bringtofrontIfNeeded() {
 
@@ -422,7 +379,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             intent: Intent
         ) {
 
-            arrsensorvals = arrayOfNulls(14)
+
 
             var bundle: Bundle? = intent.extras
             var title: String? = bundle?.getString("title")
@@ -433,20 +390,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             if (null != content && (null != actionval))
                 postResponse(content!!, actionval!!)
-
-            Log.v("myTag", "Main activity received message: $arraySensors")
-
-
-            // Display message in UI
-            for (item in arraySensors) {
-
-                fillvalues(item)
-            }
-
-            sendValues()
-
-
-        }
+       }
 
         fun postResponse(content: String, action: String) {
 
@@ -475,32 +419,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
         }
 
-        fun sendValues() {
-
-            Handler().postDelayed({
-
-                if (NetworkUtils.isNetworkAvailable(this@MainWearActivity)) {
-
-                    populatesensorList()
-                    Log.d("myTag", "send values to server")
-                    dataViewModel!!.addSensoreEvent(
-                        AppState.session.username,
-                        sensorEventDataList
-                    )
-
-                    sensorEventDataList.clear()
-                } else {
-
-                    Toast.makeText(
-                        this@MainWearActivity,
-                        getString(R.string.internet_error),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-
-            }, INTERVAL)
-
-        }
 
 
     }

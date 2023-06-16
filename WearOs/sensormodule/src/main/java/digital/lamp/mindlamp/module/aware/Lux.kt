@@ -1,15 +1,8 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Light
-import com.aware.providers.Accelerometer_Provider
-import com.aware.providers.Barometer_Provider
-import com.aware.providers.Light_Provider
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 
@@ -20,7 +13,7 @@ class Lux constructor(awareListener: AwareLuxListener, context: Context, sensorn
     init {
         try {
             //Lux settings
-            Aware.setSetting(
+      /*      Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_LIGHT,
                 200000
@@ -68,7 +61,7 @@ class Lux constructor(awareListener: AwareLuxListener, context: Context, sensorn
                     awareListener.getLuxData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            } */
         } catch (ex: Exception) {
             ex.printStackTrace()
 

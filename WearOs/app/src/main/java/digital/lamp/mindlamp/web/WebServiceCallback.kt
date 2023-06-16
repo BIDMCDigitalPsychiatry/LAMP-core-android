@@ -3,7 +3,6 @@ package digital.lamp.mindlamp.web
 import androidx.annotation.NonNull
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import digital.lamp.mindlamp.web.WebServiceResponseData
 import digital.lamp.mindlamp.web.pojo.response.ResponseBase
 import retrofit2.Call
 import retrofit2.Callback

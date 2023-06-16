@@ -9,23 +9,26 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <!-- For receiving heart rate data. -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
+    <!-- Include this permission any time your app needs location information. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <permission
-        android:name="com.aware.READ_CONTEXT_DATA"
-        android:description="@string/read_permission"
-        android:icon="@drawable/ic_launcher_settings"
-        android:label="Read AWARE&apos;s Context data"
-        android:protectionLevel="signature" />
-    <permission
-        android:name="com.aware.WRITE_CONTEXT_DATA"
-        android:description="@string/write_permission"
-        android:icon="@drawable/ic_launcher_settings"
-        android:label="Write to AWARE&apos;s Context data"
-        android:protectionLevel="signature" />
+    <!-- Include only if your app benefits from precise location access. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
     <uses-feature
         android:name="android.hardware.type.watch"
         android:required="true" />
+    <queries>
+        <package android:name="com.google.android.wearable.healthservices" />
+
+    </queries>
 
     <application
         android:name="digital.lamp.mindlamp.app.App"
@@ -94,8 +97,22 @@
                 <!--<action android:name="com.google.android.gms.wearable.BIND_LISTENER" />-->
             </intent-filter>
         </service>
-        <service android:exported="false" android:name="com.aware.utils.Aware_Accounts"></service>
+        <service
+            android:name="digital.lamp.mindlamp.service.LampForegroundService"
+            android:enabled="true"
+            android:exported="true" />
+        <service android:name=".sensor.health_services.HealthServiceDataService" android:foregroundServiceType="location"
+            android:permission="com.google.android.wearable.healthservices.permission.PASSIVE_DATA_BINDING"
+            android:exported="true" />
 
+        <!-- Receiver that re-registers for background data after a device restart. -->
+        <receiver
+            android:name=".sensor.health_services.StartupReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

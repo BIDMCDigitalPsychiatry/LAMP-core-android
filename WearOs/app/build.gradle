@@ -1,11 +1,19 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-
+apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 33
   //  buildToolsVersion "30.0.2"
-
+    signingConfigs {
+        release {
+            storeFile file('E:\\ProjectFiles\\androidstudio_workspace\\LampAndroidGithub\\WearOs\\app\\key.jks')
+            storePassword 'v2lamp20*89'
+            keyPassword 'v2lamp20*89'
+            keyAlias 'key0'
+        }
+    }
 
     buildFeatures {
         viewBinding = true
@@ -13,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId "digital.lamp.mindlamp"
-        minSdkVersion 25
+        minSdkVersion 30
         targetSdkVersion 33
         versionCode 841
         versionName "2.0"
@@ -21,10 +29,10 @@ android {
     }
     buildTypes {
         release {
-          //  signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            debuggable = false
+            debuggable = true
         }
     }
 
@@ -104,6 +112,7 @@ dependencies {
     //since bom is used no need to specify other firebase dependencies
     //implementation 'com.google.firebase:firebase-common-ktx:20.3.0'
     implementation 'com.google.firebase:firebase-messaging-ktx:23.1.1'
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 
     compileOnly 'com.google.android.wearable:wearable:2.9.0'
     implementation 'androidx.appcompat:appcompat:1.6.0'
@@ -117,7 +126,26 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
+    implementation 'androidx.health:health-services-client:1.0.0-beta01'
+    implementation 'com.google.guava:guava:30.1.1-android'
+    // Datastore
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
 
+
+    implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
+    // Hilt dependency injection
+    implementation "com.google.dagger:hilt-android:2.43.2"
+    kapt "com.google.dagger:hilt-android-compiler:2.43.2"
+    implementation 'androidx.hilt:hilt-work:1.0.0'
+    // Lifecycle
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2022.6.10'
+
+
+    // WorkManager
+    implementation "androidx.work:work-runtime:2.7.1"
+    implementation "androidx.work:work-runtime-ktx:2.7.1"
+    kapt 'androidx.hilt:hilt-compiler:1.0.0'
  apply plugin: "com.google.gms.google-services"
+
 
 }

@@ -1,14 +1,8 @@
 package digital.lamp.mindlamp.model
 
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.Sensor
-import android.os.Handler
-import android.util.Log
 import android.view.View
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.DataMap
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData

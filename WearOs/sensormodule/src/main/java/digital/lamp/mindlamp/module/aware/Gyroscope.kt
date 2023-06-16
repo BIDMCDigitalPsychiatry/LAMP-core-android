@@ -1,13 +1,8 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Gyroscope
-import com.aware.providers.Gyroscope_Provider
-import lamp.mindlamp.sensormodule.aware.AwareGyroscopeListener
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 /**
@@ -17,7 +12,7 @@ class Gyroscope constructor(awareListener: AwareGyroscopeListener, context: Cont
     init {
         try {
             //Gyroscope Settings
-            Aware.setSetting(
+        /*    Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_GYROSCOPE,
                 200000
@@ -67,7 +62,7 @@ class Gyroscope constructor(awareListener: AwareGyroscopeListener, context: Cont
                     awareListener.getGyroscopeData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            }*/
         } catch (ex: Exception) {
 
             val sensorEventData =

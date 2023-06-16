@@ -1,10 +1,14 @@
 package digital.lamp.mindlamp.service
 
 import android.content.Intent
-import android.hardware.Sensor
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.android.gms.wearable.*
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataMapItem
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.WearableListenerService
 
 class WearListenerService : WearableListenerService() {
 
@@ -12,13 +16,14 @@ class WearListenerService : WearableListenerService() {
         super.onCreate()
     }
     override fun onMessageReceived(messageEvent: MessageEvent) {
+        Log.v("NewWatch", "WearListenerService:onMessageReceived")
         if (messageEvent.path == "/message_path") {
             val message = String(messageEvent.data)
             Log.v(
-                "myTag",
+                "NewWatch",
                 "Message path received on watch is: " + messageEvent.path
             )
-            Log.v("myTag", "Message received on watch is: $message")
+            Log.v("NewWatch", "Message received on watch is: $message")
 
             // Broadcast message to wearable activity for display
             val messageIntent = Intent()

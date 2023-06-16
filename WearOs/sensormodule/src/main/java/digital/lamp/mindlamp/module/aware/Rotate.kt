@@ -1,15 +1,8 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Rotation
-import com.aware.providers.Rotation_Provider
-import lamp.mindlamp.sensormodule.aware.AwareAccelerometerListener
-import lamp.mindlamp.sensormodule.aware.AwareRotationListener
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
-import lamp.mindlamp.sensormodule.aware.model.RotationData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 /**
@@ -19,7 +12,7 @@ class Rotate constructor(awareListener: AwareRotationListener, context: Context,
     init {
         try {
             //Rotation Sensor Settings
-            Aware.setSetting(
+       /*     Aware.setSetting(
                 context,
                 Aware_Preferences.FREQUENCY_ROTATION,
                 200000
@@ -69,7 +62,7 @@ class Rotate constructor(awareListener: AwareRotationListener, context: Context,
                     awareListener.getRotationData(Constants.FAILURE, sensorEventData)
 
                 }
-            }
+            }*/
         } catch (ex: Exception) {
 
             ex.printStackTrace()

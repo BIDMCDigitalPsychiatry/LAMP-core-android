@@ -1,13 +1,8 @@
 package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
-import com.aware.Accelerometer
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Screen
-import com.aware.providers.Accelerometer_Provider
+
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 import java.lang.Exception
 
@@ -24,7 +19,7 @@ class Screenstate constructor(
     init {
         try {
             //Screen State Settings
-            Aware.setSetting(context, Aware_Preferences.STATUS_SCREEN, true)
+           /* Aware.setSetting(context, Aware_Preferences.STATUS_SCREEN, true)
             Aware.startScreen(context)//Start Screen Sensor
             //Sensor Observer
             Screen.setSensorObserver(object : Screen.AWARESensorObserver {
@@ -136,7 +131,7 @@ class Screenstate constructor(
                     awareListener.getScreenState(Constants.FAILURE, sensorEventRequest)
                 }
             })
-            Aware.stopScreen(context)
+            Aware.stopScreen(context) */
         } catch (ex: Exception) {
 
             val sensorEventRequest =

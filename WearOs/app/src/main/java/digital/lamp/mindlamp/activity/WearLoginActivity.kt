@@ -10,19 +10,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.databinding.ActivityLoginWearBinding
-import digital.lamp.mindlamp.databinding.ActivityPreLoginWearBinding
+import digital.lamp.mindlamp.sensor.health_services.SensorStore
+import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.viewmodels.DataViewModel
 import digital.lamp.mindlamp.web.WebConstant
 import digital.lamp.mindlamp.web.WebServiceResponseData
 import digital.lamp.mindlamp.web.pojo.response.UserExistResponse
-
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 /**
@@ -52,7 +53,7 @@ class WearLoginActivity : FragmentActivity() {
         }
 
 
-       binding. btndone.setOnClickListener(object : View.OnClickListener {
+        binding. btndone.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
 
@@ -61,7 +62,7 @@ class WearLoginActivity : FragmentActivity() {
 
                     WebConstant.USERID =
                         Utils.toBase64(
-                            binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+                            "U8917110983@lamp.com" + ":" +"U8917110983"
                                 .trim()
                         ).toString().trim()
 
@@ -99,8 +100,19 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
+                           GlobalScope.launch(Dispatchers.IO) {
+                               try {
+                                   synchronized(SensorStore) {
+                                       SensorStore.clear()
+                                   }
+                               }
+                               catch(e:Exception){
+                                   LampLog.d("Exception","clear   sensor values")
+                               }
+                           }
+
                             AppState.session.userId = Utils.toBase64(
-                                binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+                                "U8917110983@lamp.com" + ":" + "U8917110983"
                                     .trim()
                             ).toString().trim()
                             AppState.session.username =

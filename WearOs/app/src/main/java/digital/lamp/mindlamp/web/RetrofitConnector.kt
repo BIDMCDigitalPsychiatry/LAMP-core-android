@@ -1,8 +1,6 @@
 package digital.lamp.mindlamp.web
 
-import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
-import digital.lamp.mindlamp.utils.Utils
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

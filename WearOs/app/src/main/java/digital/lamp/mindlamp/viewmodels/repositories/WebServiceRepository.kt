@@ -25,7 +25,7 @@ class WebServiceRepository {
         }
     }
 
-    fun getWebServiceResponseLiveData(): LiveData<WebServiceResponseData>? {
+    fun getWebServiceResponseLiveData(): LiveData<WebServiceResponseData> {
         return webServiceResponseLiveData
     }
 

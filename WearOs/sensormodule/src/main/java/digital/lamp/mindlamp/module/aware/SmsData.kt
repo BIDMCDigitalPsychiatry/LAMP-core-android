@@ -3,9 +3,7 @@ package digital.lamp.mindlamp.module.aware
 import android.content.ContentValues
 import android.content.Context
 import android.os.Handler
-import com.aware.Aware
-import com.aware.Aware_Preferences
-import com.aware.Communication
+
 import lamp.mindlamp.sensormodule.aware.AwareSMSListener
 
 /**
@@ -15,7 +13,7 @@ class SmsData constructor(awareListener: AwareSMSListener, context: Context, sen
 
     init {
         //Wifi sensor settings
-        Aware.setSetting(context, Aware_Preferences.STATUS_COMMUNICATION_EVENTS, true)
+      /*  Aware.setSetting(context, Aware_Preferences.STATUS_COMMUNICATION_EVENTS, true)
         Aware.setSetting(context, Aware_Preferences.STATUS_MESSAGES, true)
         Aware.startCommunication(context)
 
@@ -43,7 +41,7 @@ class SmsData constructor(awareListener: AwareSMSListener, context: Context, sen
                 Aware.stopCommunication(context)
             }, 3000
         )
-
+*/
     }
 
 }
