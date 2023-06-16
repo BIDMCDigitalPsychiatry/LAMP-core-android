@@ -14,7 +14,7 @@ import digital.lamp.mindlamp.utils.LampLog
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
 class WifiData constructor(sensorListener: SensorListener, context: Context) {
-    init{
+    init {
         try {
             Lamp.startWiFi(context)//start sensor
             //Sensor Observer
@@ -41,13 +41,14 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                             data.getAsString("bssid"),
                             data.getAsString("ssid"),
                             data.getAsInteger("rssi"),
-                            null,null,null,null,null,
-                            null,null, null,null
+                            null, null, null, null, null,
+                            null, null, null, null
                         )
                         val sensorEventData =
                             SensorEvent(
                                 data,
-                                Sensors.NEARBY_DEVICES.sensor_name,System.currentTimeMillis().toDouble()
+                                Sensors.NEARBY_DEVICES.sensor_name,
+                                System.currentTimeMillis().toDouble()
                             )
 
                         LampLog.e("Wifi : ${data.bssid}")
@@ -65,8 +66,8 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                 override fun onWiFiDisabled() {
                 }
             }
-        }catch (ex: Exception){
-           ex.printStackTrace()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 }

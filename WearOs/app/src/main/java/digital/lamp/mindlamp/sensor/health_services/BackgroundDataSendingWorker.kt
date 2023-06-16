@@ -25,23 +25,26 @@ class BackgroundDataSendingWorker @AssistedInject constructor(
         Log.d("new watch", "data sending Worker running")
         DebugLogs.writeToFile(" BackgroundDataSendingWorker dowork")
         runBlocking {
-            val list:ArrayList<SensorEventData>
+            val list: ArrayList<SensorEventData>
             synchronized(SensorStore) {
-                  list = SensorStore.getStoredSensorValues()
+                list = SensorStore.getStoredSensorValues()
                 SensorStore.clear()
             }
-                if (list!=null && list.isNotEmpty() && NetworkUtils.isNetworkAvailable(applicationContext)) {
-                     webServiceRepository.callUpdateSensordataWS(
-                        AppState.session.username, list,
-                       webServiceRepository.getWebServiceResponseLiveData()
-                  )
+            if (list != null && list.isNotEmpty() && NetworkUtils.isNetworkAvailable(
+                    applicationContext
+                )
+            ) {
+                webServiceRepository.callUpdateSensordataWS(
+                    AppState.session.username, list,
+                    webServiceRepository.getWebServiceResponseLiveData()
+                )
 
                 Log.d("myTag", "send values to server")
 
-                   // DebugLogs.writeToFile(" BackgroundDataSendingWorker data sent")
+                // DebugLogs.writeToFile(" BackgroundDataSendingWorker data sent")
 
-                }
             }
+        }
 
         return Result.success()
     }

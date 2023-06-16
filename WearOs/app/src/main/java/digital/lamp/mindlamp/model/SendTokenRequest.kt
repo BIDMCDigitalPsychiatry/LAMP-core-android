@@ -18,5 +18,5 @@ data class TokenData(
     val action: String,
     val device_token: String,
     val device_type: String,
-    val user_agent: UserAgent? =null
-    )
+    val user_agent: UserAgent? = null
+)

@@ -56,7 +56,6 @@ class HealthServiceDataRepository @Inject constructor(
     }
 
 
-
     @OptIn(InternalCoroutinesApi::class)
     suspend fun storeLatestHeartRate(heartRate: Double) {
         dataStore.edit { prefs ->
@@ -64,12 +63,12 @@ class HealthServiceDataRepository @Inject constructor(
         }
 
         val sensorData = SensorDataUtils.getHeartRateSensorData(heartRate)
-kotlinx.coroutines.internal.synchronized(SensorStore)
-{
-    SensorStore.storeValue(sensorData)
-}
-        LampLog.d("NewWatch","Heart rate value $heartRate Stored to file")
-     }
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorData)
+        }
+        LampLog.d("NewWatch", "Heart rate value $heartRate Stored to file")
+    }
 
     companion object {
         const val PREFERENCES_FILENAME = "passive_data_prefs"

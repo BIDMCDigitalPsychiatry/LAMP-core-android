@@ -23,7 +23,7 @@ object Utils {
         return context.applicationInfo.loadLabel(context.packageManager).toString()
     }
 
-    fun displayProgress(progressbar:View, pgtext:TextView, state: Boolean, txt: String) {
+    fun displayProgress(progressbar: View, pgtext: TextView, state: Boolean, txt: String) {
 
         if (null != progressbar) {
             if (state) {

@@ -17,6 +17,7 @@ class DataViewModel(application: Application) : BaseViewModel(application) {
             getWebServiceResponseLiveData()
         )
     }
+
     fun addNotificationEvent(participantId: String, notificatonRequest: NotificatonRequest) {
         webServiceRepository.callNotificationdataWS(
             participantId, notificatonRequest,
@@ -31,7 +32,7 @@ class DataViewModel(application: Application) : BaseViewModel(application) {
         )
     }
 
-    fun addLogEvent(origin: String, level:String, logEventRequest: LogEventRequest) {
+    fun addLogEvent(origin: String, level: String, logEventRequest: LogEventRequest) {
         webServiceRepository.callLogEventnWS(
             origin, level, logEventRequest,
             getWebServiceResponseLiveData()

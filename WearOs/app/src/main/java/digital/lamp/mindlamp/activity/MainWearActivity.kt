@@ -48,7 +48,7 @@ import java.util.*
 @Suppress("DEPRECATION")
 @AndroidEntryPoint
 class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener  {
+    GoogleApiClient.OnConnectionFailedListener {
 
     var googleApiClient: GoogleApiClient? = null
     var isconnected: Boolean = false
@@ -79,31 +79,35 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             e.printStackTrace()
         }
 
-        permissionLauncher= registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
                 when (result) {
                     true -> {
-                     LampLog.d("New watch", "Body sensors permission granted")
-                      //  viewModel.togglePassiveData(true)
+                        LampLog.d("New watch", "Body sensors permission granted")
+                        //  viewModel.togglePassiveData(true)
                     }
+
                     false -> {
                         LampLog.d("New watch", "Body sensors permission not granted")
-                       // viewModel.togglePassiveData(false)
+                        // viewModel.togglePassiveData(false)
                     }
                 }
             }
         permissionLauncher.launch(android.Manifest.permission.BODY_SENSORS)
-        var permissionLauncher2: ActivityResultLauncher<String>  = registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
-            when (result) {
-                true -> {
-                    LampLog.d("New watch", "Body sensors permission granted")
-                    //  viewModel.togglePassiveData(true)
-                }
-                false -> {
-                    LampLog.d("New watch", "Body sensors permission not granted")
-                    // viewModel.togglePassiveData(false)
+        var permissionLauncher2: ActivityResultLauncher<String> =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+                when (result) {
+                    true -> {
+                        LampLog.d("New watch", "Body sensors permission granted")
+                        //  viewModel.togglePassiveData(true)
+                    }
+
+                    false -> {
+                        LampLog.d("New watch", "Body sensors permission not granted")
+                        // viewModel.togglePassiveData(false)
+                    }
                 }
             }
-        }
         permissionLauncher2.launch(android.Manifest.permission.BODY_SENSORS_BACKGROUND)
         registerReceiver(
             br,
@@ -118,19 +122,20 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                     // Precise location access granted.\
 
                 }
+
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                     // Only approximate location access granted.
 
-                } else -> {
-                // No location access granted.
-            }
+                }
+
+                else -> {
+                    // No location access granted.
+                }
             }
         }
         when {
             ContextCompat.checkSelfPermission(
-                this
-
-                ,
+                this,
                 Manifest.permission.ACCESS_FINE_LOCATION
 
 
@@ -143,31 +148,33 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             }
 
 
-
-
-
-            ActivityCompat. shouldShowRequestPermissionRationale(this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-                ) || ActivityCompat.shouldShowRequestPermissionRationale(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) || ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
             -> {
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected, and what
-            // features are disabled if it's declined. In this UI, include a
-            // "cancel" or "no thanks" button that lets the user continue
-            // using your app without granting the permission.
-          //  showInContextUI(...)
+                // In an educational UI, explain to the user why your app requires this
+                // permission for a specific feature to behave as expected, and what
+                // features are disabled if it's declined. In this UI, include a
+                // "cancel" or "no thanks" button that lets the user continue
+                // using your app without granting the permission.
+                //  showInContextUI(...)
                 this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
 
 
             }
+
             else -> {
                 // You can directly ask for the permission.
                 // The registered ActivityResultCallback gets the result of this request.
                 locationPermissionRequest.launch(
-                    arrayOf( Manifest.permission.ACCESS_FINE_LOCATION,  Manifest.permission.ACCESS_COARSE_LOCATION)
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
 
                 )
             }
@@ -185,9 +192,9 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
         dataViewModel = ViewModelProviders.of(this@MainWearActivity).get(DataViewModel::class.java)
 
-         lifecycleScope.launchWhenStarted {
+        lifecycleScope.launchWhenStarted {
             viewModel.latestHeartRate.collect {
-               Log.d(TAG,"Health data received heart rate: "+ it.toString())
+                Log.d(TAG, "Health data received heart rate: " + it.toString())
 
             }
         }
@@ -221,6 +228,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             .getRunningServices(Integer.MAX_VALUE)
             .any { it -> it.service.className == service.name }
     }
+
     private fun startLampService() {
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
 
@@ -230,26 +238,24 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
+
     fun initializecontrols() {
         binding.btnLogout.setOnClickListener {
-           try {
-               Lamp.stopLAMP(this)
-           }
-           catch (e:Exception){
-               LampLog.e("lampException",e.message,e)
-           }
+            try {
+                Lamp.stopLAMP(this)
+            } catch (e: Exception) {
+                LampLog.e("lampException", e.message, e)
+            }
             try {
                 stopService(Intent(this, LampForegroundService::class.java))
+            } catch (e: Exception) {
+                LampLog.e("lampException", e.message, e)
             }
-             catch (e:Exception){
-            LampLog.e("lampException",e.message,e)
-            }
-            try{
+            try {
                 viewModel.unregister()
+            } catch (e: Exception) {
+                LampLog.e("lampException", "viewModel.unregister() " + e.message, e)
             }
-        catch (e:Exception){
-            LampLog.e("lampException","viewModel.unregister() "+e.message,e)
-        }
 
             AppState.session.clearData()
             val intent = Intent(this@MainWearActivity, WearLoginActivity::class.java)
@@ -258,7 +264,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
         }
     }
-
 
 
     fun setObserver() {
@@ -325,7 +330,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
     }
 
 
-
     override fun onConnectionFailed(p0: ConnectionResult) {
         Log.d("SENSOR", "Accuracy changed ")
         isconnected = false
@@ -359,8 +363,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         })
 
 
-
-
     }
 
     inner class MessageReceiver : BroadcastReceiver() {
@@ -380,7 +382,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         ) {
 
 
-
             var bundle: Bundle? = intent.extras
             var title: String? = bundle?.getString("title")
             var actionval = bundle?.getString("action")
@@ -390,7 +391,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
             if (null != content && (null != actionval))
                 postResponse(content!!, actionval!!)
-       }
+        }
 
         fun postResponse(content: String, action: String) {
 
@@ -418,7 +419,6 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             }
 
         }
-
 
 
     }
@@ -485,6 +485,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                                         DialogInterface.BUTTON_POSITIVE -> PermissionCheck.requestPermissionScreen(
                                             this
                                         )
+
                                         DialogInterface.BUTTON_NEGATIVE ->
                                             // proceed with logic by disabling the related features or quit the app.
                                             finish()

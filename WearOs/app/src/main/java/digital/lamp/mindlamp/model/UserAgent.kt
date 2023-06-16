@@ -8,7 +8,7 @@ import digital.lamp.mindlamp.BuildConfig
  */
 data class LogEventRequest(
     val message: String,
-    val user_agent: UserAgent? =null,
+    val user_agent: UserAgent? = null,
     val user_id: String
 )
 

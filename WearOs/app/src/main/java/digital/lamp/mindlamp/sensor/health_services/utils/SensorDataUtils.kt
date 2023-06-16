@@ -6,7 +6,7 @@ import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.DimensionData
 
 object SensorDataUtils {
-    fun  getHeartRateSensorData(heartRateValue:Double): SensorEventData {
+    fun getHeartRateSensorData(heartRateValue: Double): SensorEventData {
         val dimensionData =
             DimensionData(
                 null,
@@ -34,7 +34,8 @@ object SensorDataUtils {
             )
         return sensorEventData
     }
-    fun  getSensorEventData(sensorData:SensorEvent): SensorEventData {
+
+    fun getSensorEventData(sensorData: SensorEvent): SensorEventData {
 
         val sensorEventData =
             SensorEventData(

@@ -16,12 +16,17 @@ import digital.lamp.mindlamp.utils.LampLog
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class MagnetometerData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
+class MagnetometerData constructor(
+    sensorListener: SensorListener,
+    context: Context,
+    frequency: Double?
+) {
     init {
         try {
-            Lamp.startMagnetometer(context)//start Sensor
+            //start Magnetometer Sensor
+            Lamp.startMagnetometer(context)
             frequency?.let {
-                val interval = (1 / frequency!!)*1000
+                val interval = (1 / frequency!!) * 1000
                 Magnetometer.setInterval(interval.toLong())// 1 millisecond
             }
             //Sensor Observer
@@ -32,17 +37,22 @@ class MagnetometerData constructor(sensorListener: SensorListener, context: Cont
                 //val value=it.
                 val magnetData =
                     MagnetData(x, y, z)
-                val data = DeviceMotionData( MotionData(null,null,null),magnetData,
-                    AttitudeData(null,null,null),GravityData(null,null,null), RotationData(null,null,null))
+                val data = DeviceMotionData(
+                    MotionData(null, null, null),
+                    magnetData,
+                    AttitudeData(null, null, null),
+                    GravityData(null, null, null),
+                    RotationData(null, null, null)
+                )
                 val sensorEventData =
                     SensorEvent(
                         data,
-                        Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
+                        Sensors.DEVICE_MOTION.sensor_name, System.currentTimeMillis().toDouble()
                     )
                 LampLog.e("Magnetometer : $x : $y : $z")
                 sensorListener.getMagneticData(sensorEventData)
             }
-        }catch (ex : Exception){
+        } catch (ex: Exception) {
             ex.printStackTrace()
         }
     }

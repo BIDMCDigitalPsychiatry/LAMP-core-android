@@ -96,6 +96,7 @@ class AccelerometerData constructor(
 
                         sensorListener.getAccelerometerData(sensorEventDataAccelerometer)
                     }
+
                     else -> {
                         val deviceMotionData = DeviceMotionData(
                             motionData,

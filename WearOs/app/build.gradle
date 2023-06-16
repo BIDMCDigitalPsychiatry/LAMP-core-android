@@ -9,9 +9,9 @@ android {
     signingConfigs {
         release {
             storeFile file('E:\\ProjectFiles\\androidstudio_workspace\\LampAndroidGithub\\WearOs\\app\\key.jks')
-            storePassword 'v2lamp20*89'
-            keyPassword 'v2lamp20*89'
-            keyAlias 'key0'
+            storePassword ''
+            keyPassword ''
+            keyAlias ''
         }
     }
 

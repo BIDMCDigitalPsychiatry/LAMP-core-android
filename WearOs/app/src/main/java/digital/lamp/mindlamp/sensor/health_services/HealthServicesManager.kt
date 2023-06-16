@@ -44,7 +44,7 @@ class HealthServicesManager @Inject constructor(
 
             .build()
 
-      LampLog.d("NewWatch", "Registering heart rate listener")
+        LampLog.d("NewWatch", "Registering heart rate listener")
         passiveMonitoringClient.setPassiveListenerServiceAsync(
             HealthServiceDataService::class.java,
             passiveListenerConfig

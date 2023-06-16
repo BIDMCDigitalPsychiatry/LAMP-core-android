@@ -112,12 +112,15 @@ import javax.inject.Inject
  */
 @HiltAndroidApp
 class App : Application(), LifecycleObserver, Configuration.Provider {
-    @Inject lateinit var workerFactory: HiltWorkerFactory
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
     var inBackground: Boolean = false
+
     companion object {
         lateinit var app: App
     }
+
     override fun onCreate() {
         super.onCreate()
         app = this
@@ -135,7 +138,7 @@ class App : Application(), LifecycleObserver, Configuration.Provider {
         val sendDataRequest =
             PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(10L, TimeUnit.MINUTES)
                 // Additional configuration
-               // .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                // .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
         WorkManager.getInstance(this)
             .enqueue(sendDataRequest)

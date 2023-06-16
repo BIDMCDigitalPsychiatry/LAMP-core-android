@@ -43,21 +43,27 @@ class ActivityTransitionData constructor(
                         "running" -> {
                             activityData.running = transitionType
                         }
+
                         "cycling" -> {
                             activityData.cycling = transitionType
                         }
+
                         "in_car" -> {
                             activityData.automotive = transitionType
                         }
+
                         "stationary" -> {
                             activityData.stationary = transitionType
                         }
+
                         "unknown" -> {
                             activityData.unknown = transitionType
                         }
+
                         "walking" -> {
                             activityData.walking = transitionType
                         }
+
                         "on_foot" -> {
                             activityData.on_foot = transitionType
                         }
@@ -81,7 +87,7 @@ class ActivityTransitionData constructor(
                             null,
                             null,
                             null, null, null,
-                            null, null, null, activityData,null,null
+                            null, null, null, activityData, null, null
                         )
                     val sensorEventData =
                         SensorEvent(

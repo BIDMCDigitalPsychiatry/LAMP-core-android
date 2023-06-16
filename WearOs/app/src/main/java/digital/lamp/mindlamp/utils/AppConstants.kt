@@ -5,7 +5,7 @@ package digital.lamp.mindlamp.utils
  */
 
 internal object AppConstants {
-    const val BASE_URL : String = "https://api.lamp.digital/"
+    const val BASE_URL: String = "https://api.lamp.digital/"
     const val NOTIFICATION_CHANNEL = "lamp_channel"
     const val NOTIFICATION_SURVEY_CHANNEL = "lamp_survey_channel"
     const val NOTIFICATION_ID = 101

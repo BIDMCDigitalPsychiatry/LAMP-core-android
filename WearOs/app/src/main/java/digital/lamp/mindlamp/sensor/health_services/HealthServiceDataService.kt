@@ -20,17 +20,17 @@ class HealthServiceDataService : PassiveListenerService() {
 
             }
             dataPoints.getData(DataType.LOCATION).forEach {
-              //  Log.d("Watch", "Location: ${it.value.latitude } , ${it.value.longitude }, ${it.value.bearing }, , ${it.value.altitude }")
+                //  Log.d("Watch", "Location: ${it.value.latitude } , ${it.value.longitude }, ${it.value.bearing }, , ${it.value.altitude }")
 
 
             }
             dataPoints.getData(DataType.CALORIES).forEach {
-             //   Log.d("Watch", "Calories value: ${it.value}")
+                //   Log.d("Watch", "Calories value: ${it.value}")
 
 
             }
             dataPoints.getData(DataType.VO2_MAX).forEach {
-               // Log.d("Watch", "Vo2max value: ${it.value}")
+                // Log.d("Watch", "Vo2max value: ${it.value}")
 
 
             }

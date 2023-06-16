@@ -44,7 +44,8 @@ open class Pref<T>(private val key: String, private val default: T) : ReadWriteP
         private var prefMode: Int = Context.MODE_PRIVATE
 
         fun init(ctx: Context, name: String, mode: Int = Context.MODE_PRIVATE) {
-            prefSharedPreferences = ctx.getSharedPreferences(name,
+            prefSharedPreferences = ctx.getSharedPreferences(
+                name,
                 prefMode
             )
             prefName = name

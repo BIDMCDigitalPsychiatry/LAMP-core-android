@@ -17,13 +17,17 @@ import digital.lamp.mindlamp.utils.LampLog
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class RotationData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
+class RotationData constructor(
+    sensorListener: SensorListener,
+    context: Context,
+    frequency: Double?
+) {
     init {
         try {
 
             Lamp.startGyroscope(context)//start Sensor
             frequency?.let {
-                val interval = (1 / frequency!!)*1000
+                val interval = (1 / frequency!!) * 1000
                 Gyroscope.setInterval(interval.toLong())
             }
             //Sensor Observer
@@ -34,18 +38,20 @@ class RotationData constructor(sensorListener: SensorListener, context: Context,
                 //val value=it.
                 val rotationData =
                     RotationData(x, y, z)
-                val data = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),
-                    AttitudeData(null,null,null),GravityData(null,null,null), rotationData)
+                val data = DeviceMotionData(
+                    MotionData(null, null, null), MagnetData(null, null, null),
+                    AttitudeData(null, null, null), GravityData(null, null, null), rotationData
+                )
                 val sensorEventData =
                     SensorEvent(
                         data,
-                        Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
+                        Sensors.DEVICE_MOTION.sensor_name, System.currentTimeMillis().toDouble()
                     )
                 LampLog.e("Rotation : $x : $y : $z")
                 sensorListener.getRotationData(sensorEventData)
             }
-        }catch (ex : Exception){
-          ex.printStackTrace()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 }
