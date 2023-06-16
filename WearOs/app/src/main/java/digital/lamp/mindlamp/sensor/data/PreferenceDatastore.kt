@@ -33,22 +33,24 @@ class PreferenceDatastore @Inject constructor(
 ) {
 
 
-
     suspend fun setLastTimestampAccelerometer(timestamp: Long) {
         dataStore.edit { prefs ->
             prefs[LAST_TIMESTAMP_ACCELEROMETER] = timestamp
         }
     }
+
     suspend fun setLastTimestampMagnetometer(timestamp: Long) {
         dataStore.edit { prefs ->
             prefs[LAST_TIMESTAMP_MAGNETOMETER] = timestamp
         }
     }
+
     suspend fun setLastTimestampRotation(timestamp: Long) {
         dataStore.edit { prefs ->
             prefs[LAST_TIMESTAMP_ROTATION] = timestamp
         }
     }
+
     suspend fun setLastTimestampGravity(timestamp: Long) {
         dataStore.edit { prefs ->
             prefs[LAST_TIMESTAMP_GRAVITY] = timestamp
@@ -57,23 +59,22 @@ class PreferenceDatastore @Inject constructor(
 
 
     val lastTimestampAccelerometer: Flow<Long> = dataStore.data.map { prefs ->
-        prefs[LAST_TIMESTAMP_ACCELEROMETER] ?:0
+        prefs[LAST_TIMESTAMP_ACCELEROMETER] ?: 0
     }
     val lastTimestampMagnetometer: Flow<Long> = dataStore.data.map { prefs ->
-        prefs[LAST_TIMESTAMP_MAGNETOMETER] ?:0
+        prefs[LAST_TIMESTAMP_MAGNETOMETER] ?: 0
     }
     val lastTimestampRotation: Flow<Long> = dataStore.data.map { prefs ->
-        prefs[LAST_TIMESTAMP_ROTATION] ?:0
+        prefs[LAST_TIMESTAMP_ROTATION] ?: 0
     }
     val lastTimestampGravity: Flow<Long> = dataStore.data.map { prefs ->
-        prefs[LAST_TIMESTAMP_GRAVITY] ?:0
+        prefs[LAST_TIMESTAMP_GRAVITY] ?: 0
     }
-
-
 
 
     companion object {
-            private val LAST_TIMESTAMP_ACCELEROMETER = longPreferencesKey("last_time_stamp_accelerometer")
+        private val LAST_TIMESTAMP_ACCELEROMETER =
+            longPreferencesKey("last_time_stamp_accelerometer")
         private val LAST_TIMESTAMP_MAGNETOMETER = longPreferencesKey("last_time_stamp_magnetometer")
         private val LAST_TIMESTAMP_GRAVITY = longPreferencesKey("last_time_stamp_gravity")
         private val LAST_TIMESTAMP_ROTATION = longPreferencesKey("last_time_stamp_rotation")

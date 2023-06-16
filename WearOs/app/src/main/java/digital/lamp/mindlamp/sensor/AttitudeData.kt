@@ -17,13 +17,17 @@ import digital.lamp.mindlamp.utils.LampLog
 /**
  * Created by ZCO Engineering Dept.
  */
-class AttitudeData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
+class AttitudeData constructor(
+    sensorListener: SensorListener,
+    context: Context,
+    frequency: Double?
+) {
     init {
         try {
 
             Lamp.startRotation(context)//start Sensor
             frequency?.let {
-                val interval =(1 / frequency!!)*1000
+                val interval = (1 / frequency!!) * 1000
                 Rotation.setInterval(interval.toLong())
             }
             //Sensor Observer
@@ -33,17 +37,23 @@ class AttitudeData constructor(sensorListener: SensorListener, context: Context,
                 val z = it.getAsDouble(Rotation.VALUES_2)
                 val attitudeData =
                     AttitudeData(x, y, z)
-                val data = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),attitudeData,GravityData(null,null,null),  RotationData(null,null,null))
+                val data = DeviceMotionData(
+                    MotionData(null, null, null),
+                    MagnetData(null, null, null),
+                    attitudeData,
+                    GravityData(null, null, null),
+                    RotationData(null, null, null)
+                )
                 val sensorEventData =
                     SensorEvent(
                         data,
-                        Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
+                        Sensors.DEVICE_MOTION.sensor_name, System.currentTimeMillis().toDouble()
                     )
                 LampLog.e("Rotation : $x : $y : $z")
                 sensorListener.getRotationData(sensorEventData)
             }
-        }catch (ex : Exception){
-          ex.printStackTrace()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 }

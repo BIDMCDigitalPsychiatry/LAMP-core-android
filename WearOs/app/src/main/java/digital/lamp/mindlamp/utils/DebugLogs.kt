@@ -14,6 +14,7 @@ object DebugLogs {
     val simple: DateFormat = SimpleDateFormat(
         "dd MMM yyyy HH:mm:ss:SSS Z"
     )
+
     /**
      * Saving Debugg Logs
      *
@@ -22,7 +23,7 @@ object DebugLogs {
     fun writeToFile(txt: String?) {
         try {
 
-            val logfile = File(App.app.filesDir , "LampLog.txt")
+            val logfile = File(App.app.filesDir, "LampLog.txt")
 
             if (!logfile.exists()) {
                 logfile.createNewFile()
@@ -42,9 +43,10 @@ object DebugLogs {
             LampLog.e(e.toString())
         }
     }
-    fun writeToFileTime(txt:String,milliSec:Long){
-       val result = Date(milliSec)
-       writeToFile("$txt::$milliSec::"+simple.format(result))
+
+    fun writeToFileTime(txt: String, milliSec: Long) {
+        val result = Date(milliSec)
+        writeToFile("$txt::$milliSec::" + simple.format(result))
     }
 
 }

@@ -18,10 +18,14 @@ class TelephonySensorData constructor(sensorListener: SensorListener, context: C
         try {
             Lamp.startTelephony(context)//Start Screen Sensor
             //Sensor Observer
-            TelephonySensor.setSensorObserver(object :TelephonySensor.TelephonyListener{
+            TelephonySensor.setSensorObserver(object : TelephonySensor.TelephonyListener {
                 override fun onIncomingCallEnded(callDuration: Int?) {
                     callDuration?.let {
-                        DebugLogs.writeToFile("Incoming cAll : $callDuration time ${System.currentTimeMillis().toDouble()}")
+                        DebugLogs.writeToFile(
+                            "Incoming cAll : $callDuration time ${
+                                System.currentTimeMillis().toDouble()
+                            }"
+                        )
                         val telephonyData = TelephonyData(
                             callDuration,
                             SensorConstants.CallState.INCOMING.value
@@ -37,8 +41,13 @@ class TelephonySensorData constructor(sensorListener: SensorListener, context: C
 
                 override fun onOutgoingCallEnded(callDuration: Int?) {
                     callDuration?.let {
-                        DebugLogs.writeToFile("Outgoing cAll : $callDuration time ${System.currentTimeMillis().toDouble()}")
-                        val telephonyData = TelephonyData(callDuration,  SensorConstants.CallState.OUTGOING.value)
+                        DebugLogs.writeToFile(
+                            "Outgoing cAll : $callDuration time ${
+                                System.currentTimeMillis().toDouble()
+                            }"
+                        )
+                        val telephonyData =
+                            TelephonyData(callDuration, SensorConstants.CallState.OUTGOING.value)
                         val sensorEventData =
                             SensorEvent(
                                 telephonyData,
@@ -49,8 +58,12 @@ class TelephonySensorData constructor(sensorListener: SensorListener, context: C
                 }
 
                 override fun onMissedCall() {
-                    DebugLogs.writeToFile("missed cAll :  time ${System.currentTimeMillis().toDouble()}")
-                    val telephonyData = TelephonyData(0,  SensorConstants.CallState.MISSED.value)
+                    DebugLogs.writeToFile(
+                        "missed cAll :  time ${
+                            System.currentTimeMillis().toDouble()
+                        }"
+                    )
+                    val telephonyData = TelephonyData(0, SensorConstants.CallState.MISSED.value)
                     val sensorEventData =
                         SensorEvent(
                             telephonyData,

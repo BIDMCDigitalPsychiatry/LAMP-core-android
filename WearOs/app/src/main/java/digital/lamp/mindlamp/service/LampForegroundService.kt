@@ -70,18 +70,18 @@ class LampForegroundService : Service(),
     private lateinit var oScope: CoroutineScope
     private lateinit var oGson: Gson
     var sensorSpecList = arrayListOf<SensorSpecs>()
-     private var lastTimestampAccelerometer:Long=0
-    private var lastTimestampMagnetometer:Long=0
-    private var lastTimestampRotation:Long=0
-    private var lastTimestampGravity:Long=0
-    private var lastTimestampGyroscope:Long=0
-    private var lastTimestampLocation:Long=0
-    private var lastTimestampWifi:Long=0
-    private var lastTimestampScreenState:Long=0
-    private var lastTimestampActivity:Long=0
-    private var lastTimestampTelephony:Long=0
-   // private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-   // private lateinit var locationCallback: LocationCallback
+    private var lastTimestampAccelerometer: Long = 0
+    private var lastTimestampMagnetometer: Long = 0
+    private var lastTimestampRotation: Long = 0
+    private var lastTimestampGravity: Long = 0
+    private var lastTimestampGyroscope: Long = 0
+    private var lastTimestampLocation: Long = 0
+    private var lastTimestampWifi: Long = 0
+    private var lastTimestampScreenState: Long = 0
+    private var lastTimestampActivity: Long = 0
+    private var lastTimestampTelephony: Long = 0
+    // private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+    // private lateinit var locationCallback: LocationCallback
 
     override fun onCreate() {
         super.onCreate()
@@ -134,32 +134,30 @@ class LampForegroundService : Service(),
     }
 
 
+    /* private fun setPeriodicSyncWorker() {
+         workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
+         val periodicWork =
+             PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
+                 15 * 60 * 1000L, TimeUnit.MILLISECONDS
+             )
+                 .addTag(SYNC_WORK_MANAGER_TAG)
+                 .build()
 
-
-   /* private fun setPeriodicSyncWorker() {
-        workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
-        val periodicWork =
-            PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
-                15 * 60 * 1000L, TimeUnit.MILLISECONDS
-            )
-                .addTag(SYNC_WORK_MANAGER_TAG)
-                .build()
-
-        WorkManager.getInstance(this)
-            .enqueueUniquePeriodicWork(
-                SYNC_DATA_WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
-                periodicWork
-            )
-    }*/
+         WorkManager.getInstance(this)
+             .enqueueUniquePeriodicWork(
+                 SYNC_DATA_WORK_NAME,
+                 ExistingPeriodicWorkPolicy.KEEP,
+                 periodicWork
+             )
+     }*/
 
     private fun invokeSensorSpecData() {
 
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this) > 15) {
-                sensorSpecList  = arrayListOf()
+                sensorSpecList = arrayListOf()
                 val basic = "Basic ${
-                     AppState.session.userId.trim()                  
+                    AppState.session.userId.trim()
                 }"
 
                 GlobalScope.launch(Dispatchers.IO) {
@@ -173,7 +171,7 @@ class LampForegroundService : Service(),
                             state.toString(),
                             SensorSpec::class.java
                         )
-                       LampLog.d("Sensor Spec"+"Sensor spec="+state)
+                        LampLog.d("Sensor Spec" + "Sensor spec=" + state)
                         if (oSensorSpec?.data?.isNotEmpty() == true) {
                             // AppState.session.isCellularUploadAllowed =
                             //   oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
@@ -208,7 +206,7 @@ class LampForegroundService : Service(),
             override fun onTick(millisUntilFinished: Long) {
 
                 count++
-                Log.d("Timer","collectSensorData"+count)
+                Log.d("Timer", "collectSensorData" + count)
                 when (count) {
                     1 -> {
                     }
@@ -309,25 +307,25 @@ class LampForegroundService : Service(),
                     }
 
                     6 -> {
-                       /* var locationDateRequired = true
-                        var frequency: Double? = 0.1
+                        /* var locationDateRequired = true
+                         var frequency: Double? = 0.1
 
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.GPS.sensor_name) {
-                                locationDateRequired = true
-                                it.frequency?.let {
-                                    if (it != 0.0 && it <= 1)
-                                        frequency = it
-                                }
-                            }
-                        }
-                        if (locationDateRequired) {
-                            //Invoke Location
-                            LocationData(
-                                this@LampForegroundService,
-                                applicationContext, frequency
-                            )
-                        } */
+                         sensorSpecList.forEach {
+                             if (it.spec == Sensors.GPS.sensor_name) {
+                                 locationDateRequired = true
+                                 it.frequency?.let {
+                                     if (it != 0.0 && it <= 1)
+                                         frequency = it
+                                 }
+                             }
+                         }
+                         if (locationDateRequired) {
+                             //Invoke Location
+                             LocationData(
+                                 this@LampForegroundService,
+                                 applicationContext, frequency
+                             )
+                         } */
 
                     }
 
@@ -367,15 +365,14 @@ class LampForegroundService : Service(),
 
                     }
 
-                    9 ->
-                    {
+                    9 -> {
 
                     }
-                        /*ActivityTransitionData(
-                        this@LampForegroundService,
-                        applicationContext,
-                        sensorSpecList
-                    )*/
+                    /*ActivityTransitionData(
+                    this@LampForegroundService,
+                    applicationContext,
+                    sensorSpecList
+                )*/
 
                     10 -> {
                         var telephonyDataRequired = true
@@ -479,160 +476,158 @@ class LampForegroundService : Service(),
     }
 
 
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getAccelerometerData(sensorData: SensorEvent) {
+        //   Log.d("Watch", "Sensor data received: getAccelerometerData ()" )
 
+        if (lastTimestampAccelerometer != 0L && System.currentTimeMillis() - lastTimestampAccelerometer < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampAccelerometer = System.currentTimeMillis()
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getAccelerometerData(sensorData: SensorEvent) {
-         //   Log.d("Watch", "Sensor data received: getAccelerometerData ()" )
-
-           if( lastTimestampAccelerometer!=0L && System.currentTimeMillis()-lastTimestampAccelerometer< MINIMUM_DATA_COLLECTION_INTERVAL)
-               return
-            lastTimestampAccelerometer=System.currentTimeMillis()
-
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
-
-
-           // Log.d("NewWatch","getAccelerometerData  Stored to file")
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getRotationData(sensorData: SensorEvent) {
-            //Log.d("Watch", "Sensor data received: getRotationData ()" )
-            if( lastTimestampRotation!=0L && System.currentTimeMillis()-lastTimestampRotation< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampRotation=System.currentTimeMillis()
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+        // Log.d("NewWatch","getAccelerometerData  Stored to file")
+    }
 
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getRotationData(sensorData: SensorEvent) {
+        //Log.d("Watch", "Sensor data received: getRotationData ()" )
+        if (lastTimestampRotation != 0L && System.currentTimeMillis() - lastTimestampRotation < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampRotation = System.currentTimeMillis()
 
-           // Log.d("NewWatch","getRotationData  Stored to file")
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getMagneticData(sensorData: SensorEvent) {
-          //  Log.d("Watch", "Sensor data received: getMagneticData ()" )
-            if( lastTimestampMagnetometer!=0L && System.currentTimeMillis()-lastTimestampMagnetometer< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampMagnetometer=System.currentTimeMillis()
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+        // Log.d("NewWatch","getRotationData  Stored to file")
+    }
 
-           //   Log.d("NewWatch","getMagneticData  Stored to file")
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getMagneticData(sensorData: SensorEvent) {
+        //  Log.d("Watch", "Sensor data received: getMagneticData ()" )
+        if (lastTimestampMagnetometer != 0L && System.currentTimeMillis() - lastTimestampMagnetometer < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampMagnetometer = System.currentTimeMillis()
+
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getGyroscopeData(sensorData: SensorEvent) {
-            //Log.d("Watch", "Sensor data received: getGyroscopeData ()" )
-            if( lastTimestampGyroscope!=0L && System.currentTimeMillis()-lastTimestampGyroscope< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampGyroscope=System.currentTimeMillis()
+        //   Log.d("NewWatch","getMagneticData  Stored to file")
+    }
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getGyroscopeData(sensorData: SensorEvent) {
+        //Log.d("Watch", "Sensor data received: getGyroscopeData ()" )
+        if (lastTimestampGyroscope != 0L && System.currentTimeMillis() - lastTimestampGyroscope < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampGyroscope = System.currentTimeMillis()
 
-            // Log.d("NewWatch","getGyroscopeData  Stored to file")
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getLocationData(sensorData: SensorEvent) {
-            //Log.d("Watch", "Sensor data received: getLocationData ()" )
-            if( lastTimestampLocation!=0L && System.currentTimeMillis()-lastTimestampLocation< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampLocation=System.currentTimeMillis()
+        // Log.d("NewWatch","getGyroscopeData  Stored to file")
+    }
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getLocationData(sensorData: SensorEvent) {
+        //Log.d("Watch", "Sensor data received: getLocationData ()" )
+        if (lastTimestampLocation != 0L && System.currentTimeMillis() - lastTimestampLocation < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampLocation = System.currentTimeMillis()
 
-            // Log.d("NewWatch","getLocationData  Stored to file")
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getWifiData(sensorData: SensorEvent) {
-           // Log.d("Watch", "Sensor data received: getWifiData ()" )
-            if( lastTimestampWifi!=0L && System.currentTimeMillis()-lastTimestampWifi< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampWifi=System.currentTimeMillis()
+        // Log.d("NewWatch","getLocationData  Stored to file")
+    }
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getWifiData(sensorData: SensorEvent) {
+        // Log.d("Watch", "Sensor data received: getWifiData ()" )
+        if (lastTimestampWifi != 0L && System.currentTimeMillis() - lastTimestampWifi < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampWifi = System.currentTimeMillis()
 
-            // Log.d("NewWatch","getwifi  Stored to file")
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getScreenState(sensorData: SensorEvent) {
-          //  Log.d("Watch", "Sensor data received: getScreenState ()" )
-            if( lastTimestampScreenState!=0L && System.currentTimeMillis()-lastTimestampScreenState< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampScreenState=System.currentTimeMillis()
+        // Log.d("NewWatch","getwifi  Stored to file")
+    }
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getScreenState(sensorData: SensorEvent) {
+        //  Log.d("Watch", "Sensor data received: getScreenState ()" )
+        if (lastTimestampScreenState != 0L && System.currentTimeMillis() - lastTimestampScreenState < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampScreenState = System.currentTimeMillis()
 
-             //Log.d("NewWatch","getScreenState  Stored to file")
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getActivityData(sensorData: SensorEvent) {
-           /// Log.d("Watch", "Sensor data received: getActivityData ()" )
+        //Log.d("NewWatch","getScreenState  Stored to file")
+    }
 
-            if( lastTimestampActivity!=0L && System.currentTimeMillis()-lastTimestampActivity< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampActivity=System.currentTimeMillis()
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getActivityData(sensorData: SensorEvent) {
+        /// Log.d("Watch", "Sensor data received: getActivityData ()" )
 
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
+        if (lastTimestampActivity != 0L && System.currentTimeMillis() - lastTimestampActivity < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampActivity = System.currentTimeMillis()
 
-              //  Log.d("NewWatch","getActivityData  Stored to file")
-
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        override fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>) {
-            //Log.d("Watch", "Sensor data received: getGoogleFitData ()" )
-            //No more implemented
+        //  Log.d("NewWatch","getActivityData  Stored to file")
+
+    }
+
+    override fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>) {
+        //Log.d("Watch", "Sensor data received: getGoogleFitData ()" )
+        //No more implemented
+    }
+
+    @OptIn(InternalCoroutinesApi::class)
+    override fun getTelephonyData(sensorData: SensorEvent) {
+        if (lastTimestampTelephony != 0L && System.currentTimeMillis() - lastTimestampTelephony < MINIMUM_DATA_COLLECTION_INTERVAL)
+            return
+        lastTimestampTelephony = System.currentTimeMillis()
+
+        val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
+        kotlinx.coroutines.internal.synchronized(SensorStore)
+        {
+            SensorStore.storeValue(sensorEventData)
         }
 
-        @OptIn(InternalCoroutinesApi::class)
-        override fun getTelephonyData(sensorData: SensorEvent) {
-            if( lastTimestampTelephony!=0L && System.currentTimeMillis()-lastTimestampTelephony< MINIMUM_DATA_COLLECTION_INTERVAL)
-                return
-            lastTimestampTelephony=System.currentTimeMillis()
-
-            val sensorEventData = SensorDataUtils.getSensorEventData(sensorData)
-            kotlinx.coroutines.internal.synchronized(SensorStore)
-            {
-                SensorStore.storeValue(sensorEventData)
-            }
-
-            //  Log.d("NewWatch","getTelephonyData  Stored to file")
-        }
+        //  Log.d("NewWatch","getTelephonyData  Stored to file")
+    }
 
 
 }

@@ -14,17 +14,30 @@ import retrofit2.http.*
 interface RestApi {
 
     @PUT(WebConstant.ADD_LOG_DATA)
-    fun addLogEvent(@Query("origin") origin:String, @Query("level") level:String, @Body logEventRequest: LogEventRequest) : Call<ResponseBody>
+    fun addLogEvent(
+        @Query("origin") origin: String,
+        @Query("level") level: String,
+        @Body logEventRequest: LogEventRequest
+    ): Call<ResponseBody>
 
     @POST(WebConstant.ADD_SENSOR_DATA)
-    fun sendDeviceToken(@Path("participant_id") participantId:String, @Body sendTokenRequest: SendTokenRequest) : Call<AddDeviceTokenResponse>
+    fun sendDeviceToken(
+        @Path("participant_id") participantId: String,
+        @Body sendTokenRequest: SendTokenRequest
+    ): Call<AddDeviceTokenResponse>
 
     @POST(WebConstant.ADD_SENSOR_DATA)
-    fun addNotification(@Path("participant_id") participantId:String, @Body notificationRequest: NotificatonRequest): Call<AddDeviceTokenResponse?>?
+    fun addNotification(
+        @Path("participant_id") participantId: String,
+        @Body notificationRequest: NotificatonRequest
+    ): Call<AddDeviceTokenResponse?>?
 
     @POST(WebConstant.ADD_SENSOR_DATA)
-    fun addSensorEvent(@Path("participant_id") participantId:String, @Body sensorEventDataList: ArrayList<SensorEventData>): Call<SensorEventResponse?>?
+    fun addSensorEvent(
+        @Path("participant_id") participantId: String,
+        @Body sensorEventDataList: ArrayList<SensorEventData>
+    ): Call<SensorEventResponse?>?
 
-        @GET(WebConstant.PARTICIPANT_ID)
-    fun isUserExists(@Path("participant_id") participantId:String): Call<UserExistResponse?>?
+    @GET(WebConstant.PARTICIPANT_ID)
+    fun isUserExists(@Path("participant_id") participantId: String): Call<UserExistResponse?>?
 }

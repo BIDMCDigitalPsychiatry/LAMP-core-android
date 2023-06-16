@@ -3,8 +3,10 @@ package digital.lamp.mindlamp.web
 class WebConstant {
     companion object {
         const val SOCKET_TIME_OUT = 60L
+
         //Headers
         var USERID = ""
+
         /**
          * Codes
          */
@@ -12,6 +14,7 @@ class WebConstant {
         const val CODE_FAILED = 1
         const val CODE_SOCKET_TIME_OUT = 30
         const val CODE_INVALID_USER = 403
+
         //Methods
         const val ADD_LOG_DATA = "/"
         const val ADD_SENSOR_DATA = "participant/{participant_id}/sensor_event"

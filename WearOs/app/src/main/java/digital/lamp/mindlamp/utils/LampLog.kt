@@ -7,7 +7,7 @@ import android.util.Log
  */
 internal object LampLog {
 
-    val DOLOG =true
+    val DOLOG = true
     private val TAG = "Lamp V2"
 
 
@@ -35,13 +35,15 @@ internal object LampLog {
         }
 
     }
-    fun printStackTrace(e:Exception) {
+
+    fun printStackTrace(e: Exception) {
 
         if (DOLOG) {
-           e.printStackTrace()
+            e.printStackTrace()
         }
 
     }
+
     fun e(tag: String, message: String?, throwable: Throwable) {
         if (message == null)
             return

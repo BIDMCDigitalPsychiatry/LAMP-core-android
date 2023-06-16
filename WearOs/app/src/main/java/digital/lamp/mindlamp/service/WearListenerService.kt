@@ -15,6 +15,7 @@ class WearListenerService : WearableListenerService() {
     override fun onCreate() {
         super.onCreate()
     }
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
         Log.v("NewWatch", "WearListenerService:onMessageReceived")
         if (messageEvent.path == "/message_path") {

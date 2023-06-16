@@ -31,7 +31,7 @@ import javax.inject.Inject
 class HealthServiceViewModel @Inject constructor(
     private val repository: HealthServiceDataRepository,
     private val healthServicesManager: HealthServicesManager
-): ViewModel() {
+) : ViewModel() {
 
     val latestHeartRate = repository.latestHeartRate
 
@@ -40,17 +40,17 @@ class HealthServiceViewModel @Inject constructor(
         // accordingly.
 
 
-
-                viewModelScope.launch {
-                    healthServicesManager.registerForHeartRateData()
-                }
+        viewModelScope.launch {
+            healthServicesManager.registerForHeartRateData()
+        }
 
     }
-fun unregister(){
-    viewModelScope.launch {
-        healthServicesManager.unregisterForHeartRateData()
+
+    fun unregister() {
+        viewModelScope.launch {
+            healthServicesManager.unregisterForHeartRateData()
+        }
     }
-}
 
 }
 

@@ -15,6 +15,7 @@
  */
 
 package digital.lamp.mindlamp.sensor.health_services
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -42,7 +43,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class StartupReceiver : BroadcastReceiver() {
 
-    @Inject lateinit var repository: HealthServiceDataRepository
+    @Inject
+    lateinit var repository: HealthServiceDataRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
@@ -75,7 +77,7 @@ class StartupReceiver : BroadcastReceiver() {
         val sendDataRequest =
             PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(10L, TimeUnit.MINUTES)
                 // Additional configuration
-             //   .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                //   .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
         WorkManager.getInstance(context)
             .enqueue(sendDataRequest)

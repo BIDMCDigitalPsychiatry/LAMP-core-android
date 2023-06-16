@@ -18,12 +18,17 @@ import digital.lamp.mindlamp.utils.LampLog
 /**
  * Created by ZCO Engineering Dept.
  */
-class GravityData constructor(sensorListener: SensorListener, context: Context, frequency:Double?) {
+class GravityData constructor(
+    sensorListener: SensorListener,
+    context: Context,
+    frequency: Double?
+) {
     init {
         try {
-            Lamp.startGravity(context)//Start Gyroscope Sensor
+            //Start Gyroscope Sensor
+            Lamp.startGravity(context)
             frequency?.let {
-                val interval = (1 / frequency!!)*1000
+                val interval = (1 / frequency!!) * 1000
                 Gravity.setInterval(interval.toLong())// 1 millisecond
             }
             //Sensor Observer
@@ -32,18 +37,20 @@ class GravityData constructor(sensorListener: SensorListener, context: Context, 
                 val y = it.getAsDouble(Gyroscope.VALUES_1)
                 val z = it.getAsDouble(Gyroscope.VALUES_2)
 
-                val gravityData = GravityData(x,y,z)
-                val dimensionData = DeviceMotionData( MotionData(null,null,null),MagnetData(null,null,null),
-                    AttitudeData(null,null,null),gravityData,  RotationData(null,null,null))
+                val gravityData = GravityData(x, y, z)
+                val dimensionData = DeviceMotionData(
+                    MotionData(null, null, null), MagnetData(null, null, null),
+                    AttitudeData(null, null, null), gravityData, RotationData(null, null, null)
+                )
                 val sensorEventData =
                     SensorEvent(
                         dimensionData,
-                        Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
+                        Sensors.DEVICE_MOTION.sensor_name, System.currentTimeMillis().toDouble()
                     )
                 LampLog.e("Gyroscope : $x : $y : $z")
                 sensorListener.getGyroscopeData(sensorEventData)
             }
-        }catch (ex : Exception){
+        } catch (ex: Exception) {
             ex.printStackTrace()
         }
     }

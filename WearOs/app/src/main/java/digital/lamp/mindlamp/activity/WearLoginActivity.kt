@@ -53,7 +53,7 @@ class WearLoginActivity : FragmentActivity() {
         }
 
 
-        binding. btndone.setOnClickListener(object : View.OnClickListener {
+        binding.btndone.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
 
@@ -62,7 +62,7 @@ class WearLoginActivity : FragmentActivity() {
 
                     WebConstant.USERID =
                         Utils.toBase64(
-                            "U8917110983@lamp.com" + ":" +"U8917110983"
+                            "U8917110983@lamp.com" + ":" + "U8917110983"
                                 .trim()
                         ).toString().trim()
 
@@ -100,16 +100,15 @@ class WearLoginActivity : FragmentActivity() {
                     when (t?.responseCode) {
 
                         WebConstant.CODE_SUCCESS -> {
-                           GlobalScope.launch(Dispatchers.IO) {
-                               try {
-                                   synchronized(SensorStore) {
-                                       SensorStore.clear()
-                                   }
-                               }
-                               catch(e:Exception){
-                                   LampLog.d("Exception","clear   sensor values")
-                               }
-                           }
+                            GlobalScope.launch(Dispatchers.IO) {
+                                try {
+                                    synchronized(SensorStore) {
+                                        SensorStore.clear()
+                                    }
+                                } catch (e: Exception) {
+                                    LampLog.d("Exception", "clear   sensor values")
+                                }
+                            }
 
                             AppState.session.userId = Utils.toBase64(
                                 "U8917110983@lamp.com" + ":" + "U8917110983"
@@ -125,6 +124,7 @@ class WearLoginActivity : FragmentActivity() {
                             finish()
 
                         }
+
                         WebConstant.CODE_INVALID_USER -> {
                             msg = getString(R.string.authentication_failed)
                             toast = Toast.makeText(

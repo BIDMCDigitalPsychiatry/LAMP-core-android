@@ -29,26 +29,27 @@ object SensorStore {
             return ArrayList<SensorEventData>()
 
     }
-fun storeValue(sensorData: SensorEventData) {
-    val gson = Gson()
-    val file = File(App.app.filesDir ,"sensors.txt")
 
-    val list: ArrayList<SensorEventData> = if(file.length()>0) {
-        val reader = JsonReader(FileReader(file))
-        val type: Type = object : TypeToken<List<SensorEventData?>?>() {}.type
-        gson.fromJson(reader, type)
+    fun storeValue(sensorData: SensorEventData) {
+        val gson = Gson()
+        val file = File(App.app.filesDir, "sensors.txt")
+
+        val list: ArrayList<SensorEventData> = if (file.length() > 0) {
+            val reader = JsonReader(FileReader(file))
+            val type: Type = object : TypeToken<List<SensorEventData?>?>() {}.type
+            gson.fromJson(reader, type)
+
+        } else {
+            ArrayList<SensorEventData>()
+        }
+
+        list.add(sensorData)
+        val sensorDataText = gson.toJson(list)
+        clear()
+        file.writeText(sensorDataText)
 
     }
-    else {
-        ArrayList<SensorEventData>()
-    }
 
-    list.add(sensorData)
-    val sensorDataText = gson.toJson(list)
-    clear()
-    file.writeText(sensorDataText)
-
-}
     fun clear() {
         val file = File(App.app.filesDir, "sensors.txt")
         val fw: FileWriter

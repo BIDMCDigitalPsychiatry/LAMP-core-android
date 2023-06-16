@@ -23,7 +23,8 @@ object LampNotificationManager {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             serviceChannel.setSound(null, null)
-            val manager = context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val manager =
+                context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(serviceChannel)
         }
 

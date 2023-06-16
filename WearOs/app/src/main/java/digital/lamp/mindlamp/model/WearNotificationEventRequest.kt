@@ -3,7 +3,7 @@ package digital.lamp.mindlamp.model
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class WearNotificationEventRequest (
+data class WearNotificationEventRequest(
     @SerializedName("data")
     @Expose
     val notificationData: WearNotificationData,

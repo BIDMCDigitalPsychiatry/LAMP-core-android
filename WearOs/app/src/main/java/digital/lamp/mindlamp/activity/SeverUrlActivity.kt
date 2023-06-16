@@ -20,7 +20,7 @@ class SeverUrlActivity : FragmentActivity() {
         binding = ActivityServerurlBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        binding. txtserverurl.setText(AppState.session.urlvalue)
+        binding.txtserverurl.setText(AppState.session.urlvalue)
 
         binding.imgservericon.setOnClickListener(object : View.OnClickListener {
 
