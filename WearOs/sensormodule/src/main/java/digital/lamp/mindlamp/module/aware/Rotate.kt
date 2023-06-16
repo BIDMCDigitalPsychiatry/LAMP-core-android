@@ -2,11 +2,7 @@ package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
 
-import lamp.mindlamp.sensormodule.aware.AwareAccelerometerListener
-import lamp.mindlamp.sensormodule.aware.AwareRotationListener
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
-import lamp.mindlamp.sensormodule.aware.model.RotationData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 /**

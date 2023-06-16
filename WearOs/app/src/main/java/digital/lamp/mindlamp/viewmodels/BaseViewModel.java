@@ -8,7 +8,6 @@ import androidx.lifecycle.LiveData;
 
 import digital.lamp.mindlamp.viewmodels.repositories.WebServiceRepository;
 import digital.lamp.mindlamp.web.WebServiceResponseData;
-import digital.lamp.mindlamp.web.WebServiceResponseData;
 
 public class BaseViewModel extends AndroidViewModel {
 

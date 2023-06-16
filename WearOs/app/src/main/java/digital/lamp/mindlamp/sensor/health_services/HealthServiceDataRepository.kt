@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package digital.lamp.mindlamp.health_services
+package digital.lamp.mindlamp.sensor.health_services
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -27,7 +26,8 @@ import androidx.health.services.client.data.HeartRateAccuracy
 import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_HIGH
 import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_MEDIUM
 import androidx.health.services.client.data.SampleDataPoint
-import digital.lamp.mindlamp.health_services.utils.SensorDataUtils
+import digital.lamp.mindlamp.sensor.health_services.utils.SensorDataUtils
+import digital.lamp.mindlamp.utils.LampLog
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -55,6 +55,8 @@ class HealthServiceDataRepository @Inject constructor(
         prefs[LATEST_HEART_RATE] ?: 0.0
     }
 
+
+
     @OptIn(InternalCoroutinesApi::class)
     suspend fun storeLatestHeartRate(heartRate: Double) {
         dataStore.edit { prefs ->
@@ -66,13 +68,15 @@ kotlinx.coroutines.internal.synchronized(SensorStore)
 {
     SensorStore.storeValue(sensorData)
 }
-        Log.d("NewWatch","Heart rate value $heartRate Stored to file")
+        LampLog.d("NewWatch","Heart rate value $heartRate Stored to file")
      }
 
     companion object {
         const val PREFERENCES_FILENAME = "passive_data_prefs"
         private val PASSIVE_DATA_ENABLED = booleanPreferencesKey("passive_data_enabled")
         private val LATEST_HEART_RATE = doublePreferencesKey("latest_heart_rate")
+
+
     }
 }
 

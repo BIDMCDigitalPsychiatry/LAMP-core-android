@@ -5,7 +5,7 @@ import java.io.File
 import java.io.FileWriter
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 /**
  * Created by ZCo Developer

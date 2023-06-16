@@ -1,10 +1,14 @@
 package digital.lamp.mindlamp.service
 
 import android.content.Intent
-import android.hardware.Sensor
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.android.gms.wearable.*
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataMapItem
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.WearableListenerService
 
 class WearListenerService : WearableListenerService() {
 

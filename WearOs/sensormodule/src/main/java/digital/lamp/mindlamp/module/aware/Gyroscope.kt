@@ -2,9 +2,7 @@ package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
 
-import lamp.mindlamp.sensormodule.aware.AwareGyroscopeListener
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 /**

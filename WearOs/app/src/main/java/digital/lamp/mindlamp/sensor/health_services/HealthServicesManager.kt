@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package digital.lamp.mindlamp.health_services
+package digital.lamp.mindlamp.sensor.health_services
 
 import androidx.concurrent.futures.await
 import androidx.health.services.client.HealthServicesClient
@@ -31,7 +31,7 @@ class HealthServicesManager @Inject constructor(
     healthServicesClient: HealthServicesClient
 ) {
     private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
-    private val dataTypes = setOf(DataType.HEART_RATE_BPM,DataType.LOCATION,DataType.CALORIES)
+    private val dataTypes = setOf(DataType.HEART_RATE_BPM)
 
     suspend fun hasHeartRateCapability(): Boolean {
         val capabilities = passiveMonitoringClient.getCapabilitiesAsync().await()
@@ -44,7 +44,7 @@ class HealthServicesManager @Inject constructor(
 
             .build()
 
-        digital.lamp.mindlamp.utils.LampLog.d("NewWatch", "Registering listener")
+      LampLog.d("NewWatch", "Registering heart rate listener")
         passiveMonitoringClient.setPassiveListenerServiceAsync(
             HealthServiceDataService::class.java,
             passiveListenerConfig

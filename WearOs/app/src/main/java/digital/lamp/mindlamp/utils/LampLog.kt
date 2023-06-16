@@ -1,7 +1,6 @@
 package digital.lamp.mindlamp.utils
 
 import android.util.Log
-import digital.lamp.mindlamp.BuildConfig
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020

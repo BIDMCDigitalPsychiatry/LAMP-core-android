@@ -1,4 +1,4 @@
-package digital.lamp.mindlamp.health_services
+package digital.lamp.mindlamp.sensor.health_services
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

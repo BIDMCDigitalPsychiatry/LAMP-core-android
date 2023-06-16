@@ -1,14 +1,9 @@
 package digital.lamp.mindlamp.module.aware
 
-import android.content.ContentValues
 import android.content.Context
-import android.os.Handler
-import android.util.Log
 
 import lamp.mindlamp.sensormodule.aware.AwareWifiListener
-import lamp.mindlamp.sensormodule.aware.Magnetometer
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 /**

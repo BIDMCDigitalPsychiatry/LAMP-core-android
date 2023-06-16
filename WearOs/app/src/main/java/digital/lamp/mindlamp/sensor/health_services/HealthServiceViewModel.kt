@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package digital.lamp.mindlamp.health_services
+package digital.lamp.mindlamp.sensor.health_services
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -46,7 +46,11 @@ class HealthServiceViewModel @Inject constructor(
                 }
 
     }
-
+fun unregister(){
+    viewModelScope.launch {
+        healthServicesManager.unregisterForHeartRateData()
+    }
+}
 
 }
 

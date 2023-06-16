@@ -1,8 +1,8 @@
-package digital.lamp.mindlamp.health_services
+package digital.lamp.mindlamp.sensor.health_services
 
-import android.util.Log
 import androidx.health.services.client.PassiveListenerService
-import androidx.health.services.client.data.*
+import androidx.health.services.client.data.DataPointContainer
+import androidx.health.services.client.data.DataType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -19,13 +19,18 @@ class HealthServiceDataService : PassiveListenerService() {
                 repository.storeLatestHeartRate(it)
 
             }
-            dataPoints.getData(DataType.LOCATION).forEach { location ->
-                Log.d("Watch", "Location: $location")
+            dataPoints.getData(DataType.LOCATION).forEach {
+              //  Log.d("Watch", "Location: ${it.value.latitude } , ${it.value.longitude }, ${it.value.bearing }, , ${it.value.altitude }")
 
 
             }
             dataPoints.getData(DataType.CALORIES).forEach {
-                Log.d("Watch", "Calories value: $it")
+             //   Log.d("Watch", "Calories value: ${it.value}")
+
+
+            }
+            dataPoints.getData(DataType.VO2_MAX).forEach {
+               // Log.d("Watch", "Vo2max value: ${it.value}")
 
 
             }

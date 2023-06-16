@@ -1,17 +1,10 @@
 package digital.lamp.mindlamp.activity
 
-import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.os.Bundle
-import android.speech.RecognizerIntent
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
-import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.databinding.ActivityServerurlBinding
-import java.util.*
 
 
 /**

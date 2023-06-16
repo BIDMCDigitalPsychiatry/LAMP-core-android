@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package digital.lamp.mindlamp.health_services
+package digital.lamp.mindlamp.sensor.health_services
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent

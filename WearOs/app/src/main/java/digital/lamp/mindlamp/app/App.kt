@@ -100,8 +100,8 @@ import androidx.work.WorkManager
 
 import dagger.hilt.android.HiltAndroidApp
 import digital.lamp.mindlamp.appstate.Pref
-import digital.lamp.mindlamp.health_services.BackgroundDataSendingWorker
-import digital.lamp.mindlamp.health_services.HealthServiceDataRepository.Companion.PREFERENCES_FILENAME
+import digital.lamp.mindlamp.sensor.health_services.BackgroundDataSendingWorker
+import digital.lamp.mindlamp.sensor.health_services.HealthServiceDataRepository.Companion.PREFERENCES_FILENAME
 import digital.lamp.mindlamp.utils.DebugLogs
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject

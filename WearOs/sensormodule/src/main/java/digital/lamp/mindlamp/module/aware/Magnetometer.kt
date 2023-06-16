@@ -2,11 +2,7 @@ package lamp.mindlamp.sensormodule.aware
 
 import android.content.Context
 
-import lamp.mindlamp.sensormodule.R
-import lamp.mindlamp.sensormodule.aware.AwareMagnetometerListener
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
-import lamp.mindlamp.sensormodule.aware.model.DimensionData
-import lamp.mindlamp.sensormodule.aware.model.MagnetData
 import lamp.mindlamp.sensormodule.constant.Constants
 
 /**
