@@ -22,6 +22,9 @@ class BackgroundDataSendingWorker @AssistedInject constructor(
     private var webServiceRepository = WebServiceRepository()
 
     override fun doWork(): Result {
+        if (!AppState.session.isLoggedIn) {
+            return Result.success()
+        }
         Log.d("new watch", "data sending Worker running")
         DebugLogs.writeToFile(" BackgroundDataSendingWorker dowork")
         runBlocking {

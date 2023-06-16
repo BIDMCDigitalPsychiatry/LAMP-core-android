@@ -62,7 +62,9 @@ class WearLoginActivity : FragmentActivity() {
 
                     WebConstant.USERID =
                         Utils.toBase64(
-                            "U8917110983@lamp.com" + ":" + "U8917110983"
+                           // "U8917110983@lamp.com" + ":" + "U8917110983"
+                            binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+
                                 .trim()
                         ).toString().trim()
 
@@ -111,7 +113,9 @@ class WearLoginActivity : FragmentActivity() {
                             }
 
                             AppState.session.userId = Utils.toBase64(
-                                "U8917110983@lamp.com" + ":" + "U8917110983"
+                                //"U8917110983@lamp.com" + ":" + "U8917110983"
+                                binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+
                                     .trim()
                             ).toString().trim()
                             AppState.session.username =

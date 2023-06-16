@@ -6,14 +6,14 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 33
   //  buildToolsVersion "30.0.2"
-    /*signingConfigs {
+    signingConfigs {
         release {
             storeFile file('E:\\ProjectFiles\\androidstudio_workspace\\LampAndroidGithub\\WearOs\\app\\key.jks')
             storePassword 'v2lamp20*89'
             keyPassword 'v2lamp20*89'
             keyAlias 'key0'
         }
-    }*/
+    }
 
     buildFeatures {
         viewBinding = true
@@ -23,13 +23,13 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion 30
         targetSdkVersion 33
-        versionCode 841
-        versionName "2.0"
+        versionCode 918
+        versionName "1.1"
 
     }
     buildTypes {
         release {
-            //signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable = false
