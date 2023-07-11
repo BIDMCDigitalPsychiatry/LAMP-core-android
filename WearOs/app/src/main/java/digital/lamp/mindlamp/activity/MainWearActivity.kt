@@ -69,6 +69,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         binding = ActivityMainWearBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        AppState.session.isLoggedIn = true
         FirebaseApp.initializeApp(this);
 
 
@@ -100,11 +101,13 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                     true -> {
                         LampLog.d("New watch", "Body sensors permission granted")
                         //  viewModel.togglePassiveData(true)
+
                     }
 
                     false -> {
                         LampLog.d("New watch", "Body sensors permission not granted")
                         // viewModel.togglePassiveData(false)
+
                     }
                 }
             }
@@ -114,71 +117,13 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
             IntentFilter("com.from.notification")
         );
 
-        val locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            when {
-                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                    // Precise location access granted.\
-
-                }
-
-                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                    // Only approximate location access granted.
-
-                }
-
-                else -> {
-                    // No location access granted.
-                }
-            }
+        try {
+            doLocationPermissions()
         }
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-
-
-            ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // You can use the API that requires the permission.
-
-            }
-
-
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) || ActivityCompat.shouldShowRequestPermissionRationale(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-            -> {
-                // In an educational UI, explain to the user why your app requires this
-                // permission for a specific feature to behave as expected, and what
-                // features are disabled if it's declined. In this UI, include a
-                // "cancel" or "no thanks" button that lets the user continue
-                // using your app without granting the permission.
-                //  showInContextUI(...)
-                this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
-
-
-            }
-
-            else -> {
-                // You can directly ask for the permission.
-                // The registered ActivityResultCallback gets the result of this request.
-                locationPermissionRequest.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-
-                )
-            }
+        catch (e:Exception){
+            LampLog.e(TAG,"exception Location permission",e)
         }
+
 
         // Build a new GoogleApiClient that includes the Wearable API
         googleApiClient = GoogleApiClient.Builder(this)
@@ -238,7 +183,73 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
+fun doLocationPermissions() {
+    val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                // Precise location access granted.\
 
+            }
+
+            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                // Only approximate location access granted.
+
+            }
+
+            else -> {
+                // No location access granted.
+            }
+        }
+    }
+    when {
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+
+
+        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED -> {
+            // You can use the API that requires the permission.
+
+        }
+
+
+        ActivityCompat.shouldShowRequestPermissionRationale(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) || ActivityCompat.shouldShowRequestPermissionRationale(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        -> {
+            // In an educational UI, explain to the user why your app requires this
+            // permission for a specific feature to behave as expected, and what
+            // features are disabled if it's declined. In this UI, include a
+            // "cancel" or "no thanks" button that lets the user continue
+            // using your app without granting the permission.
+            //  showInContextUI(...)
+            this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+
+        }
+
+        else -> {
+            // You can directly ask for the permission.
+            // The registered ActivityResultCallback gets the result of this request.
+            locationPermissionRequest.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+
+            )
+        }
+    }
+}
     fun initializecontrols() {
         binding.btnLogout.setOnClickListener {
             try {

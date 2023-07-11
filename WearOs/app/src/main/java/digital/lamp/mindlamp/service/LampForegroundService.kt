@@ -9,12 +9,14 @@ import android.net.TrafficStats
 import android.os.CountDownTimer
 import android.os.IBinder
 import android.util.Log
+import androidx.work.ListenableWorker
 import androidx.work.WorkManager
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
+import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.notification.LampNotificationManager
@@ -41,6 +43,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.concurrent.timer
 
 
 /**
@@ -64,8 +67,7 @@ class LampForegroundService : Service(),
     private var isAlarm: Boolean = false
     private var isActivitySchedule = false
     private var localNotificationId = 0
-    private lateinit var alarmManager: AlarmManager
-    private lateinit var alarmIntent: PendingIntent
+
 
     private lateinit var oScope: CoroutineScope
     private lateinit var oGson: Gson
@@ -204,7 +206,14 @@ class LampForegroundService : Service(),
         var count = 0
         val timer = object : CountDownTimer(MILLISEC_FUTURE, TIME_INTERVAL) {
             override fun onTick(millisUntilFinished: Long) {
-
+                if (!AppState.session.isLoggedIn) {
+                    try {
+                        cancel()
+                    }
+                    catch (e:Exception){
+                        LampLog.e(TAG,"Exception in timer cancel"+e.message,e)
+                    }
+                }
                 count++
                 Log.d("Timer", "collectSensorData" + count)
                 when (count) {
@@ -212,97 +221,117 @@ class LampForegroundService : Service(),
                     }
 
                     2 -> {
-                        var accelerometerDataRequired = true
-                        var sensorSpec = ""
-                        var frequency: Double? = 0.1
+                        try {
+                            var accelerometerDataRequired = true
+                            var sensorSpec = ""
+                            var frequency: Double? = 0.1
 
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
-                                it.spec == Sensors.DEVICE_MOTION.sensor_name
-                            ) {
-                                accelerometerDataRequired = true
-                                if (accelerometerDataRequired)
-                                    sensorSpec += it.spec!!
-                                else
-                                    sensorSpec = it.spec!!
-                                it.frequency?.let {
-                                    if (it != 0.0 && it <= 5)
-                                        frequency = it
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
+                                    it.spec == Sensors.DEVICE_MOTION.sensor_name
+                                ) {
+                                    accelerometerDataRequired = true
+                                    if (accelerometerDataRequired)
+                                        sensorSpec += it.spec!!
+                                    else
+                                        sensorSpec = it.spec!!
+                                    it.frequency?.let {
+                                        if (it != 0.0 && it <= 5)
+                                            frequency = it
+                                    }
                                 }
                             }
-                        }
-                        //Invoke Accelerometer Call
-                        if (accelerometerDataRequired) {
-                            AccelerometerData(
-                                this@LampForegroundService,
-                                applicationContext,
-                                frequency, sensorSpec
-                            )
+                            //Invoke Accelerometer Call
+                            if (accelerometerDataRequired) {
+                                AccelerometerData(
+                                    this@LampForegroundService,
+                                    applicationContext,
+                                    frequency, sensorSpec
+                                )
+                            }
+
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
                         }
                     }
 
                     3 -> {
-                        var rotationDataRequird = true
-                        var frequency: Double? = 0.1
+                        try {
+                            var rotationDataRequird = true
+                            var frequency: Double? = 0.1
 
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                rotationDataRequird = true
-                                it.frequency?.let {
-                                    if (it != 0.0 && it <= 5)
-                                        frequency = it
-                                }
-                            } //Invoke Rotation Call
-                        }
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    rotationDataRequird = true
+                                    it.frequency?.let {
+                                        if (it != 0.0 && it <= 5)
+                                            frequency = it
+                                    }
+                                } //Invoke Rotation Call
+                            }
 
-                        if (rotationDataRequird) {
-                            RotationData(
-                                this@LampForegroundService,
-                                applicationContext, frequency
-                            )
+                            if (rotationDataRequird) {
+                                RotationData(
+                                    this@LampForegroundService,
+                                    applicationContext, frequency
+                                )
+                            }
+
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
                         }
                     }
 
                     4 -> {
-                        var magnetometerDataRequired = true
-                        var frequency: Double? = 0.1
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                magnetometerDataRequired = true
-                                it.frequency?.let {
-                                    if (it != 0.0 && it <= 5)
-                                        frequency = it
+                        try {
+                            var magnetometerDataRequired = true
+                            var frequency: Double? = 0.1
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    magnetometerDataRequired = true
+                                    it.frequency?.let {
+                                        if (it != 0.0 && it <= 5)
+                                            frequency = it
+                                    }
                                 }
                             }
-                        }
-                        if (magnetometerDataRequired) {
-                            //Invoke Magnet Call
-                            MagnetometerData(
-                                this@LampForegroundService,
-                                applicationContext, frequency
-                            )
-                        }
+                            if (magnetometerDataRequired) {
+                                //Invoke Magnet Call
+                                MagnetometerData(
+                                    this@LampForegroundService,
+                                    applicationContext, frequency
+                                )
+                            }
 
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
+
+                        }
                     }
 
                     5 -> {
-                        var gravityDataRequired = true
-                        var frequency: Double? = 0.1
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
-                                gravityDataRequired = true
+                        try {
+                            var gravityDataRequired = true
 
-                                it.frequency?.let {
-                                    if (it != 0.0 && it <= 5)
-                                        frequency = it
-                                }
-                            }//Invoke Gyroscope Call
-                        }
-                        if (gravityDataRequired) {
-                            GravityData(
-                                this@LampForegroundService,
-                                applicationContext, frequency
-                            )
+                            var frequency: Double? = 0.1
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.DEVICE_MOTION.sensor_name) {
+                                    gravityDataRequired = true
+
+                                    it.frequency?.let {
+                                        if (it != 0.0 && it <= 5)
+                                            frequency = it
+                                    }
+                                }//Invoke Gyroscope Call
+                            }
+                            if (gravityDataRequired) {
+                                GravityData(
+                                    this@LampForegroundService,
+                                    applicationContext, frequency
+                                )
+                            }
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
                         }
                     }
 
@@ -330,39 +359,45 @@ class LampForegroundService : Service(),
                     }
 
                     7 -> {
-                        var wifiDataRequired = true
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
-                                wifiDataRequired = true
+                        try {
+                            var wifiDataRequired = true
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
+                                    wifiDataRequired = true
 
+                                }
                             }
+                            if (wifiDataRequired) {
+                                //Invoke WifiData
+                                WifiData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )
+                            }
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
                         }
-                        if (wifiDataRequired) {
-                            //Invoke WifiData
-                            WifiData(
-                                this@LampForegroundService,
-                                applicationContext
-                            )
-                        }
-
                     }
 
                     8 -> {
-                        var screenStateDataRequired = true
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.SCREEN_STATE.sensor_name || it.spec == Sensors.DEVICE_STATE.sensor_name) {
-                                screenStateDataRequired = true
+                        try {
+                            var screenStateDataRequired = true
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.SCREEN_STATE.sensor_name || it.spec == Sensors.DEVICE_STATE.sensor_name) {
+                                    screenStateDataRequired = true
 
+                                }
                             }
+                            if (screenStateDataRequired) {
+                                //Invoke screen state Data
+                                ScreenStateData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )
+                            }
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
                         }
-                        if (screenStateDataRequired) {
-                            //Invoke screen state Data
-                            ScreenStateData(
-                                this@LampForegroundService,
-                                applicationContext
-                            )
-                        }
-
                     }
 
                     9 -> {
@@ -375,21 +410,25 @@ class LampForegroundService : Service(),
                 )*/
 
                     10 -> {
-                        var telephonyDataRequired = true
-                        sensorSpecList.forEach {
-                            if (it.spec == Sensors.TELEPHONY.sensor_name) {
-                                telephonyDataRequired = true
+                        try {
+                            var telephonyDataRequired = true
+                            sensorSpecList.forEach {
+                                if (it.spec == Sensors.TELEPHONY.sensor_name) {
+                                    telephonyDataRequired = true
 
+                                }
                             }
-                        }
-                        if (telephonyDataRequired) {
-                            //Invoke screen state Data
-                            TelephonySensorData(
-                                this@LampForegroundService,
-                                applicationContext
-                            )
-                        }
+                            if (telephonyDataRequired) {
+                                //Invoke screen state Data
+                                TelephonySensorData(
+                                    this@LampForegroundService,
+                                    applicationContext
+                                )
+                            }
 
+                        } catch (e: Exception) {
+                            LampLog.e("LampWatch", e.message, e)
+                        }
                     }
                 }
             }
@@ -405,6 +444,7 @@ class LampForegroundService : Service(),
 
 
     override fun onDestroy() {
+
         super.onDestroy()
 
     }

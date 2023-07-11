@@ -217,9 +217,9 @@ class HomeActivity : AppCompatActivity() {
             binding.progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
-            if (checkAndRequestPermissions(this)) {
+           checkAndRequestPermissions(this)
                 initializeWebview()
-            }
+
         }
         handleNotification(intent)
 
@@ -419,6 +419,7 @@ class HomeActivity : AppCompatActivity() {
                         initializeWebview()
                         //else any one or both the permissions are not granted
                     } else {
+                        initializeWebview()
                         //Now further we check if used denied permanently or not
                         if (ActivityCompat.shouldShowRequestPermissionRationale(
                                 this,
@@ -438,6 +439,7 @@ class HomeActivity : AppCompatActivity() {
                                     }
                                 })
                         } else {
+                          //  DebugLogs.writeToFile("Display settings screen")
                             // case 5. Permission denied permanently.
                             // You can open Permission setting's page from here now.
                             val intent = Intent()
@@ -796,7 +798,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (binding.webView.copyBackForwardList().getCurrentIndex() > 0) {
+        if (binding.webView.canGoBack()) {
             binding.webView.goBack()
         } else {
             super.onBackPressed() // finishes activity

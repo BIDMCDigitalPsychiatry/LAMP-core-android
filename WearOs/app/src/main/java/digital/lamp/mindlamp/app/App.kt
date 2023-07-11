@@ -136,7 +136,7 @@ class App : Application(), LifecycleObserver, Configuration.Provider {
         )
         //send data to server periodically
         val sendDataRequest =
-            PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(10L, TimeUnit.MINUTES)
+            PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(180L, TimeUnit.SECONDS)
                 // Additional configuration
                 // .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()

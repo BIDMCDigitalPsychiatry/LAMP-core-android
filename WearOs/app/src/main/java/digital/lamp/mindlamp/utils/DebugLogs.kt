@@ -22,7 +22,7 @@ object DebugLogs {
      */
     fun writeToFile(txt: String?) {
         try {
-
+            return
             val logfile = File(App.app.filesDir, "LampLog.txt")
 
             if (!logfile.exists()) {
