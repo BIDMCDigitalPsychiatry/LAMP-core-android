@@ -18,7 +18,7 @@ class TelephonySensorData constructor(sensorListener: SensorListener, context: C
             Lamp.startTelephony(context)//Start Screen Sensor
             //Sensor Observer
             TelephonySensor.setSensorObserver(object :TelephonySensor.TelephonyListener{
-                override fun onIncomingCallEnded(callDuration: Int?) {
+                override fun onIncomingCallEnded(callDuration: Long?) {
                     callDuration?.let {
                         DebugLogs.writeToFile("Incoming cAll : $callDuration time ${System.currentTimeMillis().toDouble()}")
                         val telephonyData = TelephonyData(
@@ -34,7 +34,7 @@ class TelephonySensorData constructor(sensorListener: SensorListener, context: C
                     }
                 }
 
-                override fun onOutgoingCallEnded(callDuration: Int?) {
+                override fun onOutgoingCallEnded(callDuration: Long?) {
                     callDuration?.let {
                         DebugLogs.writeToFile("Outgoing cAll : $callDuration time ${System.currentTimeMillis().toDouble()}")
                         val telephonyData = TelephonyData(callDuration,  SensorConstants.CallState.OUTGOING.value)
