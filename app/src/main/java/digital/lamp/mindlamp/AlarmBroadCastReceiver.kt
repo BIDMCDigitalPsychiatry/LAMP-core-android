@@ -12,7 +12,7 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 /**
  * Created by ZCO Engineering Dept. on 06,February,2020
  */
-class AlarmBroadCastReceiver : BroadcastReceiver() {
+class AlarmBroadCastReceiver : BroadcastReceiver()  {
     override fun onReceive(context: Context, intent: Intent) {
         val action: String? = intent.action
         val id = intent.getIntExtra("id",0)
