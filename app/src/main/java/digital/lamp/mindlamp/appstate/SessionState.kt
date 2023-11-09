@@ -43,7 +43,7 @@ class SessionState {
 
     var showDisclosureAlert by Pref(
         PREF_SHOW_DISCLOSURE_ALERT,
-        true
+        false
     )
 
     var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,1L)
