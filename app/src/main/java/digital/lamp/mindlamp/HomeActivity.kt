@@ -12,6 +12,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.database.CursorWindow
 import android.net.TrafficStats
 import android.net.Uri
 import android.net.http.SslError
@@ -23,7 +24,6 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -54,7 +54,6 @@ import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.databinding.ActivityHomeBinding
-import digital.lamp.mindlamp.databinding.ActivityWebviewOverviewBinding
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
@@ -72,6 +71,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.lang.reflect.Field
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.*
@@ -114,6 +114,9 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * webview client object lazy initialization
+     */
     private val myWebViewClient: WebViewClient by lazy {
         object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
@@ -168,6 +171,9 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * fitness options
+     */
     private val fitnessOptions: FitnessOptions by lazy {
         FitnessOptions.builder()
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -213,7 +219,7 @@ class HomeActivity : AppCompatActivity() {
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
 
-        if (AppState.session.showDisclosureAlert) {
+        if (!AppState.session.showDisclosureAlert) {
             binding.progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
@@ -222,14 +228,32 @@ class HomeActivity : AppCompatActivity() {
 
         }
         handleNotification(intent)
+        // Fix for SqlBlobTooBigException
+        try {
+            val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+            field.isAccessible = true
+            field.set(null, 100 * 1024 * 1024) // 100MB is the new size
+        } catch (e: java.lang.Exception) {
+            DebugLogs.writeToFile("Exception: ${e.message}")
+        }
+        if (AppState.session.showDisclosureAlert) {
+            val batteryOptimizationHelper = BatteryOptimizationHelper(this)
+            batteryOptimizationHelper.checkBatteryOptimization()
+        }
 
     }
 
+    /**
+     * check location permission
+     */
     private fun checkLocationPermission(): Boolean {
         val locationPermission = doHaveAllLocationPermissions()
         return locationPermission
     }
 
+    /**
+     * check all permissions are granted
+     */
     private fun doHaveAllLocationPermissions(): Boolean {
         return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)
@@ -239,6 +263,10 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+
+    /**
+     * Request for location permission
+     */
     private fun requestLocationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             var rationale = false
@@ -247,6 +275,9 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+    /**
+     * request permission as per the android version
+     */
     private fun requestPermissionAsPerVersion(locationRequestCode: Int) {
         when {
             Build.VERSION.SDK_INT <= Build.VERSION_CODES.P -> {
@@ -261,6 +292,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * location permission for api 28
+     */
     @TargetApi(28)
     fun checkLocationPermissionAPI28(locationRequestCode: Int) {
         if (!PermissionCheck.checkSinglePermission(
@@ -275,6 +309,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * location permission for api 29
+     */
     @TargetApi(29)
     private fun checkLocationPermissionAPI29(locationRequestCode: Int) {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) &&
@@ -286,6 +323,9 @@ class HomeActivity : AppCompatActivity() {
         requestPermissions(permList, locationRequestCode)
     }
 
+    /**
+     * location permission for api 30
+     */
     @TargetApi(30)
     private fun checkBackgroundLocationPermissionAPI30() {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
@@ -303,6 +343,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * initialize webview
+     */
     @SuppressLint("SetJavaScriptEnabled")
     private fun initializeWebview() {
         binding.webView.clearCache(true)
@@ -346,6 +389,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * reload webpage after some time
+     */
     private fun startTimerForReloadWebpage(errorMessage: String) {
         reloadWebpageTimer?.cancel()
         reloadWebpageTimer?.purge()
@@ -399,6 +445,9 @@ class HomeActivity : AppCompatActivity() {
         )
     }
 
+    /**
+     * activity result handler
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -477,6 +526,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * check location permission is available
+     */
     private fun checkLocation() {
         if (checkLocationPermission()) {
             AppState.session.isLocationPermissionAllowed = true
@@ -488,6 +540,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * check google fit sensors
+     */
     private fun checkGoogleFit() {
         val specList = mSensorSpecsList.map { it.spec }
 
@@ -509,6 +564,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     *to show dialog
+     */
     private fun showDialogOK(message: String, okListener: DialogInterface.OnClickListener) {
         AlertDialog.Builder(this)
             .setMessage(message)
@@ -519,7 +577,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * to start service
+     */
     private fun startLampService() {
+        val batteryOptimizationHelper = BatteryOptimizationHelper(this)
+        batteryOptimizationHelper.checkBatteryOptimization()
         val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
             putExtra("inputExtra", "Foreground Service Example in Android")
             putExtra("set_alarm", false)
@@ -529,6 +592,9 @@ class HomeActivity : AppCompatActivity() {
         ContextCompat.startForegroundService(this, serviceIntent)
     }
 
+    /**
+     * to stop service
+     */
     private fun stopLampService() {
 
         val stopIntent = Intent(this, LampForegroundService::class.java)
@@ -566,6 +632,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
 
+    /**
+     * check authentication status and fetch username and password from server
+     */
     private fun onAuthenticationStateChanged(newState: AuthenticationState) = when (newState) {
         is AuthenticationState.SignedIn -> showSignedIn()
         is AuthenticationState.StoredCredentials -> showSignedIn(newState.credentials)
@@ -575,6 +644,9 @@ class HomeActivity : AppCompatActivity() {
     private fun showSignedIn() {
     }
 
+    /**
+     * to logout from current user
+     */
     private fun showSignedOut() {
 
         val tokenData = TokenData()
@@ -623,6 +695,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * to sign into the user dashboard
+     */
     private fun showSignedIn(oLoginResponse: LoginResponse) {
 
         AppState.session.isLoggedIn = true
@@ -643,6 +718,9 @@ class HomeActivity : AppCompatActivity() {
         invokeSensorSpecData()
     }
 
+    /**
+     * google fit sign in
+     */
     private fun fitSignIn() {
         if (oAuthPermissionsApproved()) {
             accessGoogleFit()
@@ -679,6 +757,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     *  Access the google fit and checks permission for listed sensors
+     */
     private fun accessGoogleFit() {
         AppState.session.isGoogleFitConnected = true
         LampLog.e(TAG, "Google Fit Connected")
@@ -691,6 +772,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * fetch current token from server
+     */
     private fun retrieveCurrentToken() {
 
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
@@ -739,6 +823,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Handles error message from google fit
+     */
     private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
         AppState.session.isGoogleFitConnected = false
         mSensorSpecsList.forEach {
@@ -757,6 +844,9 @@ class HomeActivity : AppCompatActivity() {
         trackSingleEvent("Fit_ERROR")
     }
 
+    /**
+     * handles the actions  after the google fit permission approved
+     */
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
         getGoogleAccount(),
         fitnessOptions
@@ -767,16 +857,22 @@ class HomeActivity : AppCompatActivity() {
      */
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
 
+    /**
+     * log events on firebase analytics
+     */
     private fun trackSingleEvent(eventName: String) {
         //Firebase Event Tracking
         val params = Bundle()
         firebaseAnalytics.logEvent(eventName, params)
     }
 
+    /**
+     * To display the app disclosure while first time app opening
+     */
     private fun populateOnDisclosureARAlert() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()
-            AppState.session.showDisclosureAlert = false
+            AppState.session.showDisclosureAlert = true
             if (checkAndRequestPermissions(this)) {
                 initializeWebview()
             }
@@ -797,6 +893,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * handles the app back button press or device back button press
+     */
     override fun onBackPressed() {
         if (binding.webView.canGoBack()) {
             binding.webView.goBack()
@@ -805,11 +904,17 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * fetch intent data
+     */
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         handleNotification(intent)
     }
 
+    /**
+     * Handles notifications
+     */
     private fun handleNotification(intent: Intent?) {
         hideKeyboard()
         if (intent?.hasExtra("survey_path") == true) {
@@ -846,11 +951,17 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Handles keyboard hiding
+     */
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.webView.getWindowToken(), 0)
     }
 
+    /**
+     * fetch sensors from server
+     */
     private fun invokeSensorSpecData() {
 
         if (NetworkUtils.isNetworkAvailable(this)) {
@@ -980,6 +1091,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * To check GPS permission is allowed or not
+     */
     private fun checkGPSPermission() {
         val specList = mSensorSpecsList.map { it.spec }
         if (!isFinishing && checkLocationPermission() && specList.contains(Sensors.GPS.sensor_name)) {
@@ -1009,6 +1123,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Displays error messages
+     */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
         if (!isFinishing) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
@@ -1045,6 +1162,9 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Check network connection
+     */
     override fun onResume() {
         super.onResume()
         val netwokStatus = NetworkConnectionLiveData(this)
