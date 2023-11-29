@@ -5,6 +5,7 @@ import digital.lamp.mindlamp.BuildConfig
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
+ * This class class responsible for log writing
  */
 internal object LampLog {
 

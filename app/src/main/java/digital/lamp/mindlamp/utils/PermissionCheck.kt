@@ -8,9 +8,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS
+import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_WIFI_PERMISSIONS
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
+ * This class is responsible for request permissions
  */
 object PermissionCheck {
 
@@ -103,6 +105,23 @@ object PermissionCheck {
         }
         return true
 
+    }
+    fun checkWifiPermission(context: Activity): Boolean{
+        val listPermissionsNeeded = ArrayList<String>()
+        val wifiPermission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_WIFI_STATE)
+
+        if (wifiPermission != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.ACCESS_WIFI_STATE)
+
+            ActivityCompat.requestPermissions(
+                context,
+                listPermissionsNeeded.toTypedArray(),
+                REQUEST_ID_WIFI_PERMISSIONS
+            )
+            return false
+        }
+        return true
     }
 
     fun checkSinglePermission(permission: String, context: Activity): Boolean {

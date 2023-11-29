@@ -12,38 +12,43 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * OneTimeScheduleWorker used to set different type of local notifications
+ *
+ * @param appContext The application context.
+ * @param workerParams Parameters to setup the worker, including input data.
+ */
 class OneTimeScheduleWorker(
-        private val context: Context,
-        workerParams: WorkerParameters
+    private val context: Context,
+    workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
         val TAG = "OneTimeScheduleWorker"
     }
-
+    /**
+     * This method is called in the background thread to perform the work.
+     * It should return the result of the computation.
+     *
+     * @return The Result indicating success or failure of the work.
+     */
     override suspend fun doWork(): Result {
 
         val notificationId =
-                inputData.getInt(ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value, 0)
+            inputData.getInt(ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value, 0)
         val repeatInterval =
-                inputData.getString(ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value)
+            inputData.getString(ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value)
 
         val oActivityDao = AppDatabase.getInstance(context).activityDao()
         val activityList = oActivityDao.getActivityList()
         activityList.forEach { activitySchedule ->
             activitySchedule.schedule?.forEach { durationIntervalLegacy ->
-                LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification 2")
                 durationIntervalLegacy.notification_ids?.forEach {
                     if (Utils.getMyIntValue(it) == notificationId) {
-                        LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification 3")
-                        LampLog.e(
-                                TAG,
-                                "Activity Name :: - ${activitySchedule.name} ---- $notificationId"
-                        )
                         LampNotificationManager.showActivityNotification(
-                                context,
-                                activitySchedule,
-                                notificationId
+                            context,
+                            activitySchedule,
+                            notificationId
                         )
                     }
                 }
@@ -108,7 +113,7 @@ class OneTimeScheduleWorker(
                 setMonthlyNotification(notificationId)
 
             }
-            RepeatInterval.CUSTOM.tag->{
+            RepeatInterval.CUSTOM.tag -> {
                 interval = 24
                 timeUnit = TimeUnit.HOURS
                 repeatNotification = true
@@ -119,48 +124,59 @@ class OneTimeScheduleWorker(
             val data = Data.Builder()
             data.putInt(ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value, notificationId)
             val periodicWork =
-                    PeriodicWorkRequestBuilder<PeriodicScheduleWorker>(
-                            interval, timeUnit)
-                            .addTag(WORK_MANAGER_TAG)
-                            .setInputData(data.build())
-                            .build()
+                PeriodicWorkRequestBuilder<PeriodicScheduleWorker>(
+                    interval, timeUnit
+                )
+                    .addTag(WORK_MANAGER_TAG)
+                    .setInputData(data.build())
+                    .build()
 
             WorkManager.getInstance(context)
-                    .enqueueUniquePeriodicWork(
-                            notificationId.toString(),
-                            ExistingPeriodicWorkPolicy.REPLACE,
-                            periodicWork
-                    )
+                .enqueueUniquePeriodicWork(
+                    notificationId.toString(),
+                    ExistingPeriodicWorkPolicy.REPLACE,
+                    periodicWork
+                )
         }
         return Result.success()
     }
-
+    /**
+     * Schedule a monthly notification using WorkManager.
+     *
+     * @param notificationId The unique identifier for the notification.
+     */
     private fun setMonthlyNotification(notificationId: Int) {
         val calendar = Calendar.getInstance()
+        // Schedule the notification for one month in the future
         calendar.add(Calendar.MONTH, 1)
         val nextReminderTime = calendar.timeInMillis
+        // Prepare data to be passed to the worker
         val data = Data.Builder()
         data.putString(
-                ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
-                RepeatInterval.BIMONTHLY.tag
+            ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
+            RepeatInterval.BIMONTHLY.tag
         )
         notificationId?.let {
             data.putInt(
-                    ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
-                    it
+                ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
+                it
             )
         }
-
+        // Build a OneTimeWorkRequest for the scheduled notification
         val work =
-                OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
-                        .setInitialDelay(nextReminderTime, TimeUnit.MILLISECONDS)
-                        .setInputData(data.build())
-                        .addTag(WORK_MANAGER_TAG)
-                        .build()
-
+            OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
+                .setInitialDelay(nextReminderTime, TimeUnit.MILLISECONDS)
+                .setInputData(data.build())
+                .addTag(WORK_MANAGER_TAG)
+                .build()
+    // Enqueue the work request with WorkManager
         WorkManager.getInstance(context).enqueue(work)
     }
-
+    /**
+     * Schedule a tri weekly notification using WorkManager.
+     *
+     * @param notificationId The unique identifier for the notification.
+     */
     private fun scheduleTriWeeklyNotification(notificationId: Int) {
         val calendar = Calendar.getInstance()
         var mondayTimeMillis = 0L
@@ -188,19 +204,22 @@ class OneTimeScheduleWorker(
         fridayTimeMillis = calendar.timeInMillis
 
 
-        val highestInterval = Math.max(mondayTimeMillis, Math.max(wednesdayTimeMillis, fridayTimeMillis))
-        val secondSmallestInterval = Math.max(mondayTimeMillis, Math.min(wednesdayTimeMillis, fridayTimeMillis))
-        val smallestInterval = Math.min(mondayTimeMillis, Math.min(wednesdayTimeMillis, fridayTimeMillis))
+        val highestInterval =
+            Math.max(mondayTimeMillis, Math.max(wednesdayTimeMillis, fridayTimeMillis))
+        val secondSmallestInterval =
+            Math.max(mondayTimeMillis, Math.min(wednesdayTimeMillis, fridayTimeMillis))
+        val smallestInterval =
+            Math.min(mondayTimeMillis, Math.min(wednesdayTimeMillis, fridayTimeMillis))
 
         val data = Data.Builder()
         data.putString(
-                ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
-                RepeatInterval.TRIWEEKLY.tag
+            ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
+            RepeatInterval.TRIWEEKLY.tag
         )
         notificationId?.let {
             data.putInt(
-                    ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
-                    it
+                ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
+                it
             )
         }
 
@@ -212,15 +231,19 @@ class OneTimeScheduleWorker(
 
 
         val work =
-                OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
-                        .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                        .setInputData(data.build())
-                        .addTag(WORK_MANAGER_TAG)
-                        .build()
+            OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(data.build())
+                .addTag(WORK_MANAGER_TAG)
+                .build()
 
         WorkManager.getInstance(context).enqueue(work)
     }
-
+    /**
+     * Schedule a bi weekly notification using WorkManager.
+     *
+     * @param notificationId The unique identifier for the notification.
+     */
     private fun scheduleBiWeeklyNotification(notificationId: Int) {
         val calendar = Calendar.getInstance()
         var tuesdayTimeMillis = 0L
@@ -241,13 +264,13 @@ class OneTimeScheduleWorker(
 
         val data = Data.Builder()
         data.putString(
-                ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
-                RepeatInterval.BIWEEKLY.tag
+            ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
+            RepeatInterval.BIWEEKLY.tag
         )
         notificationId?.let {
             data.putInt(
-                    ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
-                    it
+                ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
+                it
             )
         }
 
@@ -259,15 +282,19 @@ class OneTimeScheduleWorker(
             delay = smallestInterval
 
         val work =
-                OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
-                        .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                        .setInputData(data.build())
-                        .addTag(WORK_MANAGER_TAG)
-                        .build()
+            OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(data.build())
+                .addTag(WORK_MANAGER_TAG)
+                .build()
 
         WorkManager.getInstance(context).enqueue(work)
     }
-
+    /**
+     * Schedule a bi monthly notification using WorkManager.
+     *
+     * @param notificationId The unique identifier for the notification.
+     */
     private fun scheduleBiMonthlyNotification(notificationId: Int) {
         val calendar = Calendar.getInstance()
         val hour = calendar.get(Calendar.HOUR_OF_DAY)
@@ -289,22 +316,22 @@ class OneTimeScheduleWorker(
 
         val data = Data.Builder()
         data.putString(
-                ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
-                RepeatInterval.BIMONTHLY.tag
+            ScheduleConstants.WorkManagerParams.REPEAT_INTERVAL.value,
+            RepeatInterval.BIMONTHLY.tag
         )
         notificationId?.let {
             data.putInt(
-                    ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
-                    it
+                ScheduleConstants.WorkManagerParams.NOTIFICATION_ID.value,
+                it
             )
         }
 
         val work =
-                OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
-                        .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                        .setInputData(data.build())
-                        .addTag(WORK_MANAGER_TAG)
-                        .build()
+            OneTimeWorkRequestBuilder<OneTimeScheduleWorker>()
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(data.build())
+                .addTag(WORK_MANAGER_TAG)
+                .build()
 
         WorkManager.getInstance(context).enqueue(work)
     }

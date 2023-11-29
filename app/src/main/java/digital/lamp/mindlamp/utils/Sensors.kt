@@ -1,5 +1,8 @@
 package digital.lamp.mindlamp.utils
 
+/**
+ * All sensors
+ */
 enum class Sensors(val sensor_name: String) {
     GPS("lamp.gps"),
     DEVICE_MOTION("lamp.device_motion"),

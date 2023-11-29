@@ -65,6 +65,7 @@ import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
+import digital.lamp.mindlamp.utils.PermissionCheck.checkWifiPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 
 import kotlinx.coroutines.Dispatchers
@@ -172,7 +173,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     /**
-     * fitness options
+     *  Lazily initialize the FitnessOptions using the FitnessOptions.builder()
      */
     private val fitnessOptions: FitnessOptions by lazy {
         FitnessOptions.builder()
@@ -219,7 +220,7 @@ class HomeActivity : AppCompatActivity() {
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
 
-        if (!AppState.session.showDisclosureAlert) {
+        if (AppState.session.showDisclosureAlert) {
             binding.progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
@@ -236,7 +237,7 @@ class HomeActivity : AppCompatActivity() {
         } catch (e: java.lang.Exception) {
             DebugLogs.writeToFile("Exception: ${e.message}")
         }
-        if (AppState.session.showDisclosureAlert) {
+        if (!AppState.session.showDisclosureAlert) {
             val batteryOptimizationHelper = BatteryOptimizationHelper(this)
             batteryOptimizationHelper.checkBatteryOptimization()
         }
@@ -522,6 +523,15 @@ class HomeActivity : AppCompatActivity() {
                     checkGoogleFit()
                 }
 
+            }
+
+            AppConstants.REQUEST_ID_WIFI_PERMISSIONS ->{
+                val specList = mSensorSpecsList.map { it.spec }
+                if (specList.contains(Sensors.GPS.sensor_name)) {
+                    checkLocation()
+                } else {
+                    checkGoogleFit()
+                }
             }
         }
     }
@@ -872,7 +882,7 @@ class HomeActivity : AppCompatActivity() {
     private fun populateOnDisclosureARAlert() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()
-            AppState.session.showDisclosureAlert = true
+            AppState.session.showDisclosureAlert = false
             if (checkAndRequestPermissions(this)) {
                 initializeWebview()
             }
@@ -1009,7 +1019,7 @@ class HomeActivity : AppCompatActivity() {
                             if (specList.contains(Sensors.TELEPHONY.sensor_name)) {
                                 if (checkTelephonyPermission(this@HomeActivity)) {
                                     AppState.session.isTelephonyPermissionAllowed = true
-                                    if (specList.contains(Sensors.GPS.sensor_name)) {
+                                    if (specList.contains(Sensors.GPS.sensor_name) || specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
                                         checkLocation()
                                     } else {
                                         checkGoogleFit()
@@ -1018,7 +1028,14 @@ class HomeActivity : AppCompatActivity() {
 
                             } else if (specList.contains(Sensors.GPS.sensor_name)) {
                                 checkLocation()
-                            } else {
+                            } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                                 if(checkWifiPermission(this@HomeActivity)){
+                                     checkLocation()
+                                 }else {
+                                     checkGoogleFit()
+                                 }
+                            }
+                            else {
                                 checkGoogleFit()
                             }
                         }

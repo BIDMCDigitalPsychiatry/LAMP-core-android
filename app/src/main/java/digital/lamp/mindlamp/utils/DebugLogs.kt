@@ -9,6 +9,7 @@ import java.util.*
 
 /**
  * Created by ZCo Developer
+ * This class responsible for create a file and write important logs into it.
  */
 object DebugLogs {
     private val MAX_FILE_SIZE: Long=1024*1024

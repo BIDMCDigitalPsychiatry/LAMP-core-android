@@ -1,12 +1,13 @@
 package digital.lamp.mindlamp.utils
 
 import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.OnLifecycleEvent
+
 
 /**
  * Created by Zco Engineer on 11-06-2018.
+ * Custom lifecycle observer for application lifecycle events.
+ * Extends DefaultLifecycleObserver to observe various lifecycle events.
  */
 class AppLifeCycleListener : DefaultLifecycleObserver {
 

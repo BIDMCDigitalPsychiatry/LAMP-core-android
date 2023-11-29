@@ -2,6 +2,7 @@ package digital.lamp.mindlamp.utils
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
+ * This object class responsible for the constants used in the all other classes
  */
 
 internal object AppConstants {
@@ -20,6 +21,7 @@ internal object AppConstants {
 
     const val REQUEST_ID_MULTIPLE_PERMISSIONS = 1
     const val REQUEST_ID_TELEPHONY_PERMISSIONS = 2
+    const val REQUEST_ID_WIFI_PERMISSIONS = 3
 
     const val JAVASCRIPT_OBJ_LOGIN = "login"
     const val JAVASCRIPT_OBJ_LOGOUT = "logout"

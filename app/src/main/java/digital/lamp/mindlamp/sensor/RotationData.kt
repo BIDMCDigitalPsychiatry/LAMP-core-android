@@ -12,7 +12,11 @@ import digital.lamp.mindlamp.utils.Sensors
 import java.util.concurrent.TimeUnit
 
 /**
+ * * Represents data from the screen rotation sensor.
  * Created by ZCO Engineering Dept. on 06,February,2020
+ * @param sensorListener The listener for rotation sensor events.
+ * @param context The application context.
+ * @param frequency The desired frequency for rotation sensor data updates (in Hz).
  */
 class RotationData constructor(sensorListener: SensorListener, context: Context, frequency:Double?){
     init {
@@ -38,7 +42,6 @@ class RotationData constructor(sensorListener: SensorListener, context: Context,
                         data,
                         Sensors.DEVICE_MOTION.sensor_name,System.currentTimeMillis().toDouble()
                     )
-                LampLog.e("Rotation : $x : $y : $z")
                 sensorListener.getRotationData(sensorEventData)
             }
         }catch (ex : Exception){

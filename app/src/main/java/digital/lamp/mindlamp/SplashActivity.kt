@@ -9,14 +9,15 @@ import digital.lamp.mindlamp.databinding.ActivityHomeBinding
 import digital.lamp.mindlamp.databinding.ActivitySplashBinding
 import org.json.JSONException
 
-
 /**
- * Created by ZCO Engineering Dept. on 14,February,2020
+ * SplashScreen that appears when the app is launched.
+ * This activity is responsible for initializing essential resources
+ * and navigating to the appropriate screen after a brief delay.
  */
 class SplashActivity : AppCompatActivity() {
 
 
-    private var moveToHome : Boolean =  true
+    private var moveToHome: Boolean = true
     private lateinit var binding: ActivitySplashBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +26,7 @@ class SplashActivity : AppCompatActivity() {
 
         Handler().postDelayed({
             /* Create an Intent that will start the Menu-Activity. */
-            if(moveToHome) {
+            if (moveToHome) {
                 val mainIntent = Intent(this, HomeActivity::class.java)
                 startActivity(mainIntent)
                 finish()

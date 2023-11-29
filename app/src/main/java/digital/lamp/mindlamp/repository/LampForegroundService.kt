@@ -89,6 +89,7 @@ class LampForegroundService : Service(),
     private lateinit var oGson: Gson
 
 
+    // Called when the service is created.
     override fun onCreate() {
         super.onCreate()
 
@@ -102,6 +103,9 @@ class LampForegroundService : Service(),
         oGson = Gson()
     }
 
+    /**
+     *    Called when the service is started.
+     */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
@@ -109,6 +113,7 @@ class LampForegroundService : Service(),
         isActivitySchedule = intent?.extras?.getBoolean("set_activity_schedule") ?: false
         localNotificationId = intent?.extras?.getInt("notification_id") ?: 0
         if (!isAlarm && !isActivitySchedule && localNotificationId == 0) {
+            // Create and show the notification to make the service run in the foreground.
             val notification =
                 LampNotificationManager.showNotification(
                     this,
@@ -116,11 +121,11 @@ class LampForegroundService : Service(),
                 )
 
             startForeground(1010, notification)
-
             setAlarmManager()
 
             invokeSensorSpecData(true)
             invokeActivitySchedules()
+
             setAlarmManagerForEvery24Hours()
             setPeriodicSyncWorker()
 
@@ -145,11 +150,14 @@ class LampForegroundService : Service(),
             Lamp.stopLAMP(this)
             collectSensorData()
         }
-
+        // If the system kills the service, it will be restarted.
         return START_STICKY
     }
 
 
+    /**
+     * Send analytics data from db to server.
+     */
     private fun syncAnalyticsData() {
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
@@ -223,23 +231,31 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * Set alarm manager for a specific time
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManager() {
+        // Get the AlarmManager system service.
         alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        // Create an intent for the AlarmBroadCastReceiver.
         alarmIntent = Intent(this, AlarmBroadCastReceiver::class.java).let { intent ->
+            // Create a PendingIntent for the AlarmBroadCastReceiver.
             PendingIntent.getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
         }
+        // Set an inexact repeating alarm for a specific interval for the AlarmBroadCastReceiver.
         alarmManager.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SystemClock.elapsedRealtime() + ALARM_INTERVAL,
             ALARM_INTERVAL,
             alarmIntent
         )
-
+        // Create an intent for the ActivityRepeatReceiver.
         val intent = Intent(this, ActivityRepeatReceiver::class.java)
         intent.putExtra("id", AppConstants.REPEAT_HOURLY)
+        // Create a PendingIntent for the ActivityRepeatReceiver.
         val pendingIntent = PendingIntent.getBroadcast(this, 120, intent, FLAG_IMMUTABLE)
-
+        // Set an inexact repeating alarm for a specific interval for the ActivityRepeatReceiver.
         alarmManager.setInexactRepeating(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
             SYNC_SENSOR_SPEC_INTERVAL,
@@ -248,6 +264,9 @@ class LampForegroundService : Service(),
         )
     }
 
+    /**
+     * To start a workmanager to sync analytics data
+     */
     private fun setPeriodicSyncWorker() {
         workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
         val periodicWork =
@@ -265,10 +284,17 @@ class LampForegroundService : Service(),
             )
     }
 
+    /**
+     * Fetch google sign in or not
+     */
     private fun isSignedIn(): Boolean {
         return GoogleSignIn.getLastSignedInAccount(this) != null
     }
 
+    /**
+     * Fetch sensor associated with the LAMP account
+     * after that start that sensor service
+     */
     private fun collectSensorData() {
         DebugLogs.writeToFile("collectSensorData")
         var sensorSpecList = arrayListOf<SensorSpecs>()
@@ -402,17 +428,22 @@ class LampForegroundService : Service(),
                     }
                     7 -> {
                         var wifiDataRequired = false
+                        var frequency: Double? = null
                         sensorSpecList.forEach {
                             if (it.spec == Sensors.NEARBY_DEVICES.sensor_name) {
                                 wifiDataRequired = true
 
+                            }
+                            it.frequency?.let {
+                                if (it != 0.0 && it <= 5)
+                                    frequency = it
                             }
                         }
                         if (wifiDataRequired) {
                             //Invoke WifiData
                             WifiData(
                                 this@LampForegroundService,
-                                applicationContext
+                                applicationContext,frequency
                             )
                         }
 
@@ -469,17 +500,25 @@ class LampForegroundService : Service(),
     }
 
 
+    /**
+     * called when the service is destroyed.
+     */
     override fun onDestroy() {
         super.onDestroy()
         trackSingleEvent("Service_Stopped")
     }
 
+    /**
+     * The system calls this method when another component wants to bind with the service.
+     */
     override fun onBind(p0: Intent?): IBinder? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 
-    //Method to perform the Sensor Spec or custom sensor data,
+    /**Method to perform the Sensor Spec or custom sensor data,
+     *
+     */
     private fun invokeSensorSpecData(initialCall: Boolean = false) {
         DebugLogs.writeToFile("Call sensor spec")
 
@@ -625,6 +664,15 @@ class LampForegroundService : Service(),
                             if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
+                    }catch (e: Exception) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            val mainIntent =
+                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                            mainIntent.putExtra("message",getString(digital.lamp.mindlamp.R.string.server_un_rechable))
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            if (App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
+                        }
                     }
                 }
             }
@@ -642,7 +690,9 @@ class LampForegroundService : Service(),
         }
     }
 
-    //Method to perform Sensor Data Webservice after fetching the details from DB
+    /**Method to perform Sensor Data Webservice after fetching the details from DB
+     *
+     */
     private fun invokeAddSensorData(
         sensorEventDataList: ArrayList<SensorEvent>,
         isGogolefitData: Boolean
@@ -651,9 +701,7 @@ class LampForegroundService : Service(),
             return
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
-                DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
                 trackSingleEvent("API_Send_${sensorEventDataList.size}")
-
                 val basic = "Basic ${
                     Utils.toBase64(
                         AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
@@ -776,6 +824,16 @@ class LampForegroundService : Service(),
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
+                } catch (e: Exception) {
+                    GlobalScope.launch(Dispatchers.Main) {
+
+                        val mainIntent =
+                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
+                    }
                 }
             }
 
@@ -793,7 +851,10 @@ class LampForegroundService : Service(),
         }
     }
 
-    //Method to perform Activity API store details to Activity Table and Schedule Activity Alarm Manager
+    /**
+     * Method to perform Activity API store details to Activity Table and Schedule Activity Alarm Manager
+     *
+     */
     private fun invokeActivitySchedules() {
         if (NetworkUtils.isNetworkAvailable(this)) {
             DebugLogs.writeToFile("Invoke Activity Schedules")
@@ -1187,6 +1248,16 @@ class LampForegroundService : Service(),
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
+                }catch (e: Exception) {
+                    GlobalScope.launch(Dispatchers.Main) {
+
+                        val mainIntent =
+                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        if (App.app.isApplicationInForeground())
+                            startActivity(mainIntent)
+                    }
                 }
             }
         } else {
@@ -1203,7 +1274,9 @@ class LampForegroundService : Service(),
         }
     }
 
-    //Method to fetch details of notification from Activity DB from notification id and show local notification if offline.
+    /**Method to fetch details of notification from Activity DB from notification id and show local notification if offline.
+     *
+     */
     fun invokeLocalNotification(localNotificationId: Int) {
         oScope.launch {
             LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification 1")
@@ -1230,7 +1303,9 @@ class LampForegroundService : Service(),
         }
     }
 
-    //Method to schedule Alarm Manager for evey 24 hours.
+    /**Method to schedule Alarm Manager for evey 24 hours.
+     *
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerForEvery24Hours() {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -1248,6 +1323,9 @@ class LampForegroundService : Service(),
         )
     }
 
+    /**
+     * callback method implementation for Accelerometer data
+     */
     override fun getAccelerometerData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1255,7 +1333,9 @@ class LampForegroundService : Service(),
             val id = oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
-
+    /**
+     * callback method implementation for Rotation data
+     */
     override fun getRotationData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1264,6 +1344,9 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * callback method implementation for Magnetic data
+     */
     override fun getMagneticData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1272,6 +1355,9 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * callback method implementation for Gyroscope data
+     */
     override fun getGyroscopeData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1279,7 +1365,9 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
-
+    /**
+     * callback method implementation for Location  data
+     */
     override fun getLocationData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1288,6 +1376,9 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * callback method implementation for Wifi data
+     */
     override fun getWifiData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1295,7 +1386,9 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
-
+    /**
+     * callback method implementation for Screen state data
+     */
     override fun getScreenState(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1303,7 +1396,9 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
-
+    /**
+     * callback method implementation for Activity data
+     */
     override fun getActivityData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1312,6 +1407,10 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * Fetch google fit data
+     * @param sensorEventData
+     */
     override fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>) {
         val gson = GsonBuilder().serializeNulls().create()
         LampLog.e("Google Fit 1: ${gson.toJson(sensorEventData)}")
@@ -1329,6 +1428,9 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * callback method implementation for Telephony  data
+     */
     override fun getTelephonyData(sensorEventData: SensorEvent) {
         val oAnalytics = Analytics()
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
@@ -1336,13 +1438,18 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
-
+    /**
+     * Log events in firebase crashlytics
+     */
     private fun trackSingleEvent(eventName: String) {
         //Firebase Event Tracking
         val params = Bundle()
         firebaseAnalytics.logEvent(eventName, params)
     }
 
+    /**
+     * Set custom alarm manager
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerCustom(oIndex: Int, oNotificationId: Int?, oCustomTime: String) {
         val elapsedTimeMs = Utils.getMilliFromDate(oCustomTime)
@@ -1414,6 +1521,9 @@ class LampForegroundService : Service(),
         }
     }
 
+    /**
+     * Set local notification
+     */
     private fun setLocalNotification(
         oNotificationId: Int?,
         oTime: String,
@@ -1465,12 +1575,18 @@ class LampForegroundService : Service(),
         workManager.enqueue(work)
     }
 
+    /**
+     * set hourly notification
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerHourly(oNotificationId: Int?, oTime: String, startTime: String) {
         setLocalNotification(oNotificationId, oTime, startTime, RepeatInterval.HOURLY.tag)
 
     }
 
+    /**
+     * set 3 hour repeat notification
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerEvery3Hourly(
         oNotificationId: Int?,
@@ -1481,6 +1597,9 @@ class LampForegroundService : Service(),
         setLocalNotification(oNotificationId, oTime, startTime, RepeatInterval.EVERY_3H.tag)
     }
 
+    /**
+     * set 6 hour repeat notification
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerEvery6Hourly(
         oNotificationId: Int?,
@@ -1490,6 +1609,9 @@ class LampForegroundService : Service(),
         setLocalNotification(oNotificationId, oTime, startTime, RepeatInterval.EVERY_6H.tag)
     }
 
+    /**
+     * set 12 hour repeat notification
+     */
     @SuppressLint("ObsoleteSdkInt")
     private fun setAlarmManagerEvery12Hourly(
         oNotificationId: Int?,
@@ -1499,10 +1621,16 @@ class LampForegroundService : Service(),
         setLocalNotification(oNotificationId, oTime, startTime, RepeatInterval.EVERY_12H.tag)
     }
 
+    /**
+     * set daily repeating notification
+     */
     private fun setAlarmManagerDaily(oNotificationId: Int?, oTime: String, startTime: String) {
         setLocalNotification(oNotificationId, oTime, startTime, RepeatInterval.DAILY.tag)
     }
 
+    /**
+     * set bi weekly repeating notification.
+     */
     private fun setLocalNotificationBiWeekly(
         oNotificationId: Int?,
         oTime: String,
@@ -1557,6 +1685,9 @@ class LampForegroundService : Service(),
 
     }
 
+    /**
+     * set weekly repeating notification
+     */
     private fun setLocalNotificationWeekly(
         oNotificationId: Int?,
         oTime: String,
@@ -1602,6 +1733,9 @@ class LampForegroundService : Service(),
         workManager.enqueue(work)
     }
 
+    /**
+     * set for nightly repeating notification.
+     */
     private fun setLocalNotificationFortnightly(
         oNotificationId: Int?,
         oTime: String,
@@ -1657,6 +1791,9 @@ class LampForegroundService : Service(),
         workManager.enqueue(work)
     }
 
+    /**
+     * set tri weekly repeating notification
+     */
     private fun setLocalNotificationTriWeekly(
         oNotificationId: Int?,
         oTime: String,
@@ -1741,6 +1878,9 @@ class LampForegroundService : Service(),
 
     }
 
+    /**
+     * set bi monthly repeating local notification
+     */
     private fun setLocalNotificationBiMonthly(
         oNotificationId: Int?,
         oTime: String,
@@ -1790,6 +1930,9 @@ class LampForegroundService : Service(),
 
     }
 
+    /**
+     * set monthly repeating notification.
+     */
     private fun setLocalNotificationMonthly(
         oNotificationId: Int?,
         oTime: String,
@@ -1844,6 +1987,9 @@ class LampForegroundService : Service(),
 
     }
 
+    /**
+     * get alarm start time.
+     */
     private fun getAlarmStartTime(oTime: String, startTime: String): Long {
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         val sdfStart = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")

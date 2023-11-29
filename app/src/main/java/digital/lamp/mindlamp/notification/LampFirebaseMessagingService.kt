@@ -1,7 +1,6 @@
 package digital.lamp.mindlamp.notification
 
 import android.net.TrafficStats
-import android.os.Build
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -10,8 +9,6 @@ import com.google.gson.reflect.TypeToken
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.NotificationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
-import digital.lamp.mindlamp.BuildConfig
-import digital.lamp.mindlamp.HomeActivity
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.SensorSpecs
@@ -22,12 +19,18 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 /**
  * Created by ZCO Engineering Dept. on 23,April,2020
+ * Custom Firebase Messaging Service for handling incoming Firebase Cloud Messages (FCM).
  */
+
 class LampFirebaseMessagingService : FirebaseMessagingService() {
+    /**
+     * Called when a message is received.
+     *
+     * @param remoteMessage The remote message received from Firebase Cloud Messaging.
+     */
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
@@ -73,7 +76,11 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
             invokeNotificationData(notificationEvent)
         }
     }
-
+    /**
+     * Called when a new token for the default Firebase project is generated.
+     *
+     * @param token The new FCM token.
+     */
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.e(TAG, "Refreshed token: $token")

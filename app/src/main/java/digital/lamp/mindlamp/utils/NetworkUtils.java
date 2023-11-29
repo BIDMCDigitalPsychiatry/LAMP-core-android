@@ -14,7 +14,17 @@ import android.os.Build;
 
 import static android.content.Context.BATTERY_SERVICE;
 
+/**
+ * This class is responsible to check the device network connection.
+ */
 public class NetworkUtils {
+    /**
+     * Check network connection is available or not
+     *
+     * @param context
+     * @return true - if net connected
+     * @return false - not connected
+     */
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null) {
@@ -26,6 +36,13 @@ public class NetworkUtils {
         return false;
     }
 
+    /**
+     * This method is responsible for wifi network is available or not
+     *
+     * @param context
+     * @return true - if connected to an access point
+     * @return false - Wi-Fi adapter is off
+     */
     public static boolean isWifiNetworkAvailable(Context context) {
         WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
@@ -42,6 +59,12 @@ public class NetworkUtils {
         }
     }
 
+    /**
+     * This method is responsible to fetch device battery percentage.
+     *
+     * @param context
+     * @return
+     */
     public static int getBatteryPercentage(Context context) {
 
         if (Build.VERSION.SDK_INT >= 21) {

@@ -15,20 +15,22 @@ import digital.lamp.mindlamp.utils.Utils
 
 /**
  * Created by ZCO Engineering Dept. on 24,April,2020
+ * This activity is responsible for push notification actions click.
+ * while click on push notification corresponding url will be load on the web view of app.
  */
 class NotificationActivity : AppCompatActivity() {
     private lateinit var binding: CustomWebviewLayoutBinding
 
 
-    companion object{
+    companion object {
         private val TAG = NotificationActivity::class.java.simpleName
     }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = CustomWebviewLayoutBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
 
         val surveyUrl = intent.getStringExtra("survey_path")

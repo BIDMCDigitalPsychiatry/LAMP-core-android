@@ -2,20 +2,27 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.ContentValues
 import android.content.Context
+import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
+import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.sensor_core.WiFi
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
-import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
-import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.mindlamp.utils.Sensors
 
 /**
- * Created by ZCO Engineering Dept. on 06,February,2020
+ * Represents data from the Wi-Fi data sensor.
+ *Created by ZCO Engineering Dept. on 06,February,2020
+ * @param sensorListener The listener for Wi-ZFi data sensor events.
+ * @param context The application context.
  */
-class WifiData constructor(sensorListener: SensorListener, context: Context) {
-    init{
+class WifiData constructor(sensorListener: SensorListener, context: Context, frequency: Double?) {
+    init {
         try {
             Lamp.startWiFi(context)//start sensor
+            frequency?.let {
+                WiFi.setInterval(it.toLong())
+            }
             //Sensor Observer
             WiFi.sensorObserver = object : WiFi.LAMPSensorObserver {
                 override fun onWiFiScanEnded() {
@@ -40,16 +47,18 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                             data.getAsString("bssid"),
                             data.getAsString("ssid"),
                             data.getAsInteger("rssi"),
-                            null,null,null,null,null,
-                            null,null, null,null
+                            null, null, null, null, null,
+                            null, null, null, null
                         )
                         val sensorEventData =
                             SensorEvent(
                                 data,
-                                Sensors.NEARBY_DEVICES.sensor_name,System.currentTimeMillis().toDouble()
+                                Sensors.NEARBY_DEVICES.sensor_name,
+                                System.currentTimeMillis().toDouble()
                             )
 
                         LampLog.e("Wifi : ${data.bssid}")
+                        DebugLogs.writeToFile("Wifi : ${data.bssid}")
 
                         sensorListener.getWifiData(sensorEventData)
 
@@ -64,8 +73,8 @@ class WifiData constructor(sensorListener: SensorListener, context: Context) {
                 override fun onWiFiDisabled() {
                 }
             }
-        }catch (ex: Exception){
-           ex.printStackTrace()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
         }
     }
 }

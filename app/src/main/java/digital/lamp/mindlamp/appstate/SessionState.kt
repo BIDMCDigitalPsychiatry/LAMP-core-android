@@ -1,5 +1,8 @@
 package digital.lamp.mindlamp.appstate
 
+/**
+ * This class is represent preference variables used in project.
+ */
 class SessionState {
 
     companion object {
@@ -43,7 +46,7 @@ class SessionState {
 
     var showDisclosureAlert by Pref(
         PREF_SHOW_DISCLOSURE_ALERT,
-        false
+        true
     )
 
     var lastAnalyticsTimestamp by Pref(PREF_ANALYTICS_TIME_STAMP,1L)

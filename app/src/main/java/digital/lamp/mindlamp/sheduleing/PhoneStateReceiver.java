@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.telephony.TelephonyManager;
 
 import java.util.Date;
-
+/**
+ * BroadcastReceiver to listen for changes in the phone state.
+ */
 public class PhoneStateReceiver extends BroadcastReceiver {
 
     //The receiver will be recreated whenever android feels like it.  We need a static variable to remember data between instantiations

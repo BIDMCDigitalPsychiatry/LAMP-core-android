@@ -6,6 +6,13 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import androidx.lifecycle.LiveData
+
+/**
+ * LiveData that observes the network connection status and notifies observers when
+ * the network is available or lost.
+ *
+ * @param context The application context for accessing system services.
+ */
  class NetworkConnectionLiveData(private val context: Context) : LiveData<Boolean>() {
 
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

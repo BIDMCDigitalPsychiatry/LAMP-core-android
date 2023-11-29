@@ -9,6 +9,13 @@ import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.utils.Sensors
 
+/**
+ * Represents data from the ActivityTransitionData .
+ *
+ * @param sensorListener The listener for accelActivityTransitionData events.
+ * @param context The application context.
+ * @param sensorSpecList A list of sensors.
+ */
 class ActivityTransitionData constructor(
     sensorListener: SensorListener,
     context: Context,
@@ -80,7 +87,7 @@ class ActivityTransitionData constructor(
                             null,
                             null,
                             null, null, null,
-                            null, null, null, activityData,null,null
+                            null, null, null, activityData, null, null
                         )
                     val sensorEventData =
                         SensorEvent(
