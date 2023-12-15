@@ -435,7 +435,7 @@ class LampForegroundService : Service(),
 
                             }
                             it.frequency?.let {
-                                if (it != 0.0 && it <= 5)
+                                if (it != 0.0 && it <= 1)
                                     frequency = it
                             }
                         }

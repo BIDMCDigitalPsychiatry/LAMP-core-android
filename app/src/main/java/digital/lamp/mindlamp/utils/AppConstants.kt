@@ -22,6 +22,11 @@ internal object AppConstants {
     const val REQUEST_ID_MULTIPLE_PERMISSIONS = 1
     const val REQUEST_ID_TELEPHONY_PERMISSIONS = 2
     const val REQUEST_ID_WIFI_PERMISSIONS = 3
+    const val PERMISSION_REQUEST_CODE = 123
+    const val LOCATION_REQUEST_CODE = 100
+    const val BLUETOOTH_REQUEST_CODE  = 200
+    const val BLUETOOTH_REQUEST_RESULT_CODE  = 201
+
 
     const val JAVASCRIPT_OBJ_LOGIN = "login"
     const val JAVASCRIPT_OBJ_LOGOUT = "logout"
