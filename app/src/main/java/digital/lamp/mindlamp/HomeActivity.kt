@@ -1169,13 +1169,14 @@ class HomeActivity : AppCompatActivity() {
                 requestLocation()
             } else {
                 // Check if Bluetooth is enabled
-                 val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-                 val bluetoothAdapter = bluetoothManager.adapter
-                 if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
-                     requestBluetooth()
-                 }else{
-                     checkGoogleFit()
-                 }
+                val bluetoothManager =
+                    getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                val bluetoothAdapter = bluetoothManager.adapter
+                if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+                    requestBluetooth()
+                } else {
+                    checkGoogleFit()
+                }
             }
 
 
@@ -1210,21 +1211,25 @@ class HomeActivity : AppCompatActivity() {
 
     private fun requestBluetooth() {
         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-         if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-             startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
-        }else{
-             checkGoogleFit()
-         }
+        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter?.isEnabled == false) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
+            }
+
+        } else {
+            checkGoogleFit()
+        }
 
     }
-    private fun isBluetoothEnabled(): Boolean {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        return bluetoothAdapter?.isEnabled == true
-    }
+
     private fun checkPermissions(): Boolean {
         return permissionChecker.hasWifiPermissions() && permissionChecker.hasBluetoothPermissions()
     }
@@ -1240,6 +1245,8 @@ class HomeActivity : AppCompatActivity() {
         if (!permissionChecker.hasBluetoothPermissions()) {
             permissionsToRequest.add(Manifest.permission.BLUETOOTH)
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN)
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
         }
 
         if (permissionsToRequest.isNotEmpty()) {
@@ -1283,38 +1290,6 @@ class HomeActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun checkGPSForWiFiPermission() {
-        val specList = mSensorSpecsList.map { it.spec }
-        Log.e("jjjjjjjjjjj", checkPermissions().toString())
-        if (!isFinishing && checkPermissions() && specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
-            if (Utils.isGPSEnabled(this)) {
-
-            } else {
-
-                val positiveButtonClick = { dialog: DialogInterface, _: Int ->
-                    dialog.cancel()
-                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                    startActivity(intent)
-                }
-
-                val builder = AlertDialog.Builder(this)
-
-                with(builder)
-                {
-                    setTitle(getString(R.string.app_name))
-                    setMessage(getString(R.string.location_permission_info_for_wifi_access))
-                    setCancelable(false)
-                    setPositiveButton(
-                        getString(R.string.ok),
-                        DialogInterface.OnClickListener(function = positiveButtonClick)
-                    )
-                    show()
-                }
-            }
-        }
-    }
-
 
     /**
      * Displays error messages

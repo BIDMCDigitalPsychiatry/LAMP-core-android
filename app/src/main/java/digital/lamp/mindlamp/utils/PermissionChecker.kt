@@ -32,6 +32,16 @@ class PermissionChecker(private val context: Context) {
             Manifest.permission.BLUETOOTH_ADMIN
         ) == PackageManager.PERMISSION_GRANTED
 
-        return bluetoothPermissionGranted && bluetoothAdminPermissionGranted
+        val bluetoothScanPermissionGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.BLUETOOTH_SCAN
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val bluetoothConnectPermissionGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.BLUETOOTH_CONNECT
+        ) == PackageManager.PERMISSION_GRANTED
+
+        return bluetoothPermissionGranted && bluetoothAdminPermissionGranted && bluetoothScanPermissionGranted && bluetoothConnectPermissionGranted
     }
 }
