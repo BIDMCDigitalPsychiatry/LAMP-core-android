@@ -2,10 +2,10 @@ package digital.lamp.mindlamp.sensor
 
 import android.content.ContentValues
 import android.content.Context
+import android.util.Log
 import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
-import digital.lamp.lamp_kotlin.sensor_core.Locations
 import digital.lamp.lamp_kotlin.sensor_core.WiFi
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
@@ -50,7 +50,7 @@ class WifiData constructor(sensorListener: SensorListener, context: Context, fre
                             data.getAsString("bluetoothName"),
                             data.getAsInteger("bluetoothRSSI"),
                             null, null, null, null, null,
-                            null, null, null, null
+                            "Bluetooth", null, null, null
                         )
                         val sensorEventData =
                             SensorEvent(
@@ -59,8 +59,8 @@ class WifiData constructor(sensorListener: SensorListener, context: Context, fre
                                 System.currentTimeMillis().toDouble()
                             )
 
-                        LampLog.e("Bluetooth : ${data.bssid}")
-                        DebugLogs.writeToFile("Bluetooth : ${data.bssid}")
+                        Log.e("Bluetooth :"," ${data.address}")
+                        DebugLogs.writeToFile("Bluetooth : ${data.address}")
 
                         sensorListener.getWifiData(sensorEventData)
 
@@ -87,7 +87,7 @@ class WifiData constructor(sensorListener: SensorListener, context: Context, fre
                             data.getAsString("ssid"),
                             data.getAsInteger("rssi"),
                             null, null, null, null, null,
-                            null, null, null, null
+                            "wifi", null, null, null
                         )
                         val sensorEventData =
                             SensorEvent(
@@ -96,8 +96,8 @@ class WifiData constructor(sensorListener: SensorListener, context: Context, fre
                                 System.currentTimeMillis().toDouble()
                             )
 
-                        LampLog.e("Wifi : ${data.bssid}")
-                        DebugLogs.writeToFile("Wifi : ${data.bssid}")
+                        LampLog.e("Wifi : ${data.address}")
+                        DebugLogs.writeToFile("Wifi : ${data.address}")
 
                         sensorListener.getWifiData(sensorEventData)
 

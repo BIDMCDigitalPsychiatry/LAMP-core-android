@@ -149,7 +149,7 @@ dependencies {
   //  implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
 
 //    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:Notification-SNAPSHOT'
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2023.12.18'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2023.12.19'
 
     //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'
     implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'

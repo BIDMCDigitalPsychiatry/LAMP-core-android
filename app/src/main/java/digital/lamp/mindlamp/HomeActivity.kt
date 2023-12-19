@@ -27,6 +27,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -454,6 +455,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * activity result handler
      */
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -1159,6 +1161,7 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun checkLocationAndBluetoothPermission() {
         if (checkPermissions()) {
             // Both WiFi and Bluetooth permissions are granted, perform your task
@@ -1213,14 +1216,18 @@ class HomeActivity : AppCompatActivity() {
         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
         if (bluetoothAdapter?.isEnabled == false) {
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_SCAN
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
+                }
+            }else{
                 startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
             }
 
@@ -1234,6 +1241,7 @@ class HomeActivity : AppCompatActivity() {
         return permissionChecker.hasWifiPermissions() && permissionChecker.hasBluetoothPermissions()
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun requestPermissions() {
         val permissionsToRequest = mutableListOf<String>()
 
@@ -1245,8 +1253,10 @@ class HomeActivity : AppCompatActivity() {
         if (!permissionChecker.hasBluetoothPermissions()) {
             permissionsToRequest.add(Manifest.permission.BLUETOOTH)
             permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN)
-            permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
-            permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
         }
 
         if (permissionsToRequest.isNotEmpty()) {

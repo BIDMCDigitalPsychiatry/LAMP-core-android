@@ -3,6 +3,7 @@ package digital.lamp.mindlamp.utils
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.content.ContextCompat
 
 class PermissionChecker(private val context: Context) {
@@ -32,16 +33,21 @@ class PermissionChecker(private val context: Context) {
             Manifest.permission.BLUETOOTH_ADMIN
         ) == PackageManager.PERMISSION_GRANTED
 
-        val bluetoothScanPermissionGranted = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.BLUETOOTH_SCAN
-        ) == PackageManager.PERMISSION_GRANTED
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val bluetoothScanPermissionGranted = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
 
-        val bluetoothConnectPermissionGranted = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.BLUETOOTH_CONNECT
-        ) == PackageManager.PERMISSION_GRANTED
+            val bluetoothConnectPermissionGranted = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+            return bluetoothPermissionGranted && bluetoothAdminPermissionGranted && bluetoothScanPermissionGranted && bluetoothConnectPermissionGranted
+        }
+        else{
+            return bluetoothPermissionGranted && bluetoothAdminPermissionGranted
+        }
 
-        return bluetoothPermissionGranted && bluetoothAdminPermissionGranted && bluetoothScanPermissionGranted && bluetoothConnectPermissionGranted
     }
 }
