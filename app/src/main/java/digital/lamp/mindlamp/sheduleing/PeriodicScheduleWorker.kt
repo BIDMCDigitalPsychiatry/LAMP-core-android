@@ -7,12 +7,21 @@ import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Utils
-
+/**
+ * Worker class responsible for handling periodic schedule events.
+ *
+ * @param context The application context.
+ * @param workerParams Parameters for the worker, including input data.
+ */
 class PeriodicScheduleWorker(
     val context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
-
+    /**
+     * Perform the work in a coroutine.
+     *
+     * @return The result of the work.
+     */
     override suspend fun doWork(): Result {
 
         val text =getInputData().getString("notification")
@@ -22,14 +31,9 @@ class PeriodicScheduleWorker(
         val activityList = oActivityDao.getActivityList()
         activityList.forEach { activitySchedule ->
             activitySchedule.schedule?.forEach { durationIntervalLegacy ->
-                LampLog.e("BROADCASTRECEIVER","invokeLocalNotification 2")
                 durationIntervalLegacy.notification_ids?.forEach {
                     if(Utils.getMyIntValue(it) == notificationId){
-                        LampLog.e("BROADCASTRECEIVER","invokeLocalNotification 3")
-                        LampLog.e(
-                                OneTimeScheduleWorker.TAG,
-                            "Activity Name :: - ${activitySchedule.name} ---- $notificationId"
-                        )
+                        // Show a notification for the activity
                         LampNotificationManager.showActivityNotification(
                             context,
                             activitySchedule,

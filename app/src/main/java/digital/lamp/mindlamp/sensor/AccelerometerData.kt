@@ -1,17 +1,21 @@
 package digital.lamp.mindlamp.sensor
 
 import android.content.Context
-import android.util.Log
 import digital.lamp.lamp_kotlin.lamp_core.models.*
+import digital.lamp.lamp_kotlin.lamp_core.models.AttitudeData
+import digital.lamp.lamp_kotlin.lamp_core.models.GravityData
 import digital.lamp.lamp_kotlin.lamp_core.models.RotationData
 import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
-import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Sensors
-import java.util.concurrent.TimeUnit
 
 /**
- * Created by ZCO Engineering Dept. on 05,February,2020
+ * Represents data from the accelerometer sensor.
+ *
+ * @param sensorListener The listener for accelerometer sensor events.
+ * @param context The application context.
+ * @param frequency The desired frequency for sensor data updates (in Hz).
+ * @param sensorSpec A string describing name of sensor.
  */
 class AccelerometerData constructor(
     sensorListener: SensorListener,
@@ -25,8 +29,7 @@ class AccelerometerData constructor(
             //Accelerometer settings
             Lamp.startAccelerometer(context)//start sensor
             frequency?.let {
-                val interval = (1 / frequency!!) * 1000
-                Log.e("AccelerometerData", "$interval")
+                val interval = (1 / frequency) * 1000
                 Accelerometer.setInterval(interval.toLong())
             }
             //Sensor Observer
@@ -86,7 +89,6 @@ class AccelerometerData constructor(
                                 System.currentTimeMillis().toDouble()
                             )
 
-                        LampLog.e("Accelerometer : $x : $y : $z")
 
                         sensorListener.getAccelerometerData(sensorEventDataAccelerometer)
                     }
@@ -135,8 +137,6 @@ class AccelerometerData constructor(
                                 Sensors.ACCELEROMETER.sensor_name,
                                 System.currentTimeMillis().toDouble()
                             )
-
-                        LampLog.e("Accelerometer : $x : $y : $z")
 
                         sensorListener.getAccelerometerData(sensorEventDataAccelerometer)
                     }

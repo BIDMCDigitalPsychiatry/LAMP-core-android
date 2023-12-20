@@ -63,4 +63,5 @@
     <string name="retry">Retry</string>
     <string name="ssl_error" translatable="false">SSL Error</string>
     <string name="battery_optimization_info" translatable="false"> mindLAMP requires unrestricted battery access for collecting data effectively. Please disable battery optimization for the app to function properly.</string>
+    <string name="location_permission_info_for_wifi_access" translatable="false"> Enable your device\'s location to collect the Wi-Fi data effectively.</string>
 </resources>

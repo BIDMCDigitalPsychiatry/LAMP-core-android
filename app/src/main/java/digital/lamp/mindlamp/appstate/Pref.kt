@@ -12,7 +12,7 @@ import kotlin.reflect.KProperty
 open class Pref<T>(private val key: String, private val default: T) : ReadWriteProperty<Any?, T> {
     @Suppress("UNCHECKED_CAST")
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-
+        // Retrieve the value from SharedPreferences based on the specified key and default value.
         return when (default) {
             is Int -> prefSharedPreferences.getInt(key, default) as T
             is String -> prefSharedPreferences.getString(key, default) as T
@@ -25,7 +25,7 @@ open class Pref<T>(private val key: String, private val default: T) : ReadWriteP
 
     override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
         val editor: SharedPreferences.Editor = prefSharedPreferences.edit()
-
+    // Use a when expression to handle different data types and update SharedPreferences accordingly.
         when (value) {
             is String -> editor.putString(key, value)
             is Float -> editor.putFloat(key, value)

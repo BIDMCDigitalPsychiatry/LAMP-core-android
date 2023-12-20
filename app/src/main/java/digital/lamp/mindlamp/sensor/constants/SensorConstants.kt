@@ -1,5 +1,8 @@
 package digital.lamp.mindlamp.sensor.constants
 
+/**
+ * Constants related to screen state, screen state representation, call state
+ */
 object SensorConstants {
     enum class ScreenState(val value :Int){
         SCREEN_ON(0),

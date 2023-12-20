@@ -7,6 +7,9 @@ import androidx.room.Query
 import digital.lamp.mindlamp.database.entity.ActivitySchedule
 import java.util.ArrayList
 
+/**
+ * ActivityDao class provides methods to interact with the underlying database
+ */
 @Dao
 interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

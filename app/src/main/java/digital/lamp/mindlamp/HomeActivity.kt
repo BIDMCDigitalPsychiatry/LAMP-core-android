@@ -7,12 +7,15 @@ import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.database.CursorWindow
+import android.location.LocationManager
 import android.net.TrafficStats
 import android.net.Uri
 import android.net.http.SslError
@@ -24,6 +27,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -46,7 +50,6 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
-import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -59,14 +62,17 @@ import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
+import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
+import digital.lamp.mindlamp.utils.AppConstants.LOCATION_REQUEST_CODE
+import digital.lamp.mindlamp.utils.AppConstants.PERMISSION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -95,6 +101,7 @@ class HomeActivity : AppCompatActivity() {
     private var isPageLoadedComplete = false
 
     private lateinit var binding: ActivityHomeBinding
+    private val permissionChecker by lazy { PermissionChecker(this) }
 
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
@@ -172,7 +179,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     /**
-     * fitness options
+     *  Lazily initialize the FitnessOptions using the FitnessOptions.builder()
      */
     private val fitnessOptions: FitnessOptions by lazy {
         FitnessOptions.builder()
@@ -219,12 +226,12 @@ class HomeActivity : AppCompatActivity() {
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
 
-        if (!AppState.session.showDisclosureAlert) {
+        if (AppState.session.showDisclosureAlert) {
             binding.progressBar.visibility = View.GONE
             populateOnDisclosureARAlert()
         } else {
-           checkAndRequestPermissions(this)
-                initializeWebview()
+            checkAndRequestPermissions(this)
+            initializeWebview()
 
         }
         handleNotification(intent)
@@ -236,7 +243,7 @@ class HomeActivity : AppCompatActivity() {
         } catch (e: java.lang.Exception) {
             DebugLogs.writeToFile("Exception: ${e.message}")
         }
-        if (AppState.session.showDisclosureAlert) {
+        if (!AppState.session.showDisclosureAlert) {
             val batteryOptimizationHelper = BatteryOptimizationHelper(this)
             batteryOptimizationHelper.checkBatteryOptimization()
         }
@@ -448,6 +455,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * activity result handler
      */
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -488,7 +496,7 @@ class HomeActivity : AppCompatActivity() {
                                     }
                                 })
                         } else {
-                          //  DebugLogs.writeToFile("Display settings screen")
+                            //  DebugLogs.writeToFile("Display settings screen")
                             // case 5. Permission denied permanently.
                             // You can open Permission setting's page from here now.
                             val intent = Intent()
@@ -501,27 +509,62 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
             REQUEST_LOCATION_REQUEST_CODE -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    AppState.session.isLocationPermissionAllowed = true
-                    checkGoogleFit()
-                } else {
-                    checkGoogleFit()
+                if (grantResults.isNotEmpty()) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        AppState.session.isLocationPermissionAllowed = true
+                        val specList = mSensorSpecsList.map { it.spec }
+                        if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                            checkLocationAndBluetoothPermission()
+                        }
+                        checkGoogleFit()
+                    } else {
+                        checkGoogleFit()
+                    }
                 }
             }
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
             }
-            AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS -> {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    AppState.session.isTelephonyPermissionAllowed = true
+            PERMISSION_REQUEST_CODE -> {
+                val specList = mSensorSpecsList.map { it.spec }
+                if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                    checkLocationAndBluetoothPermission()
                 }
+            }
+            AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS -> {
+                if (grantResults.isNotEmpty()) {
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        AppState.session.isTelephonyPermissionAllowed = true
+                    }
+                    val specList = mSensorSpecsList.map { it.spec }
+                    if (specList.contains(Sensors.GPS.sensor_name)) {
+                        checkLocation()
+
+                    } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                        checkLocationAndBluetoothPermission()
+                    } else {
+                        checkGoogleFit()
+                    }
+                }
+
+            }
+
+            AppConstants.REQUEST_ID_WIFI_PERMISSIONS -> {
                 val specList = mSensorSpecsList.map { it.spec }
                 if (specList.contains(Sensors.GPS.sensor_name)) {
                     checkLocation()
                 } else {
                     checkGoogleFit()
                 }
+            }
 
+            BLUETOOTH_REQUEST_CODE -> {
+                val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+                    requestBluetooth()
+                } else {
+                    checkGoogleFit()
+                }
             }
         }
     }
@@ -739,13 +782,35 @@ class HomeActivity : AppCompatActivity() {
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when (resultCode) {
-            RESULT_OK -> {
-                if (requestCode == REQUEST_OAUTH_REQUEST_CODE) {
-                    accessGoogleFit()
-                    if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                        startLampService()
+        when (requestCode) {
+            REQUEST_OAUTH_REQUEST_CODE -> {
+                accessGoogleFit()
+                if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
+            }
+            LOCATION_REQUEST_CODE -> {
+                // Check if the user enabled location after the prompt
+                val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+                val isLocationEnabled =
+                    locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+                if (isLocationEnabled) {
+                    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                    if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+                        requestBluetooth()
+                    } else {
+                        checkGoogleFit()
                     }
+                }
+
+            }
+            BLUETOOTH_REQUEST_RESULT_CODE -> {
+                val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+                if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+                    requestBluetooth()
+                } else {
+                    checkGoogleFit()
                 }
             }
             else -> {
@@ -872,7 +937,7 @@ class HomeActivity : AppCompatActivity() {
     private fun populateOnDisclosureARAlert() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()
-            AppState.session.showDisclosureAlert = true
+            AppState.session.showDisclosureAlert = false
             if (checkAndRequestPermissions(this)) {
                 initializeWebview()
             }
@@ -1011,13 +1076,18 @@ class HomeActivity : AppCompatActivity() {
                                     AppState.session.isTelephonyPermissionAllowed = true
                                     if (specList.contains(Sensors.GPS.sensor_name)) {
                                         checkLocation()
+                                    } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                                        checkLocationAndBluetoothPermission()
                                     } else {
                                         checkGoogleFit()
                                     }
+
                                 }
 
                             } else if (specList.contains(Sensors.GPS.sensor_name)) {
                                 checkLocation()
+                            } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                                checkLocationAndBluetoothPermission()
                             } else {
                                 checkGoogleFit()
                             }
@@ -1090,6 +1160,114 @@ class HomeActivity : AppCompatActivity() {
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun checkLocationAndBluetoothPermission() {
+        if (checkPermissions()) {
+            // Both WiFi and Bluetooth permissions are granted, perform your task
+            // Check if location services are enabled
+            val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+            val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            if (!isLocationEnabled) {
+                requestLocation()
+            } else {
+                // Check if Bluetooth is enabled
+                val bluetoothManager =
+                    getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                val bluetoothAdapter = bluetoothManager.adapter
+                if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+                    requestBluetooth()
+                } else {
+                    checkGoogleFit()
+                }
+            }
+
+
+        } else {
+            // Request the necessary permissions
+            requestPermissions()
+        }
+    }
+
+    private fun requestLocation() {
+        val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+            dialog.cancel()
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivityForResult(intent, LOCATION_REQUEST_CODE)
+        }
+
+        val builder = AlertDialog.Builder(this)
+
+        with(builder)
+        {
+            setTitle(getString(R.string.app_name))
+            setMessage(getString(R.string.location_permission_info_for_wifi_access))
+            setCancelable(false)
+            setPositiveButton(
+                getString(R.string.ok),
+                DialogInterface.OnClickListener(function = positiveButtonClick)
+            )
+            show()
+        }
+
+    }
+
+    private fun requestBluetooth() {
+        val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter?.isEnabled == false) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
+                }
+            }else{
+                startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
+            }
+
+        } else {
+            checkGoogleFit()
+        }
+
+    }
+
+    private fun checkPermissions(): Boolean {
+        return permissionChecker.hasWifiPermissions() && permissionChecker.hasBluetoothPermissions()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun requestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (!permissionChecker.hasWifiPermissions()) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_WIFI_STATE)
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (!permissionChecker.hasBluetoothPermissions()) {
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH)
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+
 
     /**
      * To check GPS permission is allowed or not

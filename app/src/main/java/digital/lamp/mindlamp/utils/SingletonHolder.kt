@@ -1,8 +1,12 @@
 package digital.lamp.mindlamp.utils
 
+/**
+ * This class responsible for singleton object creation
+ */
 open class SingletonHolder<T, A>(creator: (A) -> T) {
     private var creator: ((A) -> T)? = creator
-    @Volatile private var instance: T? = null
+    @Volatile
+    private var instance: T? = null
     fun getInstance(arg: A): T {
         val i = instance
         if (i != null) {

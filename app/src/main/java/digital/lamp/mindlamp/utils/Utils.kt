@@ -25,8 +25,13 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
+/**
+ * This class responsible for common util methods.
+ */
 object Utils {
+    /**
+     * This method used for @param  convert to base64
+     */
     @SuppressLint("NewApi")
     fun toBase64(message: String): String? {
         val data: ByteArray
@@ -39,6 +44,9 @@ object Utils {
         return null
     }
 
+    /**
+     * To check the @param service running or not.
+     */
     @Suppress("DEPRECATION")
     fun <T> Context.isServiceRunning(service: Class<T>): Boolean {
         return (getSystemService(ACTIVITY_SERVICE) as ActivityManager)
@@ -46,17 +54,23 @@ object Utils {
             .any { it -> it.service.className == service.name }
     }
 
-    fun getMyIntValue(vararg any: Any) : Int {
-        return when(val tmp = any.first()) {
+    /**
+     * Convert any number into integer
+     */
+    fun getMyIntValue(vararg any: Any): Int {
+        return when (val tmp = any.first()) {
             is Number -> tmp.toInt()
             else -> throw Exception("not a number") // or do something else reasonable for your case
         }
     }
 
+    /**
+     * Convert date to milliseconds
+     */
     @SuppressLint("SimpleDateFormat")
     fun getMilliFromDate(dateString: String): Long {
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        sdf.timeZone =TimeZone.getDefault()
+        sdf.timeZone = TimeZone.getDefault()
 
         try {
             val mDate = sdf.parse(dateString)!!
@@ -69,48 +83,68 @@ object Utils {
         return 0
     }
 
-    fun getLocationAuthorizationStatus(context: Context):String{
-        var status =""
+    /**
+     * To fetch location authorization status
+     */
+    fun getLocationAuthorizationStatus(context: Context): String {
+        var status = ""
         val backgroundLocationPermissionApproved =
-        ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        )
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            )
         val fineLocationPermissionApproved =
-                ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-        if(backgroundLocationPermissionApproved == PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        if (backgroundLocationPermissionApproved == PackageManager.PERMISSION_GRANTED)
             status = context.getString(R.string.location_status_background_allowed)
-        else if(fineLocationPermissionApproved == PackageManager.PERMISSION_GRANTED)
+        else if (fineLocationPermissionApproved == PackageManager.PERMISSION_GRANTED)
             status = context.getString(R.string.location_status_allowed)
         return status
     }
 
-    fun isDeviceIsInPowerSaveMode(context: Context):Boolean {
-        val powerManager: PowerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    /**
+     * To check the device is in power saving mode
+     */
+    fun isDeviceIsInPowerSaveMode(context: Context): Boolean {
+        val powerManager: PowerManager =
+            context.getSystemService(Context.POWER_SERVICE) as PowerManager
         return powerManager.isPowerSaveMode
     }
 
 
+    /**
+     * To get the available internal memory size
+     */
     fun getAvailableInternalMemorySize(context: Context): String? {
         val path: File = Environment.getDataDirectory()
         val stat = StatFs(path.getPath())
         val blockSize = stat.blockSizeLong
         val availableBlocks = stat.availableBlocksLong
-        return formatSize(context,availableBlocks * blockSize)
+        return formatSize(context, availableBlocks * blockSize)
     }
 
+    /**
+     * To fetch device total internal memory size
+     */
     fun getTotalInternalMemorySize(context: Context): String? {
         val path: File = Environment.getDataDirectory()
         val stat = StatFs(path.getPath())
         val blockSize = stat.blockSizeLong
         val totalBlocks = stat.blockCountLong
-        return formatSize(context,totalBlocks * blockSize)
+        return formatSize(context, totalBlocks * blockSize)
     }
 
-    private fun formatSize(context: Context,size: Long): String? {
+    /**
+     * Formats a file size into a human-readable string.
+     *
+     * @param context The application context for accessing resources.
+     * @param size The file size in bytes.
+     * @return A formatted string representing the file size.
+     */
+    private fun formatSize(context: Context, size: Long): String? {
         var size = size
         var suffix: String? = null
         if (size >= 1024) {
@@ -130,11 +164,23 @@ object Utils {
         if (suffix != null) resultBuffer.append(suffix)
         return resultBuffer.toString()
     }
-
-    fun getUserAgent():String{
-        return "NativeCore " + BuildConfig.VERSION_NAME + "; Android " +Build.VERSION.RELEASE+ "; "+ Build.MANUFACTURER + "; " + Build.MODEL
+    /**
+     * Constructs a user-agent string for the application.
+     *
+     * The user-agent string includes information about the application version,
+     * Android version, device manufacturer, and device model.
+     *
+     * @return A formatted user-agent string.
+     */
+    fun getUserAgent(): String {
+        return "NativeCore " + BuildConfig.VERSION_NAME + "; Android " + Build.VERSION.RELEASE + "; " + Build.MANUFACTURER + "; " + Build.MODEL
     }
-
+    /**
+     * Checks if the GPS (Global Positioning System) is enabled on the device.
+     *
+     * @param context The application context for accessing system services.
+     * @return `true` if GPS is enabled, `false` otherwise.
+     */
     fun isGPSEnabled(context: Context): Boolean {
         var enabled = false
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -146,8 +192,14 @@ object Utils {
         }
         return enabled
     }
-
-    fun getHttpErrorMessage(errorCode:Int,context: Context): String{
+    /**
+     * Get a user-friendly error message based on the provided HTTP error code.
+     *
+     * @param errorCode The HTTP error code.
+     * @param context The application context for accessing string resources.
+     * @return A user-friendly error message corresponding to the given HTTP error code.
+     */
+    fun getHttpErrorMessage(errorCode: Int, context: Context): String {
         when (errorCode) {
             400 -> {
                 return context.getString(R.string.invalid_request_please_try_again)

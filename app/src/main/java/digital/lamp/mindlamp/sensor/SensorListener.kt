@@ -4,6 +4,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 
 /**
  * Created by ZCO Engineering Dept. on 05,February,2020
+ * callback from sensor events
  */
 interface SensorListener {
     //Callback to Acclerometer Data

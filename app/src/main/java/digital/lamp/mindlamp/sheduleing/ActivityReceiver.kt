@@ -11,9 +11,10 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 
 /**
  * Created by ZCO Engineering Dept. on 11,March,2021
+ * Broadcast receiver for start foreground service
  */
 class ActivityReceiver : BroadcastReceiver() {
-    companion object{
+    companion object {
         private val TAG = ActivityReceiver::class.java.simpleName
     }
     override fun onReceive(context: Context, intent: Intent) {

@@ -1,5 +1,8 @@
 package digital.lamp.mindlamp.sheduleing
 
+/**
+ * This class represents constants used in workmanager
+ */
 object ScheduleConstants {
     const val WORK_MANAGER_TAG = "local_notification_worker"
 

@@ -12,6 +12,7 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 
 /**
  * Created by ZCO Engineering Dept. on 24,February,2021
+ * Broadcast receiver to start the foreground service
  */
 class ActivityRepeatReceiver : BroadcastReceiver() {
     companion object {
@@ -21,10 +22,8 @@ class ActivityRepeatReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
         val id = intent.getIntExtra("id", 0)
-        LampLog.e(TAG, "Receiver Fired :: $id")
         val action: String? = intent.action
         if (Intent.ACTION_BOOT_COMPLETED == action) {
-            LampLog.e("Receiver Triggered From Boot")
         } else {
             if (AppState.session.isLoggedIn && context.isServiceRunning(LampForegroundService::class.java)) {
                 if (id == AppConstants.REPEAT_DAILY) {

@@ -15,10 +15,14 @@ import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.Utils
 
-
+/**
+ * This activity is responsible for notification action.
+ * url will load in to webview
+ */
 
 class NotificationActionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWebviewOverviewBinding
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +33,10 @@ class NotificationActionActivity : AppCompatActivity() {
         val surveyUrl = intent.getStringExtra("survey_path")
         val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
 
-        val oSurveyUrl = BuildConfig.BASE_URL_WEB.dropLast(1)+surveyUrl+"?a="+Utils.toBase64(AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://"))
+        val oSurveyUrl = BuildConfig.BASE_URL_WEB.dropLast(1) + surveyUrl + "?a=" + Utils.toBase64(
+            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
+                .removePrefix("http://")
+        )
 
         DebugLogs.writeToFile("URL : $oSurveyUrl")
 
@@ -37,10 +44,10 @@ class NotificationActionActivity : AppCompatActivity() {
         manager.cancel(notificationId)
 
         binding.webviewOverview.clearCache(true)
-        binding. webviewOverview.clearHistory()
+        binding.webviewOverview.clearHistory()
         binding.webviewOverview.settings.javaScriptEnabled = true
-        binding.  webviewOverview.settings.domStorageEnabled = true
-        binding. webviewOverview.settings.allowFileAccess = true
+        binding.webviewOverview.settings.domStorageEnabled = true
+        binding.webviewOverview.settings.allowFileAccess = true
         binding.webviewOverview.loadUrl(oSurveyUrl)
 
         binding.webviewOverview.webChromeClient = object : WebChromeClient() {

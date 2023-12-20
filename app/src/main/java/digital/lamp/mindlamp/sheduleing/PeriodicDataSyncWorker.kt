@@ -20,21 +20,34 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
 
+/**
+ * PeriodicDataSyncWorker used to send analytics data to server on a periodic basis
+ *
+ * @param appContext The application context.
+ * @param workerParams Parameters to setup the worker, including input data.
+ */
 class PeriodicDataSyncWorker(
     val context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
-
+    /**
+     * This method is called in the background thread to perform the work.
+     * It should return the result of the computation.
+     *
+     * @return The Result indicating success or failure of the work.
+     */
     override suspend fun doWork(): Result {
-        LampLog.e("Sensor PeriodicDataSyncWorker: start")
         if (AppState.session.lastAnalyticsTimestamp == AppState.session.lastSyncWorkerTimestamp) {
-            LampLog.e("Sensor PeriodicDataSyncWorker: last times same start worker")
             syncAnalyticsData(context)
         }
 
 
         return Result.success()
     }
+
+    /**
+     * Fetch data analytics data from db and send to server
+     */
 
     private fun syncAnalyticsData(context: Context) {
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
@@ -50,7 +63,6 @@ class PeriodicDataSyncWorker(
             .create()
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
-            LampLog.e("Sensor PeriodicDataSyncWorker: START TIME ${AppState.session.lastAnalyticsTimestamp}")
             val oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
 
             if (AppState.session.lastAnalyticsTimestamp == 1L) {
@@ -58,10 +70,8 @@ class PeriodicDataSyncWorker(
                     oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
                 AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond ?: 1L
             }
-            LampLog.e("Sensor PeriodicDataSyncWorker: START TIME ${AppState.session.lastAnalyticsTimestamp}")
             val endTime =
                 AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
-            LampLog.e("Sensor PeriodicDataSyncWorker: END TIME $endTime")
             list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
 
 
@@ -83,7 +93,6 @@ class PeriodicDataSyncWorker(
                     googleFitSensorEventDataList.add(
                         googleFitData
                     )
-                    LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleFitData)}")
                 } else {
                     sensorEventDataList.add(
                         sensorEvent
@@ -96,29 +105,34 @@ class PeriodicDataSyncWorker(
                     AppState.session.lastSyncWorkerTimestamp = it[0].datetimeMillisecond!!
                 }
             }
-            LampLog.e("DB : ${list.size} and Sensor PeriodicDataSyncWorker: ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
-                invokeAddSensorData(sensorEventDataList,context,false)
+                invokeAddSensorData(sensorEventDataList, context, false)
             if (googleFitSensorEventDataList.isNotEmpty())
-                invokeAddSensorData(googleFitSensorEventDataList,context,true)
+                invokeAddSensorData(googleFitSensorEventDataList, context, true)
             else {
-                LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
-
                 val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                 if (dbList.isNotEmpty()) {
-                    LampLog.e("Sensor PeriodicDataSyncWorker: dbList is not empty")
                     val analytics =
-                            oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
-                    AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond ?: AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+                        oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
+                    AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond
+                        ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
 
-                    AppState.session.lastSyncWorkerTimestamp = analytics?.datetimeMillisecond ?: AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+                    AppState.session.lastSyncWorkerTimestamp = analytics?.datetimeMillisecond
+                        ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
                     syncAnalyticsData(context)
                 }
             }
         }
     }
 
-    private fun invokeAddSensorData(sensorEventDataList: ArrayList<SensorEvent>, context: Context, isGogolefitData :Boolean) {
+    /**
+     * Send data to api
+     */
+    private fun invokeAddSensorData(
+        sensorEventDataList: ArrayList<SensorEvent>,
+        context: Context,
+        isGogolefitData: Boolean
+    ) {
         if (!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(
                 context
             )
@@ -143,13 +157,11 @@ class PeriodicDataSyncWorker(
                     sensorEventDataList,
                     basic, isGogolefitData
                 )
-                LampLog.e("PeriodicDataSyncWorker", " Lamp Core Response -  $state")
                 if (state.isNotEmpty()) {
                     //Code for drop DB
                     GlobalScope.launch(Dispatchers.IO) {
                         val oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
                         oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                        LampLog.e("Sensor : invokeAddSensorData")
                         syncAnalyticsData(context)
                     }
                 }
@@ -158,10 +170,15 @@ class PeriodicDataSyncWorker(
             }
         }
     }
-
+    /**
+     * Track a single event using Firebase Analytics.
+     *
+     * @param eventName The name of the event to be tracked.
+     */
     private fun trackSingleEvent(eventName: String) {
         //Firebase Event Tracking
         val params = Bundle()
+        // Log the event using Firebase Analytics
         Firebase.analytics.logEvent(eventName, params)
     }
 }
