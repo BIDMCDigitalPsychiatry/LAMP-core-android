@@ -11,7 +11,6 @@ import android.content.Intent
 import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
-
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -27,10 +26,8 @@ import digital.lamp.lamp_kotlin.lamp_core.models.*
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.ExceptionActivity
-import digital.lamp.mindlamp.HomeActivity
 import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
-
 import digital.lamp.mindlamp.database.*
 import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.AnalyticsDao
@@ -42,6 +39,7 @@ import digital.lamp.mindlamp.notification.LampNotificationManager
 import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.sensor.GravityData
 import digital.lamp.mindlamp.sensor.RotationData
+import digital.lamp.mindlamp.sensor.healthconnect.GoogleHealthConnect
 import digital.lamp.mindlamp.sheduleing.*
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_DATA_WORK_NAME
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_WORK_MANAGER_TAG
@@ -162,8 +160,8 @@ class LampForegroundService : Service(),
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
-        val googleFitSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
-        googleFitSensorEventDataList.clear()
+        val googleHealthConnectSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
+        googleHealthConnectSensorEventDataList.clear()
 
         val gson = GsonBuilder()
             .create()
@@ -194,15 +192,16 @@ class LampForegroundService : Service(),
                     sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
                     || sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name || sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
                 ) {
-                    val googleFitData = gsonWithNull.fromJson(
+                    val googleHealthConnectData = gsonWithNull.fromJson(
                         it.analyticsData,
                         SensorEvent::class.java
                     )
 
-                    googleFitSensorEventDataList.add(
-                        googleFitData
+                    googleHealthConnectSensorEventDataList.add(
+                        googleHealthConnectData
                     )
-                    LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleFitData)}")
+                    LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
+                    DebugLogs.writeToFile("Google Health connect sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
                 } else {
                     sensorEventDataList.add(
                         sensorEvent
@@ -218,8 +217,8 @@ class LampForegroundService : Service(),
             LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
-            if (googleFitSensorEventDataList.isNotEmpty())
-                invokeAddSensorData(googleFitSensorEventDataList, true)
+            if (googleHealthConnectSensorEventDataList.isNotEmpty())
+                invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
             else {
                 val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                 if (dbList.isNotEmpty()) {
@@ -307,12 +306,21 @@ class LampForegroundService : Service(),
             override fun onTick(millisUntilFinished: Long) {
                 count++
                 when (count) {
-                    1 -> if (isSignedIn() && AppState.session.isGoogleFitConnected) {
+                    1 -> {/*if (isSignedIn() && AppState.session.isGoogleFitConnected) {
                         GoogleFit(
                             this@LampForegroundService,
                             applicationContext, sensorSpecList
-                        )
+                        )*/
+
+                       /* if (AppState.session.isGoogleHealthConnectConnected) {
+                            GoogleHealthConnect(
+                                applicationContext,
+                                this@LampForegroundService,
+                                sensorSpecList
+                            )
+                        }*/
                     }
+
                     2 -> {
                         var accelerometerDataRequired = false
                         var sensorSpec = ""
@@ -342,6 +350,7 @@ class LampForegroundService : Service(),
                             )
                         }
                     }
+
                     3 -> {
                         var rotationDataRequird = false
                         var frequency: Double? = null
@@ -363,6 +372,7 @@ class LampForegroundService : Service(),
                             )
                         }
                     }
+
                     4 -> {
                         var magnetometerDataRequired = false
                         var frequency: Double? = null
@@ -384,6 +394,7 @@ class LampForegroundService : Service(),
                         }
 
                     }
+
                     5 -> {
                         var gravityDataRequired = false
                         var frequency: Double? = null
@@ -404,6 +415,7 @@ class LampForegroundService : Service(),
                             )
                         }
                     }
+
                     6 -> {
                         var locationDateRequired = false
                         var frequency: Double? = null
@@ -426,6 +438,7 @@ class LampForegroundService : Service(),
                         }
 
                     }
+
                     7 -> {
                         var wifiDataRequired = false
                         var frequency: Double? = null
@@ -443,11 +456,12 @@ class LampForegroundService : Service(),
                             //Invoke WifiData
                             WifiData(
                                 this@LampForegroundService,
-                                applicationContext,frequency
+                                applicationContext, frequency
                             )
                         }
 
                     }
+
                     8 -> {
                         var screenStateDataRequired = false
                         sensorSpecList.forEach {
@@ -465,11 +479,13 @@ class LampForegroundService : Service(),
                         }
 
                     }
+
                     9 -> ActivityTransitionData(
                         this@LampForegroundService,
                         applicationContext,
                         sensorSpecList
                     )
+
                     10 -> {
                         var telephonyDataRequired = false
                         sensorSpecList.forEach {
@@ -486,6 +502,12 @@ class LampForegroundService : Service(),
                             )
                         }
 
+                    }
+                    11->{
+                        if (AppState.session.isGoogleHealthConnectConnected) {
+                            DebugLogs.writeToFile("Health connect invoked")
+                            GoogleHealthConnect(applicationContext,this@LampForegroundService,sensorSpecList)
+                        }
                     }
                 }
             }
@@ -572,7 +594,10 @@ class LampForegroundService : Service(),
                         GlobalScope.launch(Dispatchers.Main) {
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message",getString(digital.lamp.mindlamp.R.string.server_un_rechable))
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.server_un_rechable)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
@@ -582,7 +607,10 @@ class LampForegroundService : Service(),
                             DebugLogs.writeToFile("invokeSensorSpecData client exception")
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.user_not_found))
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.user_not_found)
+                            )
                             mainIntent.putExtra("code", e.statusCode)
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             if (App.app.isApplicationInForeground())
@@ -664,11 +692,14 @@ class LampForegroundService : Service(),
                             if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
                         }
-                    }catch (e: Exception) {
+                    } catch (e: Exception) {
                         GlobalScope.launch(Dispatchers.Main) {
                             val mainIntent =
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message",getString(digital.lamp.mindlamp.R.string.server_un_rechable))
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.server_un_rechable)
+                            )
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             if (App.app.isApplicationInForeground())
                                 startActivity(mainIntent)
@@ -681,7 +712,10 @@ class LampForegroundService : Service(),
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
                     Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.you_are_not_connected))
+                mainIntent.putExtra(
+                    "message",
+                    getString(digital.lamp.mindlamp.R.string.you_are_not_connected)
+                )
                 mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 if (App.app.isApplicationInForeground()) {
                     startActivity(mainIntent)
@@ -732,7 +766,10 @@ class LampForegroundService : Service(),
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.user_not_found))
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.user_not_found)
+                        )
                         mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (App.app.isApplicationInForeground())
@@ -819,7 +856,10 @@ class LampForegroundService : Service(),
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
@@ -829,7 +869,10 @@ class LampForegroundService : Service(),
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
@@ -842,7 +885,10 @@ class LampForegroundService : Service(),
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
                     Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.you_are_not_connected))
+                mainIntent.putExtra(
+                    "message",
+                    getString(digital.lamp.mindlamp.R.string.you_are_not_connected)
+                )
                 mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 if (App.app.isApplicationInForeground()) {
                     startActivity(mainIntent)
@@ -921,6 +967,7 @@ class LampForegroundService : Service(),
                                                 }
                                             }
                                         }
+
                                         RepeatInterval.HOURLY.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -937,6 +984,7 @@ class LampForegroundService : Service(),
                                                 }
                                             }
                                         }
+
                                         RepeatInterval.EVERY_3H.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -953,6 +1001,7 @@ class LampForegroundService : Service(),
                                                 }
                                             }
                                         }
+
                                         RepeatInterval.EVERY_6H.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -969,6 +1018,7 @@ class LampForegroundService : Service(),
                                                 }
                                             }
                                         }
+
                                         RepeatInterval.EVERY_12H.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -1004,6 +1054,7 @@ class LampForegroundService : Service(),
                                             }
 
                                         }
+
                                         RepeatInterval.BIWEEKLY.tag -> {
                                             val elapsedTimeMs = Utils.getMilliFromDate(
                                                 durationIntervalLegacy.time.toString()
@@ -1028,6 +1079,7 @@ class LampForegroundService : Service(),
                                             }
 
                                         }
+
                                         RepeatInterval.TRIWEEKLY.tag -> {
                                             val elapsedTimeMs = Utils.getMilliFromDate(
                                                 durationIntervalLegacy.time.toString()
@@ -1052,6 +1104,7 @@ class LampForegroundService : Service(),
                                             }
 
                                         }
+
                                         RepeatInterval.WEEKLY.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -1070,6 +1123,7 @@ class LampForegroundService : Service(),
 
 
                                         }
+
                                         RepeatInterval.FORTNIGHTLY.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -1088,6 +1142,7 @@ class LampForegroundService : Service(),
 
 
                                         }
+
                                         RepeatInterval.BIMONTHLY.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -1105,6 +1160,7 @@ class LampForegroundService : Service(),
                                             }
 
                                         }
+
                                         RepeatInterval.MONTHLY.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -1122,6 +1178,7 @@ class LampForegroundService : Service(),
                                             }
 
                                         }
+
                                         RepeatInterval.NONE.tag -> {
                                             if (null != durationIntervalLegacy.notification_ids && durationIntervalLegacy.notification_ids?.size!! > 0) {
                                                 durationIntervalLegacy.notification_ids?.forEach { notificationId ->
@@ -1154,7 +1211,10 @@ class LampForegroundService : Service(),
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.user_not_found))
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.user_not_found)
+                        )
                         mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (App.app.isApplicationInForeground())
@@ -1243,17 +1303,23 @@ class LampForegroundService : Service(),
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+                        mainIntent.putExtra(
+                            "message",
+                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
+                        )
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         if (App.app.isApplicationInForeground())
                             startActivity(mainIntent)
@@ -1265,7 +1331,10 @@ class LampForegroundService : Service(),
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
                     Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra("message", getString(digital.lamp.mindlamp.R.string.you_are_not_connected))
+                mainIntent.putExtra(
+                    "message",
+                    getString(digital.lamp.mindlamp.R.string.you_are_not_connected)
+                )
                 mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 if (App.app.isApplicationInForeground()) {
                     startActivity(mainIntent)
@@ -1333,6 +1402,7 @@ class LampForegroundService : Service(),
             val id = oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
+
     /**
      * callback method implementation for Rotation data
      */
@@ -1365,6 +1435,7 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
+
     /**
      * callback method implementation for Location  data
      */
@@ -1386,6 +1457,7 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
+
     /**
      * callback method implementation for Screen state data
      */
@@ -1396,6 +1468,7 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
+
     /**
      * callback method implementation for Activity data
      */
@@ -1438,6 +1511,26 @@ class LampForegroundService : Service(),
             oAnalyticsDao.insertAnalytics(oAnalytics)
         }
     }
+
+    override fun getGoogleHealthConnect(sensorEventData: ArrayList<SensorEvent>) {
+        val gson = GsonBuilder().serializeNulls().create()
+        LampLog.e("Google Health connect 1: ${gson.toJson(sensorEventData)}")
+        DebugLogs.writeToFile("Google Health connect 1: ${gson.toJson(sensorEventData)}")
+
+        val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
+        GlobalScope.async {
+            sensorEventData.forEach {
+                val oAnalytics = Analytics()
+                oAnalytics.analyticsData = gson.toJson(it)
+                oAnalyticsList.add(oAnalytics)
+            }
+            //Insert it into Analytics DB
+            oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
+            LampLog.e("Google Health Connect : ${gson.toJson(sensorEventData)}")
+            DebugLogs.writeToFile("Google Health Connect : ${gson.toJson(sensorEventData)}")
+        }
+    }
+
     /**
      * Log events in firebase crashlytics
      */

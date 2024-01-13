@@ -26,6 +26,7 @@ internal object AppConstants {
     const val LOCATION_REQUEST_CODE = 100
     const val BLUETOOTH_REQUEST_CODE  = 200
     const val BLUETOOTH_REQUEST_RESULT_CODE  = 201
+    const val HEALTH_CONNECT_PERMISSION_RESULT_CODE = 5000
 
 
     const val JAVASCRIPT_OBJ_LOGIN = "login"

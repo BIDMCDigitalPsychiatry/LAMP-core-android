@@ -47,6 +47,7 @@
     <string name="request_timeout">Request timeout.</string>
     <string name="bad_gateway">Bad Gateway.</string>
     <string name="service_not_available">Service is unavailable. Please try again later.</string>
+    <string name="unknown" translatable="false">Unknown</string>
     <string name="unused" translatable="false">Unused</string>
     <string name="awake_during_sleep" translatable="false">Awake (during sleep)</string>
     <string name="sleep" translatable="false">Sleep</string>
@@ -64,4 +65,7 @@
     <string name="ssl_error" translatable="false">SSL Error</string>
     <string name="battery_optimization_info" translatable="false"> mindLAMP requires unrestricted battery access for collecting data effectively. Please disable battery optimization for the app to function properly.</string>
     <string name="location_permission_info_for_wifi_access" translatable="false"> Enable your device\'s location to collect the Wi-Fi data effectively.</string>
+    <string name="not_installed_description" translatable="false">
+        Health Connect is supported on this device, but is either not installed, or requires an update.
+    </string>
 </resources>
