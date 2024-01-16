@@ -27,4 +27,7 @@ interface SensorListener {
     fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>)
     //Callback to Telephony data
     fun getTelephonyData(sensorEventData: SensorEvent)
+    // callback to Google health connect
+    fun getGoogleHealthConnect(sensorEventData: ArrayList<SensorEvent>)
+
 }

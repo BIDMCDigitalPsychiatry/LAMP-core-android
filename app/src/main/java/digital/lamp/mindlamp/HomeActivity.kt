@@ -15,6 +15,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.database.CursorWindow
+import android.health.connect.HealthConnectManager
 import android.location.LocationManager
 import android.net.TrafficStats
 import android.net.Uri
@@ -27,12 +28,34 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.BasalMetabolicRateRecord
+import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.HydrationRecord
+import androidx.health.connect.client.records.NutritionRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.RespiratoryRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
@@ -42,6 +65,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ClientException
@@ -50,6 +74,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -59,11 +84,13 @@ import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.databinding.ActivityHomeBinding
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
+import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
+import digital.lamp.mindlamp.utils.AppConstants.HEALTH_CONNECT_PERMISSION_RESULT_CODE
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.LOCATION_REQUEST_CODE
@@ -88,6 +115,7 @@ import javax.net.ssl.*
  * Created by ZCO Engineering Dept. on 05,February,2020
  */
 
+@AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var oSensorDao: SensorDao
@@ -102,7 +130,27 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
-
+    private val viewModel: HealthConnectViewModel by viewModels()
+    val PERMISSIONS =
+        setOf(
+            HealthPermission.getReadPermission(HeartRateRecord::class),
+            HealthPermission.getReadPermission(StepsRecord::class),
+            HealthPermission.getReadPermission(SpeedRecord::class),
+            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+            HealthPermission.getReadPermission(DistanceRecord::class),
+            HealthPermission.getReadPermission(BasalMetabolicRateRecord::class),
+            HealthPermission.getReadPermission(BodyFatRecord::class),
+            HealthPermission.getReadPermission(HydrationRecord::class),
+            HealthPermission.getReadPermission(NutritionRecord::class),
+            HealthPermission.getReadPermission(BloodGlucoseRecord::class),
+            HealthPermission.getReadPermission(BloodPressureRecord::class),
+            HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+            HealthPermission.getReadPermission(BodyTemperatureRecord::class),
+            HealthPermission.getReadPermission(StepsCadenceRecord::class),
+            HealthPermission.getReadPermission(SleepStageRecord::class),
+            HealthPermission.getReadPermission(SleepSessionRecord::class),
+            HealthPermission.getReadPermission(RespiratoryRateRecord::class),
+        )
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
         private const val REQUEST_OAUTH_REQUEST_CODE = 1010
@@ -212,6 +260,9 @@ class HomeActivity : AppCompatActivity() {
             .build()
     }
 
+    private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(this) }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -221,7 +272,6 @@ class HomeActivity : AppCompatActivity() {
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oActivityDao = AppDatabase.getInstance(this).activityDao()
         oAnalyticsDao = AppDatabase.getInstance(this).analyticsDao()
-
         val filter = IntentFilter()
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
@@ -249,7 +299,6 @@ class HomeActivity : AppCompatActivity() {
         }
 
     }
-
     /**
      * check location permission
      */
@@ -589,7 +638,7 @@ class HomeActivity : AppCompatActivity() {
     private fun checkGoogleFit() {
         val specList = mSensorSpecsList.map { it.spec }
 
-        if (specList.contains(Sensors.SLEEP.sensor_name) ||
+        if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name) ||
             specList.contains(Sensors.NUTRITION.sensor_name) ||
             specList.contains(Sensors.STEPS.sensor_name) ||
             specList.contains(Sensors.HEART_RATE.sensor_name) ||
@@ -598,11 +647,52 @@ class HomeActivity : AppCompatActivity() {
             specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
             specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
         ) {
-            fitSignIn()
+           // fitSignIn()
+            checkGoogleConnectAvailable()
+
         } else {
             checkGPSPermission()
             if (!this.isServiceRunning(LampForegroundService::class.java)) {
                 startLampService()
+            }
+        }
+
+    }
+    val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+    val requestPermissions =
+        registerForActivityResult(requestPermissionActivityContract) { granted ->
+            if (granted.containsAll(PERMISSIONS)) {
+                // Permissions successfully granted
+                viewModel.permissionsGranted.value = true
+                AppState.session.isGoogleHealthConnectConnected = true
+                if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
+            } else {
+                // Lack of required permissions
+                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
+                        .putExtra(Intent.EXTRA_PACKAGE_NAME, BuildConfig.APPLICATION_ID)
+                } else {
+                    Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+                }
+                startActivity(intent)
+            }
+        }
+
+    fun checkPermissionsAndRun(client: HealthConnectClient) {
+        lifecycleScope.launch {
+            val granted = client.permissionController.getGrantedPermissions()
+            if (granted.containsAll(PERMISSIONS)) {
+                // Permissions already granted
+                viewModel.permissionsGranted.value = true
+                AppState.session.isGoogleHealthConnectConnected = true
+                if (!isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
+            } else {
+                AppState.session.isGoogleHealthConnectConnected = false
+                requestPermissions.launch(PERMISSIONS)
             }
         }
     }
@@ -777,6 +867,54 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun  checkGoogleConnectAvailable(){
+        val availabilityStatus = HealthConnectClient.getSdkStatus(this, "com.google.android.apps.healthdata")
+        if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
+            return // early return as there is no viable integration
+        }
+        if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                dialog.cancel()
+                // Optionally redirect to package installer to find a provider, for example:
+                val uriString = "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+                startActivityForResult(Intent(Intent.ACTION_VIEW).apply {
+                    setPackage("com.android.vending")
+                    data = Uri.parse(uriString)
+                    putExtra("overlay", true)
+                    putExtra("callerId", packageName)
+
+                }, HEALTH_CONNECT_PERMISSION_RESULT_CODE)
+            }
+
+            val builder = AlertDialog.Builder(this)
+
+            with(builder)
+            {
+                setTitle(getString(R.string.app_name))
+                setMessage(getString(R.string.not_installed_description))
+                setCancelable(false)
+                setPositiveButton(
+                    getString(R.string.ok),
+                    DialogInterface.OnClickListener(function = positiveButtonClick)
+                )
+                show()
+            }
+            return
+        }else if (availabilityStatus == HealthConnectClient.SDK_AVAILABLE){
+
+            if (viewModel.permissionsGranted.value == true){
+                AppState.session.isGoogleHealthConnectConnected = true
+                if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
+            }else{
+                AppState.session.isGoogleHealthConnectConnected = false
+                checkPermissionsAndRun(healthConnectClient)
+            }
+        }
+
+    }
+
     /**
      * Handles the callback from the OAuth sign in flow, executing the post sign in function
      */
@@ -811,6 +949,18 @@ class HomeActivity : AppCompatActivity() {
                     requestBluetooth()
                 } else {
                     checkGoogleFit()
+                }
+            }
+            HEALTH_CONNECT_PERMISSION_RESULT_CODE ->{
+                if (viewModel.permissionsGranted.value == false) {
+                    AppState.session.isGoogleHealthConnectConnected = false
+                    checkPermissionsAndRun(healthConnectClient)
+                }
+                else {
+                    AppState.session.isGoogleHealthConnectConnected = true
+                    if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                        startLampService()
+                    }
                 }
             }
             else -> {

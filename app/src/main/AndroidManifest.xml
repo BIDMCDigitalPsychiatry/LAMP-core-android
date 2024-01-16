@@ -3,9 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -14,13 +12,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
-
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
-    <!-- Required only when requesting background location access on
-          Android 10 (API level 29) and higher. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!--
+ Required only when requesting background location access on
+          Android 10 (API level 29) and higher.
+    -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-feature android:name="android.hardware.wifi" />
@@ -28,40 +25,75 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MICROPHONE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="s" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_SPEED" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT"/>
+    <uses-permission android:name="android.permission.health.READ_HYDRATION"/>
+    <uses-permission android:name="android.permission.health.READ_NUTRITION"/>
+    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE"/>
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"/>
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"/>
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE"/>
+    <uses-permission android:name="android.permission.health.READ_STEPS_CADENCE"/>
+    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"/>
+
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" android:maxSdkVersion="34"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" android:maxSdkVersion="34"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" android:maxSdkVersion="34"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" android:maxSdkVersion="34"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" android:maxSdkVersion="34"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" android:maxSdkVersion="34"/>
+
+    <!-- Check if Health Connect is installed -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
+    </queries>
 
     <application
-        android:name="digital.lamp.mindlamp.app.App"
+        android:name=".app.App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:roundIcon="@drawable/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
-        android:largeHeap="true"
         tools:ignore="GoogleAppIndexingWarning">
 
-       <!-- <provider
+        <!--
+         <provider
             android:name="androidx.work.impl.WorkManagerInitializer"
             android:authorities="${applicationId}.workmanager-init"
             android:exported="false"
-            android:enabled="false"/>-->
-
+            android:enabled="false"/>
+        -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             tools:node="merge">
+
             <!-- If you are using androidx.startup to initialize other components -->
             <meta-data
                 android:name="androidx.work.impl.WorkManagerInitializer"
@@ -69,48 +101,72 @@
                 tools:node="remove" />
         </provider>
 
-
-        <activity android:name="digital.lamp.mindlamp.SplashActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
             android:screenOrientation="portrait"
-            android:exported="true">
-        <intent-filter>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name="digital.lamp.mindlamp.HomeActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+        <activity
+            android:name=".HomeActivity"
+            android:exported="true"
+            android:hardwareAccelerated="true"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
-            android:hardwareAccelerated="true"
-            />
-        <activity android:name=".NotificationActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+
+            <!--
+           The app needs to handle this intent and display an appropriate privacy policy
+           explaining how the user's data will be used and handled.
+
+           This intent is sent to the app when the user clicks on the "privacy policy" link
+           in the Health Connect permissions dialog.
+            -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+
+            <!-- Permission handling for Android 14 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".NotificationActivity"
             android:theme="@style/Theme.AppCompat.Light.Dialog"
             android:windowSoftInputMode="adjustResize">
 
         </activity>
-
-        <activity android:name=".NotificationActionActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+        <activity
+            android:name=".NotificationActionActivity"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
             android:windowSoftInputMode="adjustResize">
-        </activity>
 
-        <activity android:name=".ExceptionActivity"
-            android:theme="@style/DialogTheme"
+        </activity>
+        <activity
+            android:name=".ExceptionActivity"
             android:excludeFromRecents="true"
-            android:windowSoftInputMode="adjustResize"/>
+            android:theme="@style/DialogTheme"
+            android:windowSoftInputMode="adjustResize" />
 
         <service
-            android:name="digital.lamp.mindlamp.repository.LampForegroundService"
+            android:name=".repository.LampForegroundService"
             android:enabled="true"
-            android:exported="true" />
+            android:foregroundServiceType="health"
+            android:exported="true" >
+        </service>
 
         <receiver
-            android:name="digital.lamp.mindlamp.AlarmBroadCastReceiver"
+            android:name=".AlarmBroadCastReceiver"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="true">
@@ -119,9 +175,8 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <receiver
-            android:name="digital.lamp.mindlamp.sheduleing.ActivityRepeatReceiver"
+            android:name=".sheduleing.ActivityRepeatReceiver"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="true">
@@ -130,18 +185,18 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <receiver
-            android:name="digital.lamp.mindlamp.sheduleing.ActivityReceiver"
+            android:name=".sheduleing.ActivityReceiver"
             android:exported="false">
         </receiver>
-
-        <receiver android:name=".sheduleing.PowerSaveModeReceiver"
+        <receiver
+            android:name=".sheduleing.PowerSaveModeReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED"/>
+                <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED" />
             </intent-filter>
         </receiver>
+
         <service
             android:name=".notification.LampFirebaseMessagingService"
             android:exported="false">
@@ -153,9 +208,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_noti_icon" />
-
-
-
     </application>
 
 </manifest>
