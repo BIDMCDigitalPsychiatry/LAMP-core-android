@@ -327,7 +327,7 @@ class GoogleHealthConnect(
                         calorieData.forEach {
                             val sensorEvenData: SensorEvent =
                                 getCalorieData(
-                                    it.energy.inCalories,
+                                    it.energy.inKilocalories,
                                     it.metadata.dataOrigin.packageName,
                                     it.endTime.toEpochMilli().toDouble()
                                 )
