@@ -18,7 +18,7 @@ jobs:
       -
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
       -
         name: "Do a commit for release type to increment version code"
         run: |
@@ -89,7 +89,7 @@ jobs:
       -
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       -
         env:
