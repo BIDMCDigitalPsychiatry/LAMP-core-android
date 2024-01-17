@@ -35,33 +35,40 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.READ_SPEED" />
     <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
-    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
-    <uses-permission android:name="android.permission.health.READ_BODY_FAT"/>
-    <uses-permission android:name="android.permission.health.READ_HYDRATION"/>
-    <uses-permission android:name="android.permission.health.READ_NUTRITION"/>
-    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE"/>
-    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"/>
-    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"/>
-    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE"/>
-    <uses-permission android:name="android.permission.health.READ_STEPS_CADENCE"/>
-    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
-    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"/>
-
-
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" android:maxSdkVersion="34"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" android:maxSdkVersion="34"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" android:maxSdkVersion="34"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" android:maxSdkVersion="34"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" android:maxSdkVersion="34"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" android:maxSdkVersion="34"/>
-
-    <!-- Check if Health Connect is installed -->
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.READ_HYDRATION" />
+    <uses-permission android:name="android.permission.health.READ_NUTRITION" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.READ_STEPS_CADENCE" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_HEALTH"
+        android:maxSdkVersion="34" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+        android:maxSdkVersion="34" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
+        android:maxSdkVersion="34" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"
+        android:maxSdkVersion="34" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL"
+        android:maxSdkVersion="34" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING"
+        android:maxSdkVersion="34" /> <!-- Check if Health Connect is installed -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
 
@@ -120,7 +127,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
 
-            <!--
+           <!--
            The app needs to handle this intent and display an appropriate privacy policy
            explaining how the user's data will be used and handled.
 
@@ -138,7 +145,6 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".NotificationActivity"
             android:theme="@style/Theme.AppCompat.Light.Dialog"
@@ -161,8 +167,9 @@
         <service
             android:name=".repository.LampForegroundService"
             android:enabled="true"
-            android:foregroundServiceType="health"
-            android:exported="true" >
+            android:exported="true"
+            android:foregroundServiceType="health">
+
         </service>
 
         <receiver
@@ -187,8 +194,7 @@
         </receiver>
         <receiver
             android:name=".sheduleing.ActivityReceiver"
-            android:exported="false">
-        </receiver>
+            android:exported="false"></receiver>
         <receiver
             android:name=".sheduleing.PowerSaveModeReceiver"
             android:exported="true">

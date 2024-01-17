@@ -49,6 +49,7 @@ android {
             buildConfigField 'String', 'HOST_LOG', project.devLogUrl
             buildConfigField 'String', 'BASE_URL_WEB', project.devBaseUrlWeb
             buildConfigField 'String', 'MAIN_PAGE_URL', project.devMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.devPrivacyPolicyUrl
             buildConfigField 'boolean', 'DO_LOG', 'true'
 
         }
@@ -59,6 +60,7 @@ android {
             buildConfigField 'String', 'HOST_LOG', project.qaLogUrl
             buildConfigField 'String', 'BASE_URL_WEB', project.qaBaseUrlWeb
             buildConfigField 'String', 'MAIN_PAGE_URL', project.qaMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.qaPrivacyPolicyUrl
             buildConfigField 'boolean', 'DO_LOG', 'true'
         }
 
@@ -68,6 +70,7 @@ android {
             buildConfigField 'String', 'HOST_LOG', project.betaLogUrl
             buildConfigField 'String', 'BASE_URL_WEB', project.betaBaseUrlWeb
             buildConfigField 'String', 'MAIN_PAGE_URL', project.betaMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.betaPrivacyPolicyLink
             buildConfigField 'boolean', 'DO_LOG', 'false'
         }
 
@@ -77,6 +80,7 @@ android {
             buildConfigField 'String', 'HOST_LOG', project.prodLogUrl
             buildConfigField 'boolean', 'DO_LOG', 'false'
             buildConfigField 'String', 'BASE_URL_WEB', project.prodBaseUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.prodPrivacyPolicyUrl
             buildConfigField 'String', 'MAIN_PAGE_URL', project.prodMainPageUrlWeb
 
         }

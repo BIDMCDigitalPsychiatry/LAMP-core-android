@@ -281,7 +281,11 @@ class HomeActivity : AppCompatActivity() {
             populateOnDisclosureARAlert()
         } else {
             checkAndRequestPermissions(this)
-            initializeWebview()
+            if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE"){
+                initializePrivacyPolicyWebview()
+            }else {
+                initializeWebview()
+            }
 
         }
         handleNotification(intent)
@@ -399,6 +403,32 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun initializePrivacyPolicyWebview(){
+        binding.webView.clearCache(true)
+        binding.webView.clearHistory()
+        WebView.setWebContentsDebuggingEnabled(true)
+        binding.webView.settings.javaScriptEnabled = true
+        binding.webView.settings.mediaPlaybackRequiresUserGesture = false
+        binding.webView.settings.domStorageEnabled = true
+        binding.webView.settings.allowFileAccess = true
+        binding.webView.settings.allowContentAccess = true
+        binding.webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        binding.webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        binding.progressBar.visibility = View.VISIBLE
+
+        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
+        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
+
+        var url = BuildConfig.PRIVACY_POLICY_PAGE_URL
+        binding.webView.loadUrl(url)
+
+        binding.webView.webViewClient = myWebViewClient
+        binding.webView.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                request.grant(request.resources)
+            }
+        }
+    }
     /**
      * initialize webview
      */
@@ -513,46 +543,52 @@ class HomeActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             REQUEST_ID_MULTIPLE_PERMISSIONS -> {
-                val perms = HashMap<String, Int>()
-                // Initialize the map with both permissions
-                perms[Manifest.permission.ACTIVITY_RECOGNITION] = PackageManager.PERMISSION_GRANTED
+                if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE"){
+                    initializePrivacyPolicyWebview()
+                }else {
+                    val perms = HashMap<String, Int>()
+                    // Initialize the map with both permissions
+                    perms[Manifest.permission.ACTIVITY_RECOGNITION] =
+                        PackageManager.PERMISSION_GRANTED
 
-                if (grantResults.isNotEmpty()) {
-                    for (i in permissions.indices)
-                        perms[permissions[i]] = grantResults[i]
-                    // Check for both permissions
-                    if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
-                        initializeWebview()
-                        //else any one or both the permissions are not granted
-                    } else {
-                        initializeWebview()
-                        //Now further we check if used denied permanently or not
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                                this,
-                                Manifest.permission.ACTIVITY_RECOGNITION
-                            )
-                        ) {
-                            // case 4 User has denied permission but not permanently
-                            showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app),
-                                DialogInterface.OnClickListener { _, which ->
-                                    when (which) {
-                                        DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
-                                            this
-                                        )
-                                        DialogInterface.BUTTON_NEGATIVE ->
-                                            // proceed with logic by disabling the related features or quit the app.
-                                            finish()
-                                    }
-                                })
+                    if (grantResults.isNotEmpty()) {
+                        for (i in permissions.indices)
+                            perms[permissions[i]] = grantResults[i]
+                        // Check for both permissions
+                        if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
+                            initializeWebview()
+                            //else any one or both the permissions are not granted
                         } else {
-                            //  DebugLogs.writeToFile("Display settings screen")
-                            // case 5. Permission denied permanently.
-                            // You can open Permission setting's page from here now.
-                            val intent = Intent()
-                            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                            val uri = Uri.fromParts("package", packageName, null)
-                            intent.data = uri
-                            startActivity(intent)
+                            initializeWebview()
+                            //Now further we check if used denied permanently or not
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                    this,
+                                    Manifest.permission.ACTIVITY_RECOGNITION
+                                )
+                            ) {
+                                // case 4 User has denied permission but not permanently
+                                showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app),
+                                    DialogInterface.OnClickListener { _, which ->
+                                        when (which) {
+                                            DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
+                                                this
+                                            )
+
+                                            DialogInterface.BUTTON_NEGATIVE ->
+                                                // proceed with logic by disabling the related features or quit the app.
+                                                finish()
+                                        }
+                                    })
+                            } else {
+                                //  DebugLogs.writeToFile("Display settings screen")
+                                // case 5. Permission denied permanently.
+                                // You can open Permission setting's page from here now.
+                                val intent = Intent()
+                                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                val uri = Uri.fromParts("package", packageName, null)
+                                intent.data = uri
+                                startActivity(intent)
+                            }
                         }
                     }
                 }
