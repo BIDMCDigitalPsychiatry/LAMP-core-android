@@ -12,7 +12,6 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HydrationRecord
 import androidx.health.connect.client.records.NutritionRecord
@@ -223,7 +222,7 @@ class GoogleHealthConnect(
                 response.forEachIndexed { index, stepsRecord ->
                     val sensorEvenData: SensorEvent = getStepsData(
                         stepsRecord.count,
-                        stepsRecord.metadata.dataOrigin,
+                        stepsRecord.metadata.dataOrigin.packageName,
                         stepsRecord.endTime.toEpochMilli()
                     )
                     sensorList.add(sensorEvenData)
