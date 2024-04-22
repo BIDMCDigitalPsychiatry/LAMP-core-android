@@ -135,4 +135,3 @@ jobs:
           releaseFiles: app/build/outputs/bundle/qaRelease/app-qa-release.aab
           track: beta          
           status: completed
-
