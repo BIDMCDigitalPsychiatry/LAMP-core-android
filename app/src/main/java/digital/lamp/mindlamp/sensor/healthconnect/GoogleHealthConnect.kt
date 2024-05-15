@@ -1,10 +1,6 @@
 package digital.lamp.mindlamp.sensor.healthconnect
 
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.os.Build
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -12,7 +8,6 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HydrationRecord
 import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
@@ -27,7 +22,6 @@ import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.Gson
 import digital.lamp.lamp_kotlin.lamp_core.models.BloodPressure
 import digital.lamp.lamp_kotlin.lamp_core.models.BloodPressureData
 import digital.lamp.lamp_kotlin.lamp_core.models.GoogleHealthConnectData
@@ -39,7 +33,6 @@ import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.sensor.SensorListener
-import digital.lamp.mindlamp.sensor.healthconnect.model.HealthConnectAppInfo
 import digital.lamp.mindlamp.sensor.healthconnect.model.SleepSessionData
 import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
@@ -74,45 +67,8 @@ class GoogleHealthConnect(
         context.getString(R.string.deep_sleep),
         context.getString(R.string.rem_sleep)
     )
-    val healthConnectCompatibleApps by lazy {
-        val intent = Intent("androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE")
-
-        val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.packageManager.queryIntentActivities(
-                intent,
-                PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_ALL.toLong())
-            )
-        } else {
-            context.packageManager.queryIntentActivities(
-                intent,
-                PackageManager.MATCH_ALL
-            )
-        }
-
-        packages.associate {
-            val icon = try {
-                context.packageManager.getApplicationIcon(it.activityInfo.packageName)
-            } catch (e: Resources.NotFoundException) {
-                null
-            }
-            val label = context.packageManager.getApplicationLabel(it.activityInfo.applicationInfo)
-                .toString()
-            it.activityInfo.packageName to
-                    HealthConnectAppInfo(
-                        packageName = it.activityInfo.packageName,
-                        icon = icon,
-                        appLabel = label
-                    )
-        }
-    }
-
-
-    fun checkAvailability() {
-        sdkAvailability.value = HealthConnectClient.getSdkStatus(context = context)
-    }
 
     init {
-        // checkAvailability()
         CoroutineScope(Dispatchers.IO).launch {
             Thread.sleep(5000)
             if (oSensorSpecList?.isNotEmpty() == true) {
@@ -122,7 +78,6 @@ class GoogleHealthConnect(
                 readBloodSugar()
                 readRespiratoryRate()
                 sensorListener?.getGoogleHealthConnect(sensorEventDataList)
-                DebugLogs.writeToFile("sensor events ${Gson().toJson(sensorEventDataList)}")
 
             }
         }
@@ -132,10 +87,7 @@ class GoogleHealthConnect(
         try {
             if (AppState.session.lastRespiratoryTimestamp == 1L)
                 AppState.session.lastRespiratoryTimestamp = System.currentTimeMillis() - 60000
-            Log.e(
-                "last lastRespiratoryTimestamp time",
-                "${AppState.session.lastRespiratoryTimestamp}"
-            )
+
             val timeRangeFilter = getTimeRangeFilter(AppState.session.lastRespiratoryTimestamp)
             val respiratoryRecord = readData<RespiratoryRateRecord>(timeRangeFilter)
             if (respiratoryRecord.isNotEmpty()) {
@@ -162,7 +114,6 @@ class GoogleHealthConnect(
             if (AppState.session.lastGlucoseTimestamp == 1L)
                 AppState.session.lastGlucoseTimestamp = System.currentTimeMillis() - 60000
             val startTime: Long = AppState.session.lastGlucoseTimestamp
-            DebugLogs.writeToFile("glucose last time ${AppState.session.lastGlucoseTimestamp}")
             val endTime = System.currentTimeMillis()
             val sensorList: ArrayList<SensorEvent> = arrayListOf()
             val request = ReadRecordsRequest(
@@ -170,19 +121,12 @@ class GoogleHealthConnect(
                 timeRangeFilter = TimeRangeFilter.between(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime))
             )
             val response = healthConnectClient.readRecords(request)
-           /* val response = readData<BloodGlucoseRecord>(
-                TimeRangeFilter.between(
-                    Instant.ofEpochMilli(startTime),
-                    Instant.ofEpochMilli(endTime)
-                )
-            )
-*/
+
             if (response.records.isNotEmpty()) {
                 val endTimeList =
                     response.records.map { it.time.toEpochMilli() }
                 AppState.session.lastGlucoseTimestamp = Collections.max(endTimeList) + 1
                 response.records.forEachIndexed { index, glucoseLevel ->
-                    DebugLogs.writeToFile("Glocose level ${glucoseLevel.level}")
                     val sensorEvenData: SensorEvent = getBloodGlucose(
                         glucoseLevel.level.inMillimolesPerLiter,
                         glucoseLevel.metadata.dataOrigin.packageName,
@@ -312,10 +256,6 @@ class GoogleHealthConnect(
                         AppState.session.lastTotalCaloriesBurnedDataTimestamp =
                             System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last total calorie burn time",
-                        "${AppState.session.lastTotalCaloriesBurnedDataTimestamp}"
-                    )
                     val timeRangeFilter =
                         getTimeRangeFilter(AppState.session.lastTotalCaloriesBurnedDataTimestamp)
                     val calorieData = readData<TotalCaloriesBurnedRecord>(timeRangeFilter)
@@ -338,10 +278,6 @@ class GoogleHealthConnect(
                         AppState.session.lastBodyFatDataTimestamp =
                             System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastBodyFatDataTimestamp time",
-                        "${AppState.session.lastBodyFatDataTimestamp}"
-                    )
                     val timeRangeFilterBodyFat =
                         getTimeRangeFilter(AppState.session.lastBodyFatDataTimestamp)
                     val bodyFatData = readData<BodyFatRecord>(timeRangeFilterBodyFat)
@@ -362,10 +298,7 @@ class GoogleHealthConnect(
                     if (AppState.session.lastHydrationTimestamp == 1L)
                         AppState.session.lastHydrationTimestamp = System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastHydrationTimestamp time",
-                        "${AppState.session.lastHydrationTimestamp}"
-                    )
+
                     val timeRangeFilterHydration =
                         getTimeRangeFilter(AppState.session.lastHydrationTimestamp)
                     val hydrationRecord = readData<HydrationRecord>(timeRangeFilterHydration)
@@ -384,10 +317,7 @@ class GoogleHealthConnect(
                     if (AppState.session.lastNutritionTimestamp == 1L)
                         AppState.session.lastNutritionTimestamp = System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastNutritionTimestamp time",
-                        "${AppState.session.lastNutritionTimestamp}"
-                    )
+
                     val timeRangeFilterNutrition =
                         getTimeRangeFilter(AppState.session.lastNutritionTimestamp)
                     val nutritionDataRecord = readData<NutritionRecord>(timeRangeFilterNutrition)
@@ -410,10 +340,7 @@ class GoogleHealthConnect(
                     if (AppState.session.lastDistanceDataTimestamp == 1L)
                         AppState.session.lastDistanceDataTimestamp =
                             System.currentTimeMillis() - 60000
-                    Log.e(
-                        "last lastDistanceDataTimestamp time",
-                        "${AppState.session.lastDistanceDataTimestamp}"
-                    )
+
                     val timeRangeFilter =
                         getTimeRangeFilter(AppState.session.lastDistanceDataTimestamp)
                     val readDistanceDataRecords = readData<DistanceRecord>(timeRangeFilter)
@@ -434,10 +361,7 @@ class GoogleHealthConnect(
                     if (AppState.session.lastSpeedDataTimestamp == 1L)
                         AppState.session.lastSpeedDataTimestamp = System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastSpeedDataTimestamp time",
-                        "${AppState.session.lastSpeedDataTimestamp}"
-                    )
+
                     val timeRangeFilterSpeed =
                         getTimeRangeFilter(AppState.session.lastSpeedDataTimestamp)
                     val readSpeedRecord = readData<SpeedRecord>(timeRangeFilterSpeed)
@@ -460,10 +384,7 @@ class GoogleHealthConnect(
                         AppState.session.lastStepsCadenceTimestamp =
                             System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastStepsCadenceTimestamp time",
-                        "${AppState.session.lastStepsCadenceTimestamp}"
-                    )
+
                     val timeRangeFilterCadence =
                         getTimeRangeFilter(AppState.session.lastStepsCadenceTimestamp)
                     val stepsCadenceRecord = readData<StepsCadenceRecord>(timeRangeFilterCadence)
@@ -486,13 +407,10 @@ class GoogleHealthConnect(
                     }
                 }
 
-                if (sensorSpecs.spec == Sensors.HEART_RATE.sensor_name) {
+               /* if (sensorSpecs.spec == Sensors.HEART_RATE.sensor_name) {
                     if (AppState.session.lastHeartRateTimestamp == 1L)
                         AppState.session.lastHeartRateTimestamp = System.currentTimeMillis() - 60000
-                    Log.e(
-                        "last lastHeartRateTimestamp time",
-                        "${AppState.session.lastHeartRateTimestamp}"
-                    )
+
                     val timeRangeFilter =
                         getTimeRangeFilter(AppState.session.lastHeartRateTimestamp)
                     val heartRateRecord = readData<HeartRateRecord>(timeRangeFilter)
@@ -511,15 +429,12 @@ class GoogleHealthConnect(
 
                         }
                     }
-                }
+                }*/
                 if (sensorSpecs.spec == Sensors.BLOOD_GLUCOSE.sensor_name) {
                     if (AppState.session.lastGlucoseTimestamp == 1L)
                         AppState.session.lastGlucoseTimestamp = System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastGlucoseTimestamp time",
-                        "${AppState.session.lastGlucoseTimestamp}"
-                    )
+
                     val timeRangeFilter = getTimeRangeFilter(AppState.session.lastGlucoseTimestamp)
                     val glucoseRecord = readData<BloodGlucoseRecord>(timeRangeFilter)
                     if (glucoseRecord.isNotEmpty()) {
@@ -541,10 +456,7 @@ class GoogleHealthConnect(
                         AppState.session.lastRespiratoryTimestamp =
                             System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastRespiratoryTimestamp time",
-                        "${AppState.session.lastRespiratoryTimestamp}"
-                    )
+
                     val timeRangeFilter =
                         getTimeRangeFilter(AppState.session.lastRespiratoryTimestamp)
                     val respiratoryRecord = readData<RespiratoryRateRecord>(timeRangeFilter)
@@ -566,10 +478,7 @@ class GoogleHealthConnect(
                     if (AppState.session.lastPressureTimestamp == 1L)
                         AppState.session.lastPressureTimestamp = System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastPressureTimestamp time",
-                        "${AppState.session.lastPressureTimestamp}"
-                    )
+
                     val timeRangeFilter = getTimeRangeFilter(AppState.session.lastPressureTimestamp)
                     val bloodPressureRecord = readData<BloodPressureRecord>(timeRangeFilter)
                     if (bloodPressureRecord.isNotEmpty()) {
@@ -591,10 +500,7 @@ class GoogleHealthConnect(
                         AppState.session.lastOxygenSaturationTimestamp =
                             System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastOxygenSaturationTimestamp time",
-                        "${AppState.session.lastOxygenSaturationTimestamp}"
-                    )
+
                     val timeRangeFilter =
                         getTimeRangeFilter(AppState.session.lastOxygenSaturationTimestamp)
                     val oxygenSaturationRecord = readData<OxygenSaturationRecord>(timeRangeFilter)
@@ -619,10 +525,7 @@ class GoogleHealthConnect(
                         AppState.session.lastBodyTemperatureTimestamp =
                             System.currentTimeMillis() - 60000
 
-                    Log.e(
-                        "last lastBodyTemperatureTimestamp time",
-                        "${AppState.session.lastBodyTemperatureTimestamp}"
-                    )
+
                     val timeRangeFilter =
                         getTimeRangeFilter(AppState.session.lastBodyTemperatureTimestamp)
                     val bodyTemperatureRecord = readData<BodyTemperatureRecord>(timeRangeFilter)
@@ -785,13 +688,13 @@ class GoogleHealthConnect(
         )
     }
 
-    /**
+   /* *//**
      * Creates a SensorEvent for heart rate-related data.
      *
      * @param heart_rate The value representing the heart rate related data.
      * @param source The source of the heart_rate data.
      * @return A SensorEvent representing heart_rate-related data.
-     */
+     *//*
     //9
     private fun getHeartRateData(
         heart_rate: Long,
@@ -809,7 +712,7 @@ class GoogleHealthConnect(
             timeStamp
         )
     }
-
+*/
     /**
      * Creates a SensorEvent for step count-related data.
      *
