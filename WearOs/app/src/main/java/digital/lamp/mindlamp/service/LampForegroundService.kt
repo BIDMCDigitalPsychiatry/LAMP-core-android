@@ -1,22 +1,35 @@
 package digital.lamp.mindlamp.service
 
 
-import android.app.AlarmManager
-import android.app.PendingIntent
+import android.Manifest
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.TrafficStats
 import android.os.CountDownTimer
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
-import androidx.work.ListenableWorker
+import androidx.core.app.ActivityCompat
+import androidx.hilt.work.HiltWorker
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.Worker
+import androidx.work.WorkerParameters
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.gson.Gson
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.AndroidEntryPoint
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
-import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.notification.LampNotificationManager
@@ -30,6 +43,7 @@ import digital.lamp.mindlamp.sensor.TelephonySensorData
 import digital.lamp.mindlamp.sensor.WifiData
 import digital.lamp.mindlamp.sensor.data.PreferenceDatastore
 import digital.lamp.mindlamp.sensor.data.SensorSpecs
+import digital.lamp.mindlamp.sensor.health_services.HealthServicesManager
 import digital.lamp.mindlamp.sensor.health_services.SensorStore
 import digital.lamp.mindlamp.sensor.health_services.utils.SensorDataUtils
 import digital.lamp.mindlamp.sensor.utils.Sensors
@@ -42,8 +56,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-import kotlin.concurrent.timer
 
 
 /**
@@ -82,9 +96,11 @@ class LampForegroundService : Service(),
     private var lastTimestampScreenState: Long = 0
     private var lastTimestampActivity: Long = 0
     private var lastTimestampTelephony: Long = 0
-    // private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-    // private lateinit var locationCallback: LocationCallback
+      private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
 
+
+    private var locationRequest: LocationRequest? = null
     override fun onCreate() {
         super.onCreate()
 
@@ -94,6 +110,7 @@ class LampForegroundService : Service(),
         oGson = Gson()
     }
 
+    @OptIn(InternalCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
@@ -110,26 +127,53 @@ class LampForegroundService : Service(),
             startForeground(1010, notification)
 
 
-
             invokeSensorSpecData()
             collectSensorData()
             //setPeriodicSyncWorker()
-            /* fetch Locations
+             //fetch Locations
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+                .setWaitForAccurateLocation(false)
+                .setMinUpdateIntervalMillis(500)
+                .setMaxUpdateDelayMillis(1000)
+                .build()
+
+
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
-
+                if(!AppState.session.isLoggedIn) return
                     for (location in locationResult.locations){
+                        LampLog.d(TAG,"Location update:onLocationResult:latitude "+location.latitude)
+                        GlobalScope.launch(Dispatchers.IO) {
+                            kotlinx.coroutines.internal.synchronized(SensorStore)
+                            {
 
+                                SensorStore.storeValue(
+                                    SensorDataUtils.getLocationSensorData(
+                                        location
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
 
 
-        fusedLocationClient!!.requestLocationUpdates(
-                Locations.locationRequest,
-                Locations.locationCallback,
-                Looper.getMainLooper()
-            )*/
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                    }
+            fusedLocationClient!!.requestLocationUpdates(
+                locationRequest!!,
+            locationCallback,
+            getMainLooper())
+
         }
 
         return START_STICKY
@@ -444,7 +488,12 @@ class LampForegroundService : Service(),
 
 
     override fun onDestroy() {
-
+        try {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+        catch (e:Exception){
+            LampLog.e(TAG,"Exception in location update remove"+e.message,e)
+        }
         super.onDestroy()
 
     }
@@ -669,5 +718,7 @@ class LampForegroundService : Service(),
         //  Log.d("NewWatch","getTelephonyData  Stored to file")
     }
 
-
 }
+
+
+

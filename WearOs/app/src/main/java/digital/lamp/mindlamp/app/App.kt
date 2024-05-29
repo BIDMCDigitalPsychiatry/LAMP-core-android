@@ -95,12 +95,14 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 
 import dagger.hilt.android.HiltAndroidApp
 import digital.lamp.mindlamp.appstate.Pref
-import digital.lamp.mindlamp.sensor.health_services.BackgroundDataSendingWorker
+import digital.lamp.mindlamp.sensor.workermanager.BackgroundDataSendingWorker
 import digital.lamp.mindlamp.sensor.health_services.HealthServiceDataRepository.Companion.PREFERENCES_FILENAME
 import digital.lamp.mindlamp.utils.DebugLogs
 import java.util.concurrent.TimeUnit
@@ -136,12 +138,17 @@ class App : Application(), LifecycleObserver, Configuration.Provider {
         )
         //send data to server periodically
         val sendDataRequest =
-            PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(180L, TimeUnit.SECONDS)
+            OneTimeWorkRequestBuilder<BackgroundDataSendingWorker>()
                 // Additional configuration
                 // .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setInitialDelay(1, TimeUnit.MINUTES)
+                .addTag("BGDATASENDLM")
+                //WorkManager.getInstance().cancelAllWorkByTag("BGDATASENDLM");
                 .build()
         WorkManager.getInstance(this)
-            .enqueue(sendDataRequest)
+            .enqueue(
+                sendDataRequest
+            )
         DebugLogs.writeToFile("enqued BackgroundDataSendingWorker")
     }
 

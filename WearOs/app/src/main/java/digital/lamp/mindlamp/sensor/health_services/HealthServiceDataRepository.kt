@@ -27,6 +27,7 @@ import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Compa
 import androidx.health.services.client.data.HeartRateAccuracy.SensorStatus.Companion.ACCURACY_MEDIUM
 import androidx.health.services.client.data.SampleDataPoint
 import digital.lamp.mindlamp.sensor.health_services.utils.SensorDataUtils
+import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -57,17 +58,38 @@ class HealthServiceDataRepository @Inject constructor(
 
 
     @OptIn(InternalCoroutinesApi::class)
-    suspend fun storeLatestHeartRate(heartRate: Double) {
-        dataStore.edit { prefs ->
-            prefs[LATEST_HEART_RATE] = heartRate
+      fun storeLatestHeartRate(heartRate: Double) {
+
+        try {
+            val sensorData = SensorDataUtils.getHeartRateSensorData(heartRate)
+            kotlinx.coroutines.internal.synchronized(SensorStore)
+            {
+                SensorStore.storeValue(sensorData)
+            }
+            LampLog.d("NewWatch", "Heart rate value $heartRate Stored to file")
+            digital.lamp.mindlamp.utils.DebugLogs.writeToFile("Heart rate value $heartRate Stored to file")
+        } catch (e: Exception) {
+            LampLog.e("Lamp", "storeLatestHeartRate" + e.message, e)
+
+        }
+    }
+
+    @OptIn(InternalCoroutinesApi::class)
+      fun storeStepsData(endTimestamp: Long, stepsValue: Integer) {
+        try {
+
+            val sensorData = SensorDataUtils.getStepsSensorData(endTimestamp, stepsValue)
+            kotlinx.coroutines.internal.synchronized(SensorStore)
+            {
+                SensorStore.storeValue(sensorData)
+            }
+            LampLog.d("NewWatch", "step value   $stepsValue Stored to file:Time" + endTimestamp)
+            DebugLogs.writeToFile("step value   $stepsValue Stored to file:Time" + endTimestamp)
+        } catch (e: Exception) {
+            LampLog.e("Lamp", "storeStepsData" + e.message, e)
+
         }
 
-        val sensorData = SensorDataUtils.getHeartRateSensorData(heartRate)
-        kotlinx.coroutines.internal.synchronized(SensorStore)
-        {
-            SensorStore.storeValue(sensorData)
-        }
-        LampLog.d("NewWatch", "Heart rate value $heartRate Stored to file")
     }
 
     companion object {

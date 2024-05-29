@@ -20,6 +20,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.tasks.OnCompleteListener
@@ -36,6 +41,8 @@ import digital.lamp.mindlamp.broadcastreceiver.SensorBroadcastReceiver
 import digital.lamp.mindlamp.databinding.ActivityMainWearBinding
 import digital.lamp.mindlamp.model.*
 import digital.lamp.mindlamp.sensor.health_services.HealthServiceViewModel
+import digital.lamp.mindlamp.sensor.workermanager.BackgroundDataSendingWorker
+import digital.lamp.mindlamp.sensor.workermanager.HealthServiceDataRegisterWorker
 import digital.lamp.mindlamp.service.LampForegroundService
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.viewmodels.DataViewModel
@@ -44,6 +51,7 @@ import digital.lamp.mindlamp.web.WebServiceResponseData
 import lamp.mindlamp.sensormodule.aware.aware.model.SensorEventData
 import lamp.mindlamp.sensormodule.aware.model.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Suppress("DEPRECATION")
 @AndroidEntryPoint
@@ -62,7 +70,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
     val messageReceiver: MessageReceiver = MessageReceiver()
 
     private lateinit var binding: ActivityMainWearBinding
-    private val viewModel: HealthServiceViewModel by viewModels()
+    private val healthServiceViewModel: HealthServiceViewModel by viewModels()
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,17 +78,15 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         val view = binding.root
         setContentView(view)
         AppState.session.isLoggedIn = true
+        try{
         FirebaseApp.initializeApp(this);
-
-
-
-        try {
+      try {
             unregisterReceiver(br)
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
         }
 
-        permissionLauncher =
+        /*permissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
                 when (result) {
                     true -> {
@@ -93,9 +99,9 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                         // viewModel.togglePassiveData(false)
                     }
                 }
-            }
-        permissionLauncher.launch(android.Manifest.permission.BODY_SENSORS)
-        var permissionLauncher2: ActivityResultLauncher<String> =
+            }*/
+        //permissionLauncher.launch(android.Manifest.permission.BODY_SENSORS)
+        /*var permissionLauncher2: ActivityResultLauncher<String> =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
                 when (result) {
                     true -> {
@@ -110,18 +116,17 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
 
                     }
                 }
-            }
-        permissionLauncher2.launch(android.Manifest.permission.BODY_SENSORS_BACKGROUND)
+            }*/
+        // permissionLauncher2.launch(android.Manifest.permission.BODY_SENSORS_BACKGROUND)
         registerReceiver(
             br,
             IntentFilter("com.from.notification")
         );
 
         try {
-            doLocationPermissions()
-        }
-        catch (e:Exception){
-            LampLog.e(TAG,"exception Location permission",e)
+            checkPermissions()
+        } catch (e: Exception) {
+            LampLog.e(TAG, "exception Location permission", e)
         }
 
 
@@ -138,7 +143,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         dataViewModel = ViewModelProviders.of(this@MainWearActivity).get(DataViewModel::class.java)
 
         lifecycleScope.launchWhenStarted {
-            viewModel.latestHeartRate.collect {
+            healthServiceViewModel.latestHeartRate.collect {
                 Log.d(TAG, "Health data received heart rate: " + it.toString())
 
             }
@@ -162,6 +167,14 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
                 ).show()
             }
         }
+    }
+
+    catch(e:Exception)
+    {
+        LampLog.e(TAG,"Lamp exception",e)
+    }
+        scheduleHealthServiceWorkerManager(this)
+        //scheduleDataSendWorkerManager(this)
         if (!this.isServiceRunning(LampForegroundService::class.java)) {
             startLampService()
         }
@@ -183,7 +196,7 @@ class MainWearActivity : FragmentActivity(), GoogleApiClient.ConnectionCallbacks
         }
         ContextCompat.startForegroundService(this, serviceIntent)
     }
-fun doLocationPermissions() {
+fun checkPermissions() {
     val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -197,9 +210,12 @@ fun doLocationPermissions() {
                 // Only approximate location access granted.
 
             }
-
+            permissions.getOrDefault(Manifest.permission.BODY_SENSORS,false) -> {
+                // Only approximate location access granted.
+                scheduleHealthServiceWorkerManager(this)
+            }
             else -> {
-                // No location access granted.
+
             }
         }
     }
@@ -232,18 +248,32 @@ fun doLocationPermissions() {
             // "cancel" or "no thanks" button that lets the user continue
             // using your app without granting the permission.
             //  showInContextUI(...)
-            this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+            //this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
 
 
         }
+        ActivityCompat.shouldShowRequestPermissionRationale(
+            this,
+            Manifest.permission.BODY_SENSORS
+        )
+        -> {
+            // In an educational UI, explain to the user why your app requires this
+            // permission for a specific feature to behave as expected, and what
+            // features are disabled if it's declined. In this UI, include a
+            // "cancel" or "no thanks" button that lets the user continue
+            // using your app without granting the permission.
+            //  showInContextUI(...)
+           // this.shouldShowRequestPermissionRationale(Manifest.permission.BODY_SENSORS)
 
+
+        }
         else -> {
             // You can directly ask for the permission.
             // The registered ActivityResultCallback gets the result of this request.
             locationPermissionRequest.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.BODY_SENSORS,Manifest.permission.ACTIVITY_RECOGNITION
                 )
 
             )
@@ -263,7 +293,7 @@ fun doLocationPermissions() {
                 LampLog.e("lampException", e.message, e)
             }
             try {
-                viewModel.unregister()
+                healthServiceViewModel.unregister()
             } catch (e: Exception) {
                 LampLog.e("lampException", "viewModel.unregister() " + e.message, e)
             }
@@ -525,5 +555,35 @@ fun doLocationPermissions() {
             .create()
             .show()
     }
+    private fun scheduleHealthServiceWorkerManager(context: Context) {
+        try{
+        val result = context.checkSelfPermission(android.Manifest.permission.BODY_SENSORS)
+        if (result != PackageManager.PERMISSION_GRANTED) {
+            //return   ?
+        }
 
+            Log.i("LampWatch", "Enqueuing worker")
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "healthservicereg",
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<HealthServiceDataRegisterWorker>().build()
+        )
+
+    }
+        catch(e:Exception){
+            LampLog.e(TAG,"Lamp exception",e)
+        }
+    }
+  /*  private fun scheduleDataSendWorkerManager(context: Context) {
+        DebugLogs.writeToFile(" scheduleDataSendWorkerManager")
+        //send data to server periodically
+        val sendDataRequest =
+            PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(60L, TimeUnit.SECONDS)
+                // Additional configuration
+                //   .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+
+                .build()
+        WorkManager.getInstance(context)
+            .enqueue(sendDataRequest)
+    }*/
 }

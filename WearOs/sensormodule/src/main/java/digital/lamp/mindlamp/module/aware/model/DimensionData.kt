@@ -47,3 +47,10 @@ data class MagnetData(
     val y: Double?,
     val z: Double?
 )
+
+data class StepsData(
+    val unit: String?,
+    val value: Any?,
+    val type: Any?,
+    var source: Any?
+)

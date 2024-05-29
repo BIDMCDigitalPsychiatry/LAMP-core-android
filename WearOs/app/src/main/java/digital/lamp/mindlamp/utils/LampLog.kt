@@ -7,7 +7,7 @@ import android.util.Log
  */
 internal object LampLog {
 
-    val DOLOG = false
+    val DOLOG = true
     private val TAG = "Lamp V2"
 
 

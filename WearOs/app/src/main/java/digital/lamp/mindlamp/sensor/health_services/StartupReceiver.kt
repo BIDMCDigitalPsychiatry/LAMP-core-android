@@ -21,19 +21,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.first
+import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.sensor.workermanager.BackgroundDataSendingWorker
+import digital.lamp.mindlamp.sensor.workermanager.HealthServiceDataRegisterWorker
+import digital.lamp.mindlamp.service.LampForegroundService
+import digital.lamp.mindlamp.utils.DebugLogs
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
@@ -48,56 +51,60 @@ class StartupReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-
+        if (!AppState.session.isLoggedIn) return
+        startLampService(context)
         runBlocking {
-            if (repository.passiveDataEnabled.first()) {
-                // Make sure we have permission.
-                val result = context.checkSelfPermission(android.Manifest.permission.BODY_SENSORS)
-                if (result == PackageManager.PERMISSION_GRANTED) {
-                    scheduleWorker(context)
-                } else {
-                    // We may have lost the permission somehow. Mark that background data is
-                    // disabled so the state is consistent the next time the user opens the app UI.
-                    repository.setPassiveDataEnabled(false)
-                }
+            // Make sure we have permission.
+            val result = context.checkSelfPermission(android.Manifest.permission.BODY_SENSORS)
+            if (result == PackageManager.PERMISSION_GRANTED) {
+                scheduleWorker(context)
+            } else {
+                // We may have lost the permission somehow. Mark that background data is
+                // disabled so the state is consistent the next time the user opens the app UI.
+                repository.setPassiveDataEnabled(false)
             }
+
         }
     }
+    private fun startLampService(context:Context) {
+        val serviceIntent = Intent(context, LampForegroundService::class.java).apply {
 
+            putExtra("set_alarm", false)
+            putExtra("set_activity_schedule", false)
+            putExtra("notification_id", 0)
+        }
+        ContextCompat.startForegroundService(context, serviceIntent)
+    }
     private fun scheduleWorker(context: Context) {
         // BroadcastReceiver's onReceive must complete within 10 seconds. During device startup,
         // sometimes the call to register for background data takes longer than that and our
         // BroadcastReceiver gets destroyed before it completes. Instead we schedule a WorkManager
         // job to perform the registration.
         Log.i("LampWatch", "Enqueuing worker")
+
+       /* WorkManager.getInstance(context).enqueueUniqueWork(
+            "healthservicereg",
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<HealthServiceDataRegisterWorker>().build()
+        )*/
         WorkManager.getInstance(context).enqueue(
-            OneTimeWorkRequestBuilder<RegisterForBackgroundDataWorker>().build()
+
+            OneTimeWorkRequestBuilder<HealthServiceDataRegisterWorker>().build()
         )
         //send data to server periodically
         val sendDataRequest =
-            PeriodicWorkRequestBuilder<BackgroundDataSendingWorker>(180L, TimeUnit.SECONDS)
+            OneTimeWorkRequestBuilder<BackgroundDataSendingWorker> ()
                 // Additional configuration
                 //   .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
         WorkManager.getInstance(context)
-            .enqueue(sendDataRequest)
+            .enqueue(
+                sendDataRequest
+            )
     }
 }
 
-@HiltWorker
-class RegisterForBackgroundDataWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted workerParams: WorkerParameters,
-    private val healthServicesManager: HealthServicesManager,
-) : Worker(appContext, workerParams) {
 
-    override fun doWork(): Result {
-        Log.i("LampWatch", "Worker running")
-        runBlocking {
-            healthServicesManager.registerForHeartRateData()
-        }
-        return Result.success()
-    }
-}
+
 
 

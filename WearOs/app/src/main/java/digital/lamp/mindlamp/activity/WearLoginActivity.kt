@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.activity
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -10,10 +11,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+
 import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.databinding.ActivityLoginWearBinding
 import digital.lamp.mindlamp.sensor.health_services.SensorStore
+
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.NetworkUtils
 import digital.lamp.mindlamp.utils.Utils
@@ -24,6 +27,7 @@ import digital.lamp.mindlamp.web.pojo.response.UserExistResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -62,8 +66,8 @@ class WearLoginActivity : FragmentActivity() {
 
                     WebConstant.USERID =
                         Utils.toBase64(
-                           // "U8917110983@lamp.com" + ":" + "U8917110983"
-                            binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+                            "U8917110983@lamp.com" + ":" + "U8917110983"
+                          //  binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
 
                                 .trim()
                         ).toString().trim()
@@ -113,8 +117,8 @@ class WearLoginActivity : FragmentActivity() {
                             }
 
                             AppState.session.userId = Utils.toBase64(
-                                //"U8917110983@lamp.com" + ":" + "U8917110983"
-                                binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
+                              "U8917110983@lamp.com" + ":" + "U8917110983"
+                              //  binding.txtusername.text.toString().trim() + ":" + binding.txtpwd.text.toString()
 
                                     .trim()
                             ).toString().trim()

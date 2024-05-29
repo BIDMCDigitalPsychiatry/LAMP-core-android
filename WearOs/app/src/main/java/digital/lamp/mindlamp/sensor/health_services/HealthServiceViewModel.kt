@@ -21,6 +21,7 @@ import androidx.lifecycle.viewModelScope
 
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import digital.lamp.mindlamp.utils.LampLog
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,20 +36,15 @@ class HealthServiceViewModel @Inject constructor(
 
     val latestHeartRate = repository.latestHeartRate
 
-    init {
-        // Check that the device has the heart rate capability and progress to the next state
-        // accordingly.
-
-
-        viewModelScope.launch {
-            healthServicesManager.registerForHeartRateData()
-        }
-
-    }
 
     fun unregister() {
-        viewModelScope.launch {
-            healthServicesManager.unregisterForHeartRateData()
+        try {
+            viewModelScope.launch {
+                healthServicesManager.unregister()
+            }
+        }
+        catch(e:Exception){
+            LampLog.e("Lamp","HealthServiceViewModel:Unregister"+e.message,e)
         }
     }
 

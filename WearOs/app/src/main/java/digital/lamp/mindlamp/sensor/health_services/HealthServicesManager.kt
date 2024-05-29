@@ -30,29 +30,66 @@ import javax.inject.Inject
 class HealthServicesManager @Inject constructor(
     healthServicesClient: HealthServicesClient
 ) {
+
     private val passiveMonitoringClient = healthServicesClient.passiveMonitoringClient
-    private val dataTypes = setOf(DataType.HEART_RATE_BPM)
+     private val dataTypeAll = setOf(DataType.HEART_RATE_BPM,DataType.STEPS)
+    private val dataTypeHeartRate = setOf(DataType.HEART_RATE_BPM )
+    private val dataTypeSteps = setOf(DataType.STEPS )
 
     suspend fun hasHeartRateCapability(): Boolean {
-        val capabilities = passiveMonitoringClient.getCapabilitiesAsync().await()
-        return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesPassiveMonitoring)
+        try {
+            val capabilities = passiveMonitoringClient.getCapabilitiesAsync().await()
+            return (DataType.HEART_RATE_BPM in capabilities.supportedDataTypesPassiveMonitoring)
+        }
+        catch (e:Exception){
+            LampLog.e("Lamp","hasHeartRateCapability"+e.message,e)
+            return false
+        }
+    }
+    suspend fun hasStepsCapability(): Boolean {
+        try {
+            val capabilities = passiveMonitoringClient.getCapabilitiesAsync().await()
+            return (DataType.STEPS in capabilities.supportedDataTypesPassiveMonitoring)
+        }
+        catch (e:Exception){
+            LampLog.e("Lamp","hasStepsCapability"+e.message,e)
+
+            return false
+        }
     }
 
-    suspend fun registerForHeartRateData() {
-        val passiveListenerConfig = PassiveListenerConfig.builder()
-            .setDataTypes(dataTypes)
+    suspend fun registerHealthServicesData() {
+        try {
+            var dataType = dataTypeAll
+            if (!hasHeartRateCapability() && !hasStepsCapability()) return
+            if (hasStepsCapability() && !hasHeartRateCapability())
+                dataType = dataTypeSteps
+            else if (!hasStepsCapability() && hasHeartRateCapability())
+                dataType = dataTypeHeartRate
 
-            .build()
+            val passiveListenerConfig = PassiveListenerConfig.builder()
+                .setDataTypes(dataType)
+                .build()
 
-        LampLog.d("NewWatch", "Registering heart rate listener")
-        passiveMonitoringClient.setPassiveListenerServiceAsync(
-            HealthServiceDataService::class.java,
-            passiveListenerConfig
-        ).await()
+            LampLog.d("NewWatch", "Registering heart rate listener")
+            passiveMonitoringClient.setPassiveListenerServiceAsync(
+                HealthServiceDataService::class.java,
+                passiveListenerConfig
+            ).await()
+        }catch(e:Exception){
+            LampLog.e("Lamp","HealthServicesManager:registerHealthServicesData"+e.message,e)
+        }
+
     }
 
-    suspend fun unregisterForHeartRateData() {
-        LampLog.d("New Watch", "HealthserviceManager: Unregistering listeners")
-        passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
+    suspend fun unregister() {
+        try {
+            LampLog.d("New Watch", "HealthserviceManager: Unregistering listeners")
+            passiveMonitoringClient.clearPassiveListenerServiceAsync().await()
+        }
+        catch(e:Exception){
+            LampLog.e("Lamp","HealthServicesManager:Unregister"+e.message,e)
+        }
     }
+
 }
