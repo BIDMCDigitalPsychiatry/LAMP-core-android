@@ -8,6 +8,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HydrationRecord
 import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
@@ -407,7 +408,7 @@ class GoogleHealthConnect(
                     }
                 }
 
-               /* if (sensorSpecs.spec == Sensors.HEART_RATE.sensor_name) {
+                if (sensorSpecs.spec == Sensors.HEART_RATE.sensor_name) {
                     if (AppState.session.lastHeartRateTimestamp == 1L)
                         AppState.session.lastHeartRateTimestamp = System.currentTimeMillis() - 60000
 
@@ -429,7 +430,7 @@ class GoogleHealthConnect(
 
                         }
                     }
-                }*/
+                }
                 if (sensorSpecs.spec == Sensors.BLOOD_GLUCOSE.sensor_name) {
                     if (AppState.session.lastGlucoseTimestamp == 1L)
                         AppState.session.lastGlucoseTimestamp = System.currentTimeMillis() - 60000
@@ -688,13 +689,13 @@ class GoogleHealthConnect(
         )
     }
 
-   /* *//**
+   /* *
      * Creates a SensorEvent for heart rate-related data.
      *
      * @param heart_rate The value representing the heart rate related data.
      * @param source The source of the heart_rate data.
-     * @return A SensorEvent representing heart_rate-related data.
-     *//*
+     * @return A SensorEvent representing heart_rate-related data.*/
+
     //9
     private fun getHeartRateData(
         heart_rate: Long,
@@ -712,7 +713,6 @@ class GoogleHealthConnect(
             timeStamp
         )
     }
-*/
     /**
      * Creates a SensorEvent for step count-related data.
      *
