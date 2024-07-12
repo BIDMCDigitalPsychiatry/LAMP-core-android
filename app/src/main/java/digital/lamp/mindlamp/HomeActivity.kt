@@ -926,7 +926,7 @@ class HomeActivity : AppCompatActivity() {
             with(builder)
             {
                 setTitle(getString(R.string.app_name))
-                setMessage(getString(R.string.not_installed_description))
+                setMessage(getString(R.string.hc_not_installed_description))
                 setCancelable(false)
                 setPositiveButton(
                     getString(R.string.ok),
@@ -988,8 +988,50 @@ class HomeActivity : AppCompatActivity() {
             }
             HEALTH_CONNECT_PERMISSION_RESULT_CODE ->{
                 if (viewModel.permissionsGranted.value == false) {
-                    AppState.session.isGoogleHealthConnectConnected = false
-                    checkPermissionsAndRun(healthConnectClient)
+                    try {
+                        AppState.session.isGoogleHealthConnectConnected = false
+                        checkPermissionsAndRun(healthConnectClient)
+                    }catch (e:Exception) {
+                        try {
+                            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                                dialog.cancel()
+                                // Optionally redirect to package installer to find a provider, for example:
+                                val uriString =
+                                    "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+                                startActivityForResult(Intent(Intent.ACTION_VIEW).apply {
+                                    setPackage("com.android.vending")
+                                    this.data = Uri.parse(uriString)
+                                    putExtra("overlay", true)
+                                    putExtra("callerId", packageName)
+
+                                }, HEALTH_CONNECT_PERMISSION_RESULT_CODE)
+                            }
+                            val negetiveButtonClick = { dialog: DialogInterface, _: Int ->
+                                dialog.cancel()
+                            }
+                            val builder = AlertDialog.Builder(this)
+
+                            with(builder)
+                            {
+                                setTitle(getString(R.string.app_name))
+                                setMessage(getString(R.string.hc_not_installed_description))
+                                setCancelable(false)
+                                setPositiveButton(
+                                    getString(R.string.hc_install),
+                                    DialogInterface.OnClickListener(function = positiveButtonClick)
+                                )
+                                setNegativeButton(
+                                    getString(R.string.cancel),
+                                    DialogInterface.OnClickListener(function = negetiveButtonClick)
+                                )
+
+                                show()
+                            }
+                        }catch (e:Exception){
+
+                        }
+                    }
+
                 }
                 else {
                     AppState.session.isGoogleHealthConnectConnected = true

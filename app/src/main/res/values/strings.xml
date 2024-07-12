@@ -26,6 +26,7 @@
 
     <string name="location_permission">Location Permission Needed</string>
     <string name="ok">OK</string>
+    <string name="hc_install" translatable="false">INSTALL</string>
 
     <string name="gps_enable">Location is currently disabled on your device. Please enable it.</string>
     <string name="unexpected_error">Something went wrong. Please try again later.</string>
@@ -65,7 +66,7 @@
     <string name="ssl_error" translatable="false">SSL Error</string>
     <string name="battery_optimization_info" translatable="false"> mindLAMP requires unrestricted battery access for collecting data effectively. Please disable battery optimization for the app to function properly.</string>
     <string name="location_permission_info_for_wifi_access" translatable="false"> Enable your device\'s location to collect the Wi-Fi data effectively.</string>
-    <string name="not_installed_description" translatable="false">
+    <string name="hc_not_installed_description" translatable="false">
         Health Connect is supported on this device, but is either not installed, or requires an update.
     </string>
 </resources>
