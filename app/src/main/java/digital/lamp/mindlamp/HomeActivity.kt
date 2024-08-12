@@ -7,8 +7,10 @@ import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -65,7 +67,9 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ClientException
@@ -81,11 +85,14 @@ import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.databinding.ActivityHomeBinding
+import digital.lamp.mindlamp.model.ActivityEventData
+import digital.lamp.mindlamp.model.DataWrapper
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
+import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
@@ -99,6 +106,7 @@ import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -106,7 +114,11 @@ import retrofit2.HttpException
 import java.lang.reflect.Field
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 
 
@@ -225,6 +237,22 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+    fun updateStreak(context: Context, current: Int,longest:Int) {
+        val sharedPreferences = context.getSharedPreferences("UserStreak", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putInt("current_streak", current)
+        editor.putInt("longest_streak", longest)
+        editor.apply()
+
+        // Update the widget
+        val intent = Intent(context, StreakWidgetProvider::class.java).apply {
+            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, StreakWidgetProvider::class.java))
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        context.sendBroadcast(intent)
+    }
+
     /**
      *  Lazily initialize the FitnessOptions using the FitnessOptions.builder()
      */
@@ -300,7 +328,136 @@ class HomeActivity : AppCompatActivity() {
             val batteryOptimizationHelper = BatteryOptimizationHelper(this)
             batteryOptimizationHelper.checkBatteryOptimization()
         }
+        val netwokStatus = NetworkConnectionLiveData(this)
+        netwokStatus.observe(this) {
+            if (it) {
+                Log.e("connection status", "net connected")
+            } else {
+                Log.e("connection status", "no net connected")
+                GlobalScope.launch(Dispatchers.Main) {
+                    showApiErrorAlert(getString(R.string.txt_no_internet))
+                }
+            }
+        }
 
+    }
+    private fun initialCallForActivityStreak(){
+        try {
+            val basic = "Basic ${
+                Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                        "https://"
+                    ).removePrefix("http://")
+                )
+            }"
+            CoroutineScope(Dispatchers.IO).launch {
+                val state =
+                    ActivityEventAPI(AppState.session.serverAddress).activityEventAllByParticipant(
+                        participantId = AppState.session.userId,
+                        from = getTimestampThreeMonthsFromNow(),
+                        origin = null,
+                        to = null,
+                        transform = null,
+                        basic = basic
+                    )
+                val gson = Gson()
+                val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
+                val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
+                if (!dataWrapper.data.isNullOrEmpty()) {
+                    val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
+                    Log.e("current streak", "$currentStreak")
+                    Log.e("longest streak", "$longestStreak")
+                    updateStreak(this@HomeActivity, currentStreak, longestStreak)
+                }
+
+            }
+        }catch (e:Exception){
+            LampLog.e("${e.message}")
+            DebugLogs.writeToFile("Exception in streak widget initialization webservice call")
+        }
+
+    }
+
+    fun findLongestAndCurrentStreak(data: List<ActivityEventData>): Pair<Int, Int> {
+        if (data.isEmpty()) {
+            return Pair(0, 0)
+        }
+
+        // Extract dates from the data and find unique days
+        val dates = data.map { it.date }
+        val uniqueDays = uniqueDays(dates)
+        val sortedDatesAsc = uniqueDays.sorted()
+
+        // Initialize variables
+        var tempStreak = 1
+        var maxStreak = 1
+        var currentStreak = 0
+
+        val today = Date()
+        val calendar = Calendar.getInstance()
+        val previousDay = calendar.apply { add(Calendar.DAY_OF_YEAR, -1) }.time
+
+        // Iterate through the sorted dates to find the longest streak
+        for (i in 1 until sortedDatesAsc.size) {
+            if (areDatesConsecutive(sortedDatesAsc[i - 1], sortedDatesAsc[i])) {
+                tempStreak += 1
+            } else {
+                tempStreak = 1
+            }
+            maxStreak = maxOf(maxStreak, tempStreak)
+        }
+
+        // Determine if the last date is part of the current streak
+        val lastDate = sortedDatesAsc.last()
+        if (isSameDay(today, lastDate) || isSameDay(previousDay, lastDate)) {
+            currentStreak = tempStreak
+        }
+
+        return Pair(currentStreak, maxStreak)
+    }
+
+    fun uniqueDays(dates: List<Date?>): List<Date> {
+        val uniqueDates = mutableSetOf<Date>()
+        val calendar = Calendar.getInstance()
+
+        dates.forEach { date ->
+            calendar.time = date
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            uniqueDates.add(calendar.time)
+        }
+
+        return uniqueDates.toList()
+    }
+
+    fun areDatesConsecutive(date1: Date, date2: Date): Boolean {
+        val diffInMillis = date2.time - date1.time
+        val diffInDays = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS)
+        return diffInDays == 1L
+    }
+
+    fun isSameDay(date1: Date, date2: Date): Boolean {
+        val cal1 = Calendar.getInstance().apply { time = date1 }
+        val cal2 = Calendar.getInstance().apply { time = date2 }
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+    }
+    fun getTimestampThreeMonthsFromNow(): Long {
+        val now = LocalDate.now()
+
+        // Calculate the date three months ago
+        val threeMonthsAgo = now.minus(3, ChronoUnit.MONTHS)
+
+        // Convert the LocalDate to ZonedDateTime at the start of the day
+        val zonedDateTimeThreeMonthsAgo = threeMonthsAgo.atStartOfDay(ZoneId.systemDefault())
+
+        // Convert ZonedDateTime to Instant
+        val instantThreeMonthsAgo = zonedDateTimeThreeMonthsAgo.toInstant()
+
+        // Convert the timestamp to milliseconds
+        return instantThreeMonthsAgo.toEpochMilli()
     }
     /**
      * check location permission
@@ -456,6 +613,7 @@ class HomeActivity : AppCompatActivity() {
                         "http://"
                     )
             )
+            Log.e("url","$url")
             binding.webView.loadUrl(url)
 
         } else {
@@ -480,6 +638,7 @@ class HomeActivity : AppCompatActivity() {
     private fun startTimerForReloadWebpage(errorMessage: String) {
         reloadWebpageTimer?.cancel()
         reloadWebpageTimer?.purge()
+        reloadWebpageTimer = null
 
         val actionTask: TimerTask = object : TimerTask() {
             override fun run() {
@@ -487,33 +646,25 @@ class HomeActivity : AppCompatActivity() {
                     if (isPageLoadedComplete) {
                     } else {
                         if (binding.progressBar.visibility == View.VISIBLE) {
-                            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
-                                if (!isPageLoadedComplete) {
-                                    binding.webView.loadUrl("javascript:window.location.reload( true )")
+                            if (!isFinishing && !isDestroyed) {
+                                // Show the dialog
+                                val builder = AlertDialog.Builder(this@HomeActivity)
+                                with(builder) {
+                                    setTitle(getString(R.string.app_name))
+                                    setMessage(errorMessage)
+                                    setCancelable(false)
+                                    setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                        if (!isPageLoadedComplete) {
+                                            binding.webView.loadUrl("javascript:window.location.reload(true)")
+                                        }
+                                    }
+                                    setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                                        binding.progressBar.visibility = View.GONE
+                                        dialog.cancel()
+                                        finish()
+                                    }
+                                    show()
                                 }
-
-                            }
-                            val negativeButtonClick = { dialog: DialogInterface, _: Int ->
-                                binding.progressBar.visibility = View.GONE
-                                dialog.cancel()
-                                finish()
-                            }
-                            val builder = AlertDialog.Builder(this@HomeActivity)
-
-                            with(builder)
-                            {
-                                setTitle(getString(R.string.app_name))
-                                setMessage(errorMessage)
-                                setCancelable(false)
-                                setPositiveButton(
-                                    getString(R.string.retry),
-                                    DialogInterface.OnClickListener(function = positiveButtonClick)
-                                )
-                                setNegativeButton(
-                                    getString(R.string.cancel),
-                                    DialogInterface.OnClickListener(negativeButtonClick)
-                                )
-                                show()
                             }
                         }
                     }
@@ -884,6 +1035,7 @@ class HomeActivity : AppCompatActivity() {
         //Setting User Attributes for Firebase
         firebaseAnalytics.setUserProperty("user_token", oLoginResponse.authorizationToken)
         invokeSensorSpecData()
+        initialCallForActivityStreak()
     }
 
     /**
@@ -1572,17 +1724,7 @@ class HomeActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-        val netwokStatus = NetworkConnectionLiveData(this)
-        netwokStatus.observe(this) {
-            if (it) {
-                Log.e("eee", "net connected")
-            } else {
-                Log.e("eee", "no net connected")
-                GlobalScope.launch(Dispatchers.Main) {
-                    showApiErrorAlert(getString(R.string.txt_no_internet))
-                }
-            }
-        }
+
     }
 }
 

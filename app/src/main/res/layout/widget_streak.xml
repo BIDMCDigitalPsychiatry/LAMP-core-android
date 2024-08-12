@@ -1,0 +1,44 @@
+<!-- res/layout/widget_streak.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="@drawable/rounded_corners">
+
+    <ImageView
+        android:id="@+id/imgAppIcon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_logo" />
+
+    <TextView
+        android:id="@+id/streak_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/current_streak_days"
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        />
+    <TextView
+        android:id="@+id/longestStreakText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/longest_streak_days"
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        />
+    <TextView
+        android:id="@+id/wayToGoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/way_to_go"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        />
+</LinearLayout>

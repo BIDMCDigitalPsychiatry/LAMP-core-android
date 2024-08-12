@@ -157,6 +157,7 @@ class LampForegroundService : Service(),
      * Send analytics data from db to server.
      */
     private fun syncAnalyticsData() {
+        DebugLogs.writeToFile("Send analytics data from db to server")
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
@@ -187,26 +188,30 @@ class LampForegroundService : Service(),
                     it.analyticsData,
                     SensorEvent::class.java
                 )
-                if (sensorEvent.sensor == Sensors.SLEEP.sensor_name || sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
-                    sensorEvent.sensor == Sensors.STEPS.sensor_name || sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
-                    sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
-                    || sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name || sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
-                ) {
-                    val googleHealthConnectData = gsonWithNull.fromJson(
-                        it.analyticsData,
-                        SensorEvent::class.java
-                    )
 
-                    googleHealthConnectSensorEventDataList.add(
-                        googleHealthConnectData
-                    )
-                    LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
-                    DebugLogs.writeToFile("Google Health connect sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
-                } else {
-                    sensorEventDataList.add(
-                        sensorEvent
-                    )
+                sensorEvent?.sensor?.let {sensor->
+                    if (sensorEvent.sensor == Sensors.SLEEP.sensor_name || sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
+                        sensorEvent.sensor == Sensors.STEPS.sensor_name || sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
+                        sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
+                        || sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name || sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
+                    ) {
+                        val googleHealthConnectData = gsonWithNull.fromJson(
+                            it.analyticsData,
+                            SensorEvent::class.java
+                        )
+
+                        googleHealthConnectSensorEventDataList.add(
+                            googleHealthConnectData
+                        )
+                        LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
+                        DebugLogs.writeToFile("Google Health connect sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
+                    } else {
+                        sensorEventDataList.add(
+                            sensorEvent
+                        )
+                    }
                 }
+
             }
             list.let {
                 if (it.isNotEmpty()) {
@@ -215,12 +220,14 @@ class LampForegroundService : Service(),
                 }
             }
             LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
+            DebugLogs.writeToFile("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
             if (googleHealthConnectSensorEventDataList.isNotEmpty())
                 invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
             else {
                 val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                DebugLogs.writeToFile(" analytics list${dbList.size}")
                 if (dbList.isNotEmpty()) {
                     AppState.session.lastAnalyticsTimestamp =
                         AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
@@ -735,6 +742,7 @@ class LampForegroundService : Service(),
             return
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
+                DebugLogs.writeToFile("API send from foreground service")
                 trackSingleEvent("API_Send_${sensorEventDataList.size}")
                 val basic = "Basic ${
                     Utils.toBase64(
