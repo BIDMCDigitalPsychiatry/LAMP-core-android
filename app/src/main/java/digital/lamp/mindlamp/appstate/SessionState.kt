@@ -40,6 +40,8 @@ class SessionState {
         const val PREF_LAST_BODY_TEMPERATURE_DATA_TIMESTAMP = "last_body_temperature_data_timestamp"
         const val PREF_LAST_STEPS_CADENCE_DATA_TIMESTAMP = "last_steps_cadence_data_timestamp"
         const val PREF_LAST_RESPIRATORY_DATA_TIMESTAMP = "last_respiratory_data_timestamp"
+        const val PREF_CURRENT_STREAK_DAYS = "current_streak_days"
+        const val PREF_LONGEST_STREAK_DAYS = "longest_streak_days"
     }
 
     var isLoggedIn by Pref(
@@ -90,6 +92,8 @@ class SessionState {
     var lastBodyTemperatureTimestamp by Pref(PREF_LAST_BODY_TEMPERATURE_DATA_TIMESTAMP, 1L)
     var lastStepsCadenceTimestamp by Pref(PREF_LAST_STEPS_CADENCE_DATA_TIMESTAMP, 1L)
     var lastRespiratoryTimestamp by Pref(PREF_LAST_RESPIRATORY_DATA_TIMESTAMP, 1L)
+    var currentStreakDays by Pref(PREF_CURRENT_STREAK_DAYS,0)
+    var longestStreakDays by Pref(PREF_LONGEST_STREAK_DAYS,0)
     fun clearData() {
         isLoggedIn = false
         token = ""
@@ -121,6 +125,8 @@ class SessionState {
         lastStepsCadenceTimestamp = 1L
         lastTotalCaloriesBurnedDataTimestamp = 1L
         lastRespiratoryTimestamp = 1L
+        currentStreakDays = 0
+        longestStreakDays = 0
     }
 
     var isCellularUploadAllowed by Pref(

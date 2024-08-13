@@ -24,6 +24,7 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -67,6 +68,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
 import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityEventAPI
@@ -109,6 +111,7 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.lang.reflect.Field
@@ -142,6 +145,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
     private val viewModel: HealthConnectViewModel by viewModels()
+    private var activityEventUpdated = false
     val PERMISSIONS =
         setOf(
             HealthPermission.getReadPermission(StepsRecord::class),
@@ -195,6 +199,13 @@ class HomeActivity : AppCompatActivity() {
                         reloadWebpageTimer?.cancel()
                     }
                     wepPageLoadingTimerIsRunning = false
+                    if (url == BuildConfig.BASE_URL_WEB){
+                        updateStreak(0,0)
+                    }
+                    if (AppState.session.isLoggedIn && !activityEventUpdated){
+                        initialCallForActivityStreak()
+                    }
+
                 }
             }
 
@@ -237,20 +248,16 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
-    fun updateStreak(context: Context, current: Int,longest:Int) {
-        val sharedPreferences = context.getSharedPreferences("UserStreak", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putInt("current_streak", current)
-        editor.putInt("longest_streak", longest)
-        editor.apply()
-
+    fun updateStreak(current: Int,longest:Int) {
+        AppState.session.currentStreakDays = current
+        AppState.session.longestStreakDays = longest
         // Update the widget
-        val intent = Intent(context, StreakWidgetProvider::class.java).apply {
+        val intent = Intent(this, StreakWidgetProvider::class.java).apply {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
         }
-        val ids = AppWidgetManager.getInstance(context).getAppWidgetIds(ComponentName(context, StreakWidgetProvider::class.java))
+        val ids = AppWidgetManager.getInstance(this).getAppWidgetIds(ComponentName(this, StreakWidgetProvider::class.java))
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-        context.sendBroadcast(intent)
+        this.sendBroadcast(intent)
     }
 
     /**
@@ -354,20 +361,33 @@ class HomeActivity : AppCompatActivity() {
                 val state =
                     ActivityEventAPI(AppState.session.serverAddress).activityEventAllByParticipant(
                         participantId = AppState.session.userId,
-                        from = getTimestampThreeMonthsFromNow(),
+                        from = getMonthsFromNowInMillies(),
                         origin = null,
                         to = null,
                         transform = null,
                         basic = basic
                     )
-                val gson = Gson()
-                val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
-                val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
-                if (!dataWrapper.data.isNullOrEmpty()) {
-                    val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
-                    Log.e("current streak", "$currentStreak")
-                    Log.e("longest streak", "$longestStreak")
-                    updateStreak(this@HomeActivity, currentStreak, longestStreak)
+
+                try {
+                    Log.e("log","${state.toString()}")
+                    val gson = Gson()
+                    val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
+                    val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
+                    if (!dataWrapper.data.isNullOrEmpty()) {
+                        DebugLogs.writeToFile("${state.toString()}")
+                        val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
+                        Log.e("current streak", "$currentStreak")
+                        Log.e("longest streak", "$longestStreak")
+                        DebugLogs.writeToFile("current streak ${currentStreak}")
+                        DebugLogs.writeToFile("longest streak ${longestStreak}")
+                        updateStreak(currentStreak, longestStreak)
+                    } else {
+                        updateStreak(0, 0)
+                    }
+                }catch (e:JsonSyntaxException){
+                    LampLog.e(e.message)
+                }catch (e:Exception){
+                    LampLog.e(e.message)
                 }
 
             }
@@ -409,10 +429,10 @@ class HomeActivity : AppCompatActivity() {
 
         // Determine if the last date is part of the current streak
         val lastDate = sortedDatesAsc.last()
+        activityEventUpdated = isSameDay(today,lastDate)
         if (isSameDay(today, lastDate) || isSameDay(previousDay, lastDate)) {
             currentStreak = tempStreak
         }
-
         return Pair(currentStreak, maxStreak)
     }
 
@@ -444,20 +464,30 @@ class HomeActivity : AppCompatActivity() {
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
     }
-    fun getTimestampThreeMonthsFromNow(): Long {
-        val now = LocalDate.now()
+    fun getMonthsFromNowInMillies(): Long {
+        try {
+            var monthsAgo: LocalDate
+            val now = LocalDate.now()
+            if (AppState.session.longestStreakDays == 0) {
+                monthsAgo = now.minus(12, ChronoUnit.MONTHS)
+            } else {
+                monthsAgo = now.minus(3, ChronoUnit.MONTHS)
+            }
 
-        // Calculate the date three months ago
-        val threeMonthsAgo = now.minus(3, ChronoUnit.MONTHS)
+            // Convert the LocalDate to ZonedDateTime at the start of the day
+            val zonedDateTimeThreeMonthsAgo = monthsAgo.atStartOfDay(ZoneId.systemDefault())
 
-        // Convert the LocalDate to ZonedDateTime at the start of the day
-        val zonedDateTimeThreeMonthsAgo = threeMonthsAgo.atStartOfDay(ZoneId.systemDefault())
+            // Convert ZonedDateTime to Instant
+            val instantThreeMonthsAgo = zonedDateTimeThreeMonthsAgo.toInstant()
 
-        // Convert ZonedDateTime to Instant
-        val instantThreeMonthsAgo = zonedDateTimeThreeMonthsAgo.toInstant()
+            // Convert the timestamp to milliseconds
 
-        // Convert the timestamp to milliseconds
-        return instantThreeMonthsAgo.toEpochMilli()
+            return instantThreeMonthsAgo.toEpochMilli()
+        }catch (e:Exception){
+            LampLog.e("${e.message}")
+            return System.currentTimeMillis()
+        }
+
     }
     /**
      * check location permission
@@ -998,6 +1028,7 @@ class HomeActivity : AppCompatActivity() {
                 )
                 if (state.isNotEmpty()) {
                     //Code for drop DB
+                    updateStreak(0,0)
                     AppState.session.clearData()
                     LampLog.e(TAG, " Logout Response -  $state")
                 }
@@ -1725,6 +1756,16 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+    }
+
+    override fun onStop() {
+        super.onStop()
+        activityEventUpdated = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activityEventUpdated = false
     }
 }
 

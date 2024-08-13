@@ -220,14 +220,12 @@ class LampForegroundService : Service(),
                 }
             }
             LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
-            DebugLogs.writeToFile("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
             if (googleHealthConnectSensorEventDataList.isNotEmpty())
                 invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
             else {
                 val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                DebugLogs.writeToFile(" analytics list${dbList.size}")
                 if (dbList.isNotEmpty()) {
                     AppState.session.lastAnalyticsTimestamp =
                         AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
@@ -742,7 +740,6 @@ class LampForegroundService : Service(),
             return
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
-                DebugLogs.writeToFile("API send from foreground service")
                 trackSingleEvent("API_Send_${sensorEventDataList.size}")
                 val basic = "Basic ${
                     Utils.toBase64(
