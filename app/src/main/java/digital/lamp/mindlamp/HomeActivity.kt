@@ -545,50 +545,54 @@ class HomeActivity : AppCompatActivity() {
                 if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE"){
                     initializePrivacyPolicyWebview()
                 }else {
-                    val perms = HashMap<String, Int>()
-                    // Initialize the map with both permissions
-                    perms[Manifest.permission.ACTIVITY_RECOGNITION] =
-                        PackageManager.PERMISSION_GRANTED
+                    try {
+                        val perms = HashMap<String, Int>()
+                        // Initialize the map with both permissions
+                        perms[Manifest.permission.ACTIVITY_RECOGNITION] =
+                            PackageManager.PERMISSION_GRANTED
 
-                    if (grantResults.isNotEmpty()) {
-                        for (i in permissions.indices)
-                            perms[permissions[i]] = grantResults[i]
-                        // Check for both permissions
-                        if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
-                            initializeWebview()
-                            //else any one or both the permissions are not granted
-                        } else {
-                            initializeWebview()
-                            //Now further we check if used denied permanently or not
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                                    this,
-                                    Manifest.permission.ACTIVITY_RECOGNITION
-                                )
-                            ) {
-                                // case 4 User has denied permission but not permanently
-                                showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app),
-                                    DialogInterface.OnClickListener { _, which ->
-                                        when (which) {
-                                            DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
-                                                this
-                                            )
-
-                                            DialogInterface.BUTTON_NEGATIVE ->
-                                                // proceed with logic by disabling the related features or quit the app.
-                                                finish()
-                                        }
-                                    })
+                        if (grantResults.isNotEmpty()) {
+                            for (i in permissions.indices)
+                                perms[permissions[i]] = grantResults[i]
+                            // Check for both permissions
+                            if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
+                                initializeWebview()
+                                //else any one or both the permissions are not granted
                             } else {
-                                //  DebugLogs.writeToFile("Display settings screen")
-                                // case 5. Permission denied permanently.
-                                // You can open Permission setting's page from here now.
-                                val intent = Intent()
-                                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                                val uri = Uri.fromParts("package", packageName, null)
-                                intent.data = uri
-                                startActivity(intent)
+                                initializeWebview()
+                                //Now further we check if used denied permanently or not
+                                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                        this,
+                                        Manifest.permission.ACTIVITY_RECOGNITION
+                                    )
+                                ) {
+                                    // case 4 User has denied permission but not permanently
+                                    showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app),
+                                        DialogInterface.OnClickListener { _, which ->
+                                            when (which) {
+                                                DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
+                                                    this
+                                                )
+
+                                                DialogInterface.BUTTON_NEGATIVE ->
+                                                    // proceed with logic by disabling the related features or quit the app.
+                                                    finish()
+                                            }
+                                        })
+                                } else {
+                                    //  DebugLogs.writeToFile("Display settings screen")
+                                    // case 5. Permission denied permanently.
+                                    // You can open Permission setting's page from here now.
+                                    val intent = Intent()
+                                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                    val uri = Uri.fromParts("package", packageName, null)
+                                    intent.data = uri
+                                    startActivity(intent)
+                                }
                             }
                         }
+                    }catch (e:Exception){
+                        DebugLogs.writeToFile("${e.message}")
                     }
                 }
             }
@@ -600,9 +604,9 @@ class HomeActivity : AppCompatActivity() {
                         if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
                             checkLocationAndBluetoothPermission()
                         }
-                        checkGoogleFit()
+                        checkHealthConnectSensorsAdded()
                     } else {
-                        checkGoogleFit()
+                        checkHealthConnectSensorsAdded()
                     }
                 }
             }
@@ -627,7 +631,7 @@ class HomeActivity : AppCompatActivity() {
                     } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
                         checkLocationAndBluetoothPermission()
                     } else {
-                        checkGoogleFit()
+                        checkHealthConnectSensorsAdded()
                     }
                 }
 
@@ -638,7 +642,7 @@ class HomeActivity : AppCompatActivity() {
                 if (specList.contains(Sensors.GPS.sensor_name)) {
                     checkLocation()
                 } else {
-                    checkGoogleFit()
+                    checkHealthConnectSensorsAdded()
                 }
             }
 
@@ -647,7 +651,7 @@ class HomeActivity : AppCompatActivity() {
                 if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
                     requestBluetooth()
                 } else {
-                    checkGoogleFit()
+                    checkHealthConnectSensorsAdded()
                 }
             }
         }
@@ -660,7 +664,7 @@ class HomeActivity : AppCompatActivity() {
         if (checkLocationPermission()) {
             AppState.session.isLocationPermissionAllowed = true
             //Fit SignIn Auth
-            checkGoogleFit()
+            checkHealthConnectSensorsAdded()
         } else {
             AppState.session.isLocationPermissionAllowed = false
             requestLocationPermission()
@@ -670,7 +674,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * check google fit sensors
      */
-    private fun checkGoogleFit() {
+    private fun checkHealthConnectSensorsAdded() {
         val specList = mSensorSpecsList.map { it.spec }
 
         if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name) ||
@@ -683,7 +687,7 @@ class HomeActivity : AppCompatActivity() {
             specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
         ) {
            // fitSignIn()
-            checkGoogleConnectAvailable()
+            checkHealthConnectAvailable()
 
         } else {
             checkGPSPermission()
@@ -704,14 +708,21 @@ class HomeActivity : AppCompatActivity() {
                     startLampService()
                 }
             } else {
-                // Lack of required permissions
-                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
-                        .putExtra(Intent.EXTRA_PACKAGE_NAME, BuildConfig.APPLICATION_ID)
-                } else {
-                    Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+                try {
+                    // Lack of required permissions
+                    val intent =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS).putExtra(
+                                Intent.EXTRA_PACKAGE_NAME,
+                                BuildConfig.APPLICATION_ID
+                            )
+                        } else {
+                            Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+                        }
+                    startActivity(intent)
+                }catch (e:Exception){
+                    DebugLogs.writeToFile("${e.message}")
                 }
-                startActivity(intent)
             }
         }
 
@@ -902,7 +913,7 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun  checkGoogleConnectAvailable(){
+    private fun  checkHealthConnectAvailable(){
         val availabilityStatus = HealthConnectClient.getSdkStatus(this, "com.google.android.apps.healthdata")
         if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
             return // early return as there is no viable integration
@@ -973,7 +984,7 @@ class HomeActivity : AppCompatActivity() {
                     if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
                         requestBluetooth()
                     } else {
-                        checkGoogleFit()
+                        checkHealthConnectSensorsAdded()
                     }
                 }
 
@@ -983,7 +994,7 @@ class HomeActivity : AppCompatActivity() {
                 if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
                     requestBluetooth()
                 } else {
-                    checkGoogleFit()
+                    checkHealthConnectSensorsAdded()
                 }
             }
             HEALTH_CONNECT_PERMISSION_RESULT_CODE ->{
@@ -1306,7 +1317,7 @@ class HomeActivity : AppCompatActivity() {
                                     } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
                                         checkLocationAndBluetoothPermission()
                                     } else {
-                                        checkGoogleFit()
+                                        checkHealthConnectSensorsAdded()
                                     }
 
                                 }
@@ -1316,7 +1327,7 @@ class HomeActivity : AppCompatActivity() {
                             } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
                                 checkLocationAndBluetoothPermission()
                             } else {
-                                checkGoogleFit()
+                                checkHealthConnectSensorsAdded()
                             }
                         }
                         LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
@@ -1405,7 +1416,7 @@ class HomeActivity : AppCompatActivity() {
                 if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
                     requestBluetooth()
                 } else {
-                    checkGoogleFit()
+                    checkHealthConnectSensorsAdded()
                 }
             }
 
@@ -1459,7 +1470,7 @@ class HomeActivity : AppCompatActivity() {
             }
 
         } else {
-            checkGoogleFit()
+            checkHealthConnectSensorsAdded()
         }
 
     }
