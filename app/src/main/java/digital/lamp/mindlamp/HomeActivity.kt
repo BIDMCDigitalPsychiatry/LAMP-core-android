@@ -168,9 +168,7 @@ class HomeActivity : AppCompatActivity() {
         )
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
-        private const val REQUEST_OAUTH_REQUEST_CODE = 1010
         private const val REQUEST_LOCATION_REQUEST_CODE = 1011
-        private const val REQUEST_PERMISSION_SETTING = 1012
         private const val REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE = 1013
         private const val WEBPAGE_RELOAD_INTERVAL_TIMER = 20 * 1000L
         private const val WEBPAGE_BEGINNING_DELAY = 30 * 1000L
@@ -260,40 +258,6 @@ class HomeActivity : AppCompatActivity() {
         this.sendBroadcast(intent)
     }
 
-    /**
-     *  Lazily initialize the FitnessOptions using the FitnessOptions.builder()
-     */
-    private val fitnessOptions: FitnessOptions by lazy {
-        FitnessOptions.builder()
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
-            .build()
-    }
-
     private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(this) }
 
 
@@ -327,7 +291,7 @@ class HomeActivity : AppCompatActivity() {
         try {
             val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
             field.isAccessible = true
-            field.set(null, 100 * 1024 * 1024) // 100MB is the new size
+            field.set(null, 500 * 1024 * 1024) // 100MB is the new size
         } catch (e: java.lang.Exception) {
             DebugLogs.writeToFile("Exception: ${e.message}")
         }
@@ -369,17 +333,11 @@ class HomeActivity : AppCompatActivity() {
                     )
 
                 try {
-                    Log.e("log","${state.toString()}")
                     val gson = Gson()
                     val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
                     val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
                     if (!dataWrapper.data.isNullOrEmpty()) {
-                        DebugLogs.writeToFile("${state.toString()}")
                         val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
-                        Log.e("current streak", "$currentStreak")
-                        Log.e("longest streak", "$longestStreak")
-                        DebugLogs.writeToFile("current streak ${currentStreak}")
-                        DebugLogs.writeToFile("longest streak ${longestStreak}")
                         updateStreak(currentStreak, longestStreak)
                     } else {
                         updateStreak(0, 0)
@@ -398,7 +356,7 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
-    fun findLongestAndCurrentStreak(data: List<ActivityEventData>): Pair<Int, Int> {
+    private fun findLongestAndCurrentStreak(data: List<ActivityEventData>): Pair<Int, Int> {
         if (data.isEmpty()) {
             return Pair(0, 0)
         }
@@ -436,7 +394,7 @@ class HomeActivity : AppCompatActivity() {
         return Pair(currentStreak, maxStreak)
     }
 
-    fun uniqueDays(dates: List<Date?>): List<Date> {
+    private fun uniqueDays(dates: List<Date?>): List<Date> {
         val uniqueDates = mutableSetOf<Date>()
         val calendar = Calendar.getInstance()
 
@@ -452,19 +410,19 @@ class HomeActivity : AppCompatActivity() {
         return uniqueDates.toList()
     }
 
-    fun areDatesConsecutive(date1: Date, date2: Date): Boolean {
+    private fun areDatesConsecutive(date1: Date, date2: Date): Boolean {
         val diffInMillis = date2.time - date1.time
         val diffInDays = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS)
         return diffInDays == 1L
     }
 
-    fun isSameDay(date1: Date, date2: Date): Boolean {
+    private fun isSameDay(date1: Date, date2: Date): Boolean {
         val cal1 = Calendar.getInstance().apply { time = date1 }
         val cal2 = Calendar.getInstance().apply { time = date2 }
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
     }
-    fun getMonthsFromNowInMillies(): Long {
+    private fun getMonthsFromNowInMillies(): Long {
         try {
             var monthsAgo: LocalDate
             val now = LocalDate.now()
@@ -666,49 +624,58 @@ class HomeActivity : AppCompatActivity() {
      * reload webpage after some time
      */
     private fun startTimerForReloadWebpage(errorMessage: String) {
-        reloadWebpageTimer?.cancel()
-        reloadWebpageTimer?.purge()
-        reloadWebpageTimer = null
+        try {
+            reloadWebpageTimer?.cancel()
+            reloadWebpageTimer?.purge()
+            reloadWebpageTimer = null
 
-        val actionTask: TimerTask = object : TimerTask() {
-            override fun run() {
-                runOnUiThread {
-                    if (isPageLoadedComplete) {
-                    } else {
-                        if (binding.progressBar.visibility == View.VISIBLE) {
-                            if (!isFinishing && !isDestroyed) {
-                                // Show the dialog
-                                val builder = AlertDialog.Builder(this@HomeActivity)
-                                with(builder) {
-                                    setTitle(getString(R.string.app_name))
-                                    setMessage(errorMessage)
-                                    setCancelable(false)
-                                    setPositiveButton(getString(R.string.retry)) { dialog, _ ->
-                                        if (!isPageLoadedComplete) {
-                                            binding.webView.loadUrl("javascript:window.location.reload(true)")
+            val actionTask: TimerTask = object : TimerTask() {
+                override fun run() {
+                    runOnUiThread {
+                        if (isPageLoadedComplete) {
+                        } else {
+                            if (binding.progressBar.visibility == View.VISIBLE) {
+                                if (!isFinishing && !isDestroyed) {
+                                    // Show the dialog
+                                    val builder = AlertDialog.Builder(this@HomeActivity)
+                                    with(builder) {
+                                        setTitle(getString(R.string.app_name))
+                                        setMessage(errorMessage)
+                                        setCancelable(false)
+                                        setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                            if (!isPageLoadedComplete) {
+                                                binding.webView.loadUrl("javascript:window.location.reload(true)")
+                                            }
                                         }
+                                        setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                                            binding.progressBar.visibility = View.GONE
+                                            dialog.cancel()
+                                            finish()
+                                        }
+                                        show()
                                     }
-                                    setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                                        binding.progressBar.visibility = View.GONE
-                                        dialog.cancel()
-                                        finish()
-                                    }
-                                    show()
                                 }
                             }
                         }
                     }
                 }
             }
-        }
 
-        wepPageLoadingTimerIsRunning = true
-        reloadWebpageTimer = Timer()
-        reloadWebpageTimer!!.scheduleAtFixedRate(
-            actionTask,
-            WEBPAGE_BEGINNING_DELAY,
-            WEBPAGE_RELOAD_INTERVAL_TIMER
-        )
+            wepPageLoadingTimerIsRunning = true
+            reloadWebpageTimer = Timer()
+            reloadWebpageTimer!!.scheduleAtFixedRate(
+                actionTask,
+                WEBPAGE_BEGINNING_DELAY,
+                WEBPAGE_RELOAD_INTERVAL_TIMER
+            )
+        }catch (e:Exception){
+            try {
+                binding.progressBar.visibility = View.GONE
+                DebugLogs.writeToFile("Exception in loader timer ${e.message}")
+            }catch (e:Exception){
+                DebugLogs.writeToFile("${e.message}")
+            }
+        }
     }
 
     /**
@@ -1083,18 +1050,6 @@ class HomeActivity : AppCompatActivity() {
     /**
      * google fit sign in
      */
-    private fun fitSignIn() {
-        if (oAuthPermissionsApproved()) {
-            accessGoogleFit()
-        } else {
-            GoogleSignIn.requestPermissions(
-                this,
-                REQUEST_OAUTH_REQUEST_CODE,
-                getGoogleAccount(),
-                fitnessOptions
-            )
-        }
-    }
 
     private fun  checkHealthConnectAvailable(){
         val availabilityStatus = HealthConnectClient.getSdkStatus(this, "com.google.android.apps.healthdata")
@@ -1150,12 +1105,6 @@ class HomeActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            REQUEST_OAUTH_REQUEST_CODE -> {
-                accessGoogleFit()
-                if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
-                }
-            }
             LOCATION_REQUEST_CODE -> {
                 // Check if the user enabled location after the prompt
                 val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
@@ -1235,25 +1184,9 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
             else -> {
-                oAuthErrorMsg(requestCode, resultCode)
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
                     startLampService()
                 }
-            }
-        }
-    }
-
-    /**
-     *  Access the google fit and checks permission for listed sensors
-     */
-    private fun accessGoogleFit() {
-        AppState.session.isGoogleFitConnected = true
-        LampLog.e(TAG, "Google Fit Connected")
-        trackSingleEvent("Fit_Success")
-        DebugLogs.writeToFile("Google Fit Connected")
-        mSensorSpecsList.forEach {
-            if (it.spec == Sensors.GPS.sensor_name) {
-                checkGPSPermission()
             }
         }
     }
@@ -1307,49 +1240,6 @@ class HomeActivity : AppCompatActivity() {
             }
 
         }
-    }
-
-    /**
-     * Handles error message from google fit
-     */
-    private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
-        AppState.session.isGoogleFitConnected = false
-        mSensorSpecsList.forEach {
-            if (it.spec == Sensors.GPS.sensor_name) {
-                checkGPSPermission()
-            }
-        }
-        val message = """
-            There was an error signing into Fit. Check the troubleshooting section of the README
-            for potential issues.
-            Request code was: $requestCode
-            Result code was: $resultCode
-        """.trimIndent()
-        LampLog.e(TAG, message)
-        DebugLogs.writeToFile(message)
-        trackSingleEvent("Fit_ERROR")
-    }
-
-    /**
-     * handles the actions  after the google fit permission approved
-     */
-    private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
-        getGoogleAccount(),
-        fitnessOptions
-    )
-
-    /**
-     * Gets a Google account for use in creating the Fitness client.
-     */
-    private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
-
-    /**
-     * log events on firebase analytics
-     */
-    private fun trackSingleEvent(eventName: String) {
-        //Firebase Event Tracking
-        val params = Bundle()
-        firebaseAnalytics.logEvent(eventName, params)
     }
 
     /**
