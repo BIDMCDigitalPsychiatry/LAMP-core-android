@@ -52,8 +52,8 @@ class PeriodicDataSyncWorker(
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
-        val googleFitSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
-        googleFitSensorEventDataList.clear()
+        val googleHealthConnectSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
+        googleHealthConnectSensorEventDataList.clear()
 
         val gson = GsonBuilder()
             .create()
@@ -93,7 +93,7 @@ class PeriodicDataSyncWorker(
                             SensorEvent::class.java
                         )
 
-                        googleFitSensorEventDataList.add(
+                        googleHealthConnectSensorEventDataList.add(
                             googleFitData
                         )
                     } else {
@@ -134,8 +134,8 @@ class PeriodicDataSyncWorker(
                     DebugLogs.writeToFile("exception in PeriodicDataSyncWorker ${e.message}")
                 }
             }
-            if (googleFitSensorEventDataList.isNotEmpty())
-                invokeAddSensorData(googleFitSensorEventDataList, context, true)
+            if (googleHealthConnectSensorEventDataList.isNotEmpty())
+                invokeAddSensorData(googleHealthConnectSensorEventDataList, context, true)
 
         }
     }

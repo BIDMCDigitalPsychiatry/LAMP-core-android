@@ -291,7 +291,7 @@ class HomeActivity : AppCompatActivity() {
         try {
             val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
             field.isAccessible = true
-            field.set(null, 300 * 1024 * 1024) // 100MB is the new size
+            field.set(null, 300 * 1024 * 1024) // 300MB is the new size
         } catch (e: java.lang.Exception) {
             DebugLogs.writeToFile("Exception: ${e.message}")
         }
