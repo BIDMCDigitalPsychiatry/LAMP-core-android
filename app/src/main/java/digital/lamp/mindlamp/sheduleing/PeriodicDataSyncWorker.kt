@@ -13,7 +13,6 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.Analytics
-import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -53,8 +52,8 @@ class PeriodicDataSyncWorker(
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
-        val googleFitSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
-        googleFitSensorEventDataList.clear()
+        val googleHealthConnectSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
+        googleHealthConnectSensorEventDataList.clear()
 
         val gson = GsonBuilder()
             .create()
@@ -63,6 +62,7 @@ class PeriodicDataSyncWorker(
             .create()
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
+            LampLog.e("Sensor PeriodicDataSyncWorker: START TIME ${AppState.session.lastAnalyticsTimestamp}")
             val oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
 
             if (AppState.session.lastAnalyticsTimestamp == 1L) {
@@ -70,8 +70,10 @@ class PeriodicDataSyncWorker(
                     oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
                 AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond ?: 1L
             }
+            LampLog.e("Sensor PeriodicDataSyncWorker: START TIME ${AppState.session.lastAnalyticsTimestamp}")
             val endTime =
                 AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+            LampLog.e("Sensor PeriodicDataSyncWorker: END TIME $endTime")
             list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
 
 
@@ -80,24 +82,27 @@ class PeriodicDataSyncWorker(
                     it.analyticsData,
                     SensorEvent::class.java
                 )
-                if (sensorEvent.sensor == Sensors.SLEEP.sensor_name || sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
-                    sensorEvent.sensor == Sensors.STEPS.sensor_name || sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
-                    sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
-                    || sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name || sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
-                ) {
-                    val googleFitData = gsonWithNull.fromJson(
-                        it.analyticsData,
-                        SensorEvent::class.java
-                    )
+                sensorEvent?.let {sensorEvent->
+                    if (sensorEvent.sensor == Sensors.SLEEP.sensor_name || sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
+                        sensorEvent.sensor == Sensors.STEPS.sensor_name || sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
+                        sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
+                        || sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name || sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
+                    ) {
+                        val googleFitData = gsonWithNull.fromJson(
+                            it.analyticsData,
+                            SensorEvent::class.java
+                        )
 
-                    googleFitSensorEventDataList.add(
-                        googleFitData
-                    )
-                } else {
-                    sensorEventDataList.add(
-                        sensorEvent
-                    )
+                        googleHealthConnectSensorEventDataList.add(
+                            googleFitData
+                        )
+                    } else {
+                        sensorEventDataList.add(
+                            sensorEvent
+                        )
+                    }
                 }
+
             }
             list.let {
                 if (it.isNotEmpty()) {
@@ -105,23 +110,33 @@ class PeriodicDataSyncWorker(
                     AppState.session.lastSyncWorkerTimestamp = it[0].datetimeMillisecond!!
                 }
             }
+            LampLog.e("DB : ${list.size} and Sensor PeriodicDataSyncWorker: ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, context, false)
-            if (googleFitSensorEventDataList.isNotEmpty())
-                invokeAddSensorData(googleFitSensorEventDataList, context, true)
             else {
-                val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                if (dbList.isNotEmpty()) {
-                    val analytics =
-                        oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
-                    AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond
-                        ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
+                try {
+                    LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
 
-                    AppState.session.lastSyncWorkerTimestamp = analytics?.datetimeMillisecond
-                        ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
-                    syncAnalyticsData(context)
+                    val dbList =
+                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    if (dbList.isNotEmpty()) {
+                        LampLog.e("Sensor PeriodicDataSyncWorker: dbList is not empty")
+                        val analytics =
+                            oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
+                        AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond
+                            ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
+
+                        AppState.session.lastSyncWorkerTimestamp = analytics?.datetimeMillisecond
+                            ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
+                        syncAnalyticsData(context)
+                    }
+                }catch (e:Exception){
+                    DebugLogs.writeToFile("exception in PeriodicDataSyncWorker ${e.message}")
                 }
             }
+            if (googleHealthConnectSensorEventDataList.isNotEmpty())
+                invokeAddSensorData(googleHealthConnectSensorEventDataList, context, true)
+
         }
     }
 
@@ -157,11 +172,13 @@ class PeriodicDataSyncWorker(
                     sensorEventDataList,
                     basic, isGogolefitData
                 )
+                LampLog.e("PeriodicDataSyncWorker", " Lamp Core Response -  $state")
                 if (state.isNotEmpty()) {
                     //Code for drop DB
                     GlobalScope.launch(Dispatchers.IO) {
                         val oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
                         oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                        LampLog.e("Sensor : invokeAddSensorData")
                         syncAnalyticsData(context)
                     }
                 }

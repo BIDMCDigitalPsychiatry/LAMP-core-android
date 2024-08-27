@@ -69,4 +69,7 @@
     <string name="hc_not_installed_description" translatable="false">
         Health Connect is supported on this device, but is either not installed, or requires an update.
     </string>
+    <string name="current_streak_days" translatable="false">Current streak </string>
+    <string name="longest_streak_days" translatable="false">Longest streak </string>
+    <string name="way_to_go" translatable="false">Way To Go!</string>
 </resources>

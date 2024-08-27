@@ -7,8 +7,10 @@ import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -22,6 +24,7 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -65,7 +68,10 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ClientException
@@ -81,11 +87,14 @@ import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.dao.SensorDao
 import digital.lamp.mindlamp.database.entity.SensorSpecs
 import digital.lamp.mindlamp.databinding.ActivityHomeBinding
+import digital.lamp.mindlamp.model.ActivityEventData
+import digital.lamp.mindlamp.model.DataWrapper
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
+import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
@@ -99,14 +108,20 @@ import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.lang.reflect.Field
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 
 
@@ -130,6 +145,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
     private val viewModel: HealthConnectViewModel by viewModels()
+    private var activityEventUpdated = false
     val PERMISSIONS =
         setOf(
             HealthPermission.getReadPermission(StepsRecord::class),
@@ -152,9 +168,7 @@ class HomeActivity : AppCompatActivity() {
         )
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
-        private const val REQUEST_OAUTH_REQUEST_CODE = 1010
         private const val REQUEST_LOCATION_REQUEST_CODE = 1011
-        private const val REQUEST_PERMISSION_SETTING = 1012
         private const val REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE = 1013
         private const val WEBPAGE_RELOAD_INTERVAL_TIMER = 20 * 1000L
         private const val WEBPAGE_BEGINNING_DELAY = 30 * 1000L
@@ -183,6 +197,13 @@ class HomeActivity : AppCompatActivity() {
                         reloadWebpageTimer?.cancel()
                     }
                     wepPageLoadingTimerIsRunning = false
+                    if (url == BuildConfig.BASE_URL_WEB){
+                        updateStreak(0,0)
+                    }
+                    if (AppState.session.isLoggedIn && !activityEventUpdated){
+                        initialCallForActivityStreak()
+                    }
+
                 }
             }
 
@@ -225,38 +246,16 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
-    /**
-     *  Lazily initialize the FitnessOptions using the FitnessOptions.builder()
-     */
-    private val fitnessOptions: FitnessOptions by lazy {
-        FitnessOptions.builder()
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_MOVE_MINUTES, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_BASAL_METABOLIC_RATE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_BODY_FAT_PERCENTAGE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_WHEEL_RPM, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_PEDALING_CUMULATIVE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_SPEED, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_NUTRITION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_OXYGEN_SATURATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BODY_TEMPERATURE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_MENSTRUATION, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_VAGINAL_SPOTTING, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CYCLING_PEDALING_CADENCE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_HEART_POINTS, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_STEP_COUNT_CADENCE, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
-            .build()
+    fun updateStreak(current: Int,longest:Int) {
+        AppState.session.currentStreakDays = current
+        AppState.session.longestStreakDays = longest
+        // Update the widget
+        val intent = Intent(this, StreakWidgetProvider::class.java).apply {
+            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val ids = AppWidgetManager.getInstance(this).getAppWidgetIds(ComponentName(this, StreakWidgetProvider::class.java))
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        this.sendBroadcast(intent)
     }
 
     private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(this) }
@@ -292,13 +291,159 @@ class HomeActivity : AppCompatActivity() {
         try {
             val field: Field = CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
             field.isAccessible = true
-            field.set(null, 100 * 1024 * 1024) // 100MB is the new size
+            field.set(null, 300 * 1024 * 1024) // 300MB is the new size
         } catch (e: java.lang.Exception) {
             DebugLogs.writeToFile("Exception: ${e.message}")
         }
         if (!AppState.session.showDisclosureAlert) {
             val batteryOptimizationHelper = BatteryOptimizationHelper(this)
             batteryOptimizationHelper.checkBatteryOptimization()
+        }
+        val netwokStatus = NetworkConnectionLiveData(this)
+        netwokStatus.observe(this) {
+            if (it) {
+                Log.e("connection status", "net connected")
+            } else {
+                Log.e("connection status", "no net connected")
+                GlobalScope.launch(Dispatchers.Main) {
+                    showApiErrorAlert(getString(R.string.txt_no_internet))
+                }
+            }
+        }
+
+    }
+    private fun initialCallForActivityStreak(){
+        try {
+            val basic = "Basic ${
+                Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                        "https://"
+                    ).removePrefix("http://")
+                )
+            }"
+            CoroutineScope(Dispatchers.IO).launch {
+                val state =
+                    ActivityEventAPI(AppState.session.serverAddress).activityEventAllByParticipant(
+                        participantId = AppState.session.userId,
+                        from = getMonthsFromNowInMillies(),
+                        origin = null,
+                        to = null,
+                        transform = null,
+                        basic = basic
+                    )
+
+                try {
+                    val gson = Gson()
+                    val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
+                    val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
+                    if (!dataWrapper.data.isNullOrEmpty()) {
+                        val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
+                        updateStreak(currentStreak, longestStreak)
+                    } else {
+                        updateStreak(0, 0)
+                    }
+                }catch (e:JsonSyntaxException){
+                    LampLog.e(e.message)
+                }catch (e:Exception){
+                    LampLog.e(e.message)
+                }
+
+            }
+        }catch (e:Exception){
+            LampLog.e("${e.message}")
+            DebugLogs.writeToFile("Exception in streak widget initialization webservice call")
+        }
+
+    }
+
+    private fun findLongestAndCurrentStreak(data: List<ActivityEventData>): Pair<Int, Int> {
+        if (data.isEmpty()) {
+            return Pair(0, 0)
+        }
+
+        // Extract dates from the data and find unique days
+        val dates = data.map { it.date }
+        val uniqueDays = uniqueDays(dates)
+        val sortedDatesAsc = uniqueDays.sorted()
+
+        // Initialize variables
+        var tempStreak = 1
+        var maxStreak = 1
+        var currentStreak = 0
+
+        val today = Date()
+        val calendar = Calendar.getInstance()
+        val previousDay = calendar.apply { add(Calendar.DAY_OF_YEAR, -1) }.time
+
+        // Iterate through the sorted dates to find the longest streak
+        for (i in 1 until sortedDatesAsc.size) {
+            if (areDatesConsecutive(sortedDatesAsc[i - 1], sortedDatesAsc[i])) {
+                tempStreak += 1
+            } else {
+                tempStreak = 1
+            }
+            maxStreak = maxOf(maxStreak, tempStreak)
+        }
+
+        // Determine if the last date is part of the current streak
+        val lastDate = sortedDatesAsc.last()
+        activityEventUpdated = isSameDay(today,lastDate)
+        if (isSameDay(today, lastDate) || isSameDay(previousDay, lastDate)) {
+            currentStreak = tempStreak
+        }
+        return Pair(currentStreak, maxStreak)
+    }
+
+    private fun uniqueDays(dates: List<Date?>): List<Date> {
+        val uniqueDates = mutableSetOf<Date>()
+        val calendar = Calendar.getInstance()
+
+        dates.forEach { date ->
+            calendar.time = date
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            uniqueDates.add(calendar.time)
+        }
+
+        return uniqueDates.toList()
+    }
+
+    private fun areDatesConsecutive(date1: Date, date2: Date): Boolean {
+        val diffInMillis = date2.time - date1.time
+        val diffInDays = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS)
+        return diffInDays == 1L
+    }
+
+    private fun isSameDay(date1: Date, date2: Date): Boolean {
+        val cal1 = Calendar.getInstance().apply { time = date1 }
+        val cal2 = Calendar.getInstance().apply { time = date2 }
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+    }
+    private fun getMonthsFromNowInMillies(): Long {
+        try {
+            var monthsAgo: LocalDate
+            val now = LocalDate.now()
+            if (AppState.session.longestStreakDays == 0) {
+                monthsAgo = now.minus(12, ChronoUnit.MONTHS)
+            } else {
+                monthsAgo = now.minus(3, ChronoUnit.MONTHS)
+            }
+
+            // Convert the LocalDate to ZonedDateTime at the start of the day
+            val zonedDateTimeThreeMonthsAgo = monthsAgo.atStartOfDay(ZoneId.systemDefault())
+
+            // Convert ZonedDateTime to Instant
+            val instantThreeMonthsAgo = zonedDateTimeThreeMonthsAgo.toInstant()
+
+            // Convert the timestamp to milliseconds
+
+            return instantThreeMonthsAgo.toEpochMilli()
+        }catch (e:Exception){
+            LampLog.e("${e.message}")
+            return System.currentTimeMillis()
         }
 
     }
@@ -456,6 +601,7 @@ class HomeActivity : AppCompatActivity() {
                         "http://"
                     )
             )
+            Log.e("url","$url")
             binding.webView.loadUrl(url)
 
         } else {
@@ -478,56 +624,58 @@ class HomeActivity : AppCompatActivity() {
      * reload webpage after some time
      */
     private fun startTimerForReloadWebpage(errorMessage: String) {
-        reloadWebpageTimer?.cancel()
-        reloadWebpageTimer?.purge()
+        try {
+            reloadWebpageTimer?.cancel()
+            reloadWebpageTimer?.purge()
+            reloadWebpageTimer = null
 
-        val actionTask: TimerTask = object : TimerTask() {
-            override fun run() {
-                runOnUiThread {
-                    if (isPageLoadedComplete) {
-                    } else {
-                        if (binding.progressBar.visibility == View.VISIBLE) {
-                            val positiveButtonClick = { dialog: DialogInterface, _: Int ->
-                                if (!isPageLoadedComplete) {
-                                    binding.webView.loadUrl("javascript:window.location.reload( true )")
+            val actionTask: TimerTask = object : TimerTask() {
+                override fun run() {
+                    runOnUiThread {
+                        if (isPageLoadedComplete) {
+                        } else {
+                            if (binding.progressBar.visibility == View.VISIBLE) {
+                                if (!isFinishing && !isDestroyed) {
+                                    // Show the dialog
+                                    val builder = AlertDialog.Builder(this@HomeActivity)
+                                    with(builder) {
+                                        setTitle(getString(R.string.app_name))
+                                        setMessage(errorMessage)
+                                        setCancelable(false)
+                                        setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                            if (!isPageLoadedComplete) {
+                                                binding.webView.loadUrl("javascript:window.location.reload(true)")
+                                            }
+                                        }
+                                        setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                                            binding.progressBar.visibility = View.GONE
+                                            dialog.cancel()
+                                            finish()
+                                        }
+                                        show()
+                                    }
                                 }
-
-                            }
-                            val negativeButtonClick = { dialog: DialogInterface, _: Int ->
-                                binding.progressBar.visibility = View.GONE
-                                dialog.cancel()
-                                finish()
-                            }
-                            val builder = AlertDialog.Builder(this@HomeActivity)
-
-                            with(builder)
-                            {
-                                setTitle(getString(R.string.app_name))
-                                setMessage(errorMessage)
-                                setCancelable(false)
-                                setPositiveButton(
-                                    getString(R.string.retry),
-                                    DialogInterface.OnClickListener(function = positiveButtonClick)
-                                )
-                                setNegativeButton(
-                                    getString(R.string.cancel),
-                                    DialogInterface.OnClickListener(negativeButtonClick)
-                                )
-                                show()
                             }
                         }
                     }
                 }
             }
-        }
 
-        wepPageLoadingTimerIsRunning = true
-        reloadWebpageTimer = Timer()
-        reloadWebpageTimer!!.scheduleAtFixedRate(
-            actionTask,
-            WEBPAGE_BEGINNING_DELAY,
-            WEBPAGE_RELOAD_INTERVAL_TIMER
-        )
+            wepPageLoadingTimerIsRunning = true
+            reloadWebpageTimer = Timer()
+            reloadWebpageTimer!!.scheduleAtFixedRate(
+                actionTask,
+                WEBPAGE_BEGINNING_DELAY,
+                WEBPAGE_RELOAD_INTERVAL_TIMER
+            )
+        }catch (e:Exception){
+            try {
+                binding.progressBar.visibility = View.GONE
+                DebugLogs.writeToFile("Exception in loader timer ${e.message}")
+            }catch (e:Exception){
+                DebugLogs.writeToFile("${e.message}")
+            }
+        }
     }
 
     /**
@@ -858,6 +1006,7 @@ class HomeActivity : AppCompatActivity() {
                 )
                 if (state.isNotEmpty()) {
                     //Code for drop DB
+                    updateStreak(0,0)
                     AppState.session.clearData()
                     LampLog.e(TAG, " Logout Response -  $state")
                 }
@@ -895,23 +1044,12 @@ class HomeActivity : AppCompatActivity() {
         //Setting User Attributes for Firebase
         firebaseAnalytics.setUserProperty("user_token", oLoginResponse.authorizationToken)
         invokeSensorSpecData()
+        initialCallForActivityStreak()
     }
 
     /**
      * google fit sign in
      */
-    private fun fitSignIn() {
-        if (oAuthPermissionsApproved()) {
-            accessGoogleFit()
-        } else {
-            GoogleSignIn.requestPermissions(
-                this,
-                REQUEST_OAUTH_REQUEST_CODE,
-                getGoogleAccount(),
-                fitnessOptions
-            )
-        }
-    }
 
     private fun  checkHealthConnectAvailable(){
         val availabilityStatus = HealthConnectClient.getSdkStatus(this, "com.google.android.apps.healthdata")
@@ -967,12 +1105,6 @@ class HomeActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            REQUEST_OAUTH_REQUEST_CODE -> {
-                accessGoogleFit()
-                if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
-                }
-            }
             LOCATION_REQUEST_CODE -> {
                 // Check if the user enabled location after the prompt
                 val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
@@ -1052,25 +1184,9 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
             else -> {
-                oAuthErrorMsg(requestCode, resultCode)
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
                     startLampService()
                 }
-            }
-        }
-    }
-
-    /**
-     *  Access the google fit and checks permission for listed sensors
-     */
-    private fun accessGoogleFit() {
-        AppState.session.isGoogleFitConnected = true
-        LampLog.e(TAG, "Google Fit Connected")
-        trackSingleEvent("Fit_Success")
-        DebugLogs.writeToFile("Google Fit Connected")
-        mSensorSpecsList.forEach {
-            if (it.spec == Sensors.GPS.sensor_name) {
-                checkGPSPermission()
             }
         }
     }
@@ -1124,49 +1240,6 @@ class HomeActivity : AppCompatActivity() {
             }
 
         }
-    }
-
-    /**
-     * Handles error message from google fit
-     */
-    private fun oAuthErrorMsg(requestCode: Int, resultCode: Int) {
-        AppState.session.isGoogleFitConnected = false
-        mSensorSpecsList.forEach {
-            if (it.spec == Sensors.GPS.sensor_name) {
-                checkGPSPermission()
-            }
-        }
-        val message = """
-            There was an error signing into Fit. Check the troubleshooting section of the README
-            for potential issues.
-            Request code was: $requestCode
-            Result code was: $resultCode
-        """.trimIndent()
-        LampLog.e(TAG, message)
-        DebugLogs.writeToFile(message)
-        trackSingleEvent("Fit_ERROR")
-    }
-
-    /**
-     * handles the actions  after the google fit permission approved
-     */
-    private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(
-        getGoogleAccount(),
-        fitnessOptions
-    )
-
-    /**
-     * Gets a Google account for use in creating the Fitness client.
-     */
-    private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
-
-    /**
-     * log events on firebase analytics
-     */
-    private fun trackSingleEvent(eventName: String) {
-        //Firebase Event Tracking
-        val params = Bundle()
-        firebaseAnalytics.logEvent(eventName, params)
     }
 
     /**
@@ -1583,17 +1656,17 @@ class HomeActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-        val netwokStatus = NetworkConnectionLiveData(this)
-        netwokStatus.observe(this) {
-            if (it) {
-                Log.e("eee", "net connected")
-            } else {
-                Log.e("eee", "no net connected")
-                GlobalScope.launch(Dispatchers.Main) {
-                    showApiErrorAlert(getString(R.string.txt_no_internet))
-                }
-            }
-        }
+
+    }
+
+    override fun onStop() {
+        super.onStop()
+        activityEventUpdated = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activityEventUpdated = false
     }
 }
 

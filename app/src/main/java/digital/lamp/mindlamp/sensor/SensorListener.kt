@@ -23,8 +23,7 @@ interface SensorListener {
     fun getScreenState(sensorEventData: SensorEvent)
     //Callback to Activity Data
     fun getActivityData(sensorEventData: SensorEvent)
-    //Callback to Fitbit Data
-    fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>)
+
     //Callback to Telephony data
     fun getTelephonyData(sensorEventData: SensorEvent)
     // callback to Google health connect
