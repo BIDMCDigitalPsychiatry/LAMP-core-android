@@ -222,16 +222,22 @@ class LampForegroundService : Service(),
             LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
-            if (googleHealthConnectSensorEventDataList.isNotEmpty())
-                invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
             else {
-                val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                if (dbList.isNotEmpty()) {
-                    AppState.session.lastAnalyticsTimestamp =
-                        AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
-                    syncAnalyticsData()
+                try {
+                    val dbList =
+                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    if (dbList.isNotEmpty()) {
+                        AppState.session.lastAnalyticsTimestamp =
+                            AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+                        syncAnalyticsData()
+                    }
+                }catch (e:Exception){
+                    DebugLogs.writeToFile("${e.message}")
                 }
             }
+            if (googleHealthConnectSensorEventDataList.isNotEmpty())
+                invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
+
         }
     }
 
@@ -1482,27 +1488,6 @@ class LampForegroundService : Service(),
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         GlobalScope.async {
             oAnalyticsDao.insertAnalytics(oAnalytics)
-        }
-    }
-
-    /**
-     * Fetch google fit data
-     * @param sensorEventData
-     */
-    override fun getGoogleFitData(sensorEventData: ArrayList<SensorEvent>) {
-        val gson = GsonBuilder().serializeNulls().create()
-        LampLog.e("Google Fit 1: ${gson.toJson(sensorEventData)}")
-
-        val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
-        GlobalScope.async {
-            sensorEventData.forEach {
-                val oAnalytics = Analytics()
-                oAnalytics.analyticsData = gson.toJson(it)
-                oAnalyticsList.add(oAnalytics)
-            }
-            //Insert it into Analytics DB
-            oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
-            LampLog.e("Google Fit : ${gson.toJson(sensorEventData)}")
         }
     }
 

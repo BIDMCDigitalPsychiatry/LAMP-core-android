@@ -113,24 +113,30 @@ class PeriodicDataSyncWorker(
             LampLog.e("DB : ${list.size} and Sensor PeriodicDataSyncWorker: ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, context, false)
-            if (googleFitSensorEventDataList.isNotEmpty())
-                invokeAddSensorData(googleFitSensorEventDataList, context, true)
             else {
-                LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
+                try {
+                    LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
 
-                val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                if (dbList.isNotEmpty()) {
-                    LampLog.e("Sensor PeriodicDataSyncWorker: dbList is not empty")
-                    val analytics =
-                        oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
-                    AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond
-                        ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
+                    val dbList =
+                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    if (dbList.isNotEmpty()) {
+                        LampLog.e("Sensor PeriodicDataSyncWorker: dbList is not empty")
+                        val analytics =
+                            oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
+                        AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond
+                            ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
 
-                    AppState.session.lastSyncWorkerTimestamp = analytics?.datetimeMillisecond
-                        ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
-                    syncAnalyticsData(context)
+                        AppState.session.lastSyncWorkerTimestamp = analytics?.datetimeMillisecond
+                            ?: (AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL)
+                        syncAnalyticsData(context)
+                    }
+                }catch (e:Exception){
+                    DebugLogs.writeToFile("exception in PeriodicDataSyncWorker ${e.message}")
                 }
             }
+            if (googleFitSensorEventDataList.isNotEmpty())
+                invokeAddSensorData(googleFitSensorEventDataList, context, true)
+
         }
     }
 
