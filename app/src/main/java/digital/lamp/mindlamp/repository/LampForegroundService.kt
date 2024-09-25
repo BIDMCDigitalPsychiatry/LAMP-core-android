@@ -11,6 +11,7 @@ import android.content.Intent
 import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
+import androidx.work.PeriodicWorkRequest.Companion.MIN_PERIODIC_INTERVAL_MILLIS
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -157,7 +158,6 @@ class LampForegroundService : Service(),
      * Send analytics data from db to server.
      */
     private fun syncAnalyticsData() {
-        DebugLogs.writeToFile("Send analytics data from db to server")
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
@@ -224,13 +224,14 @@ class LampForegroundService : Service(),
                 invokeAddSensorData(sensorEventDataList, false)
             else {
                 try {
-                    val dbList =
-                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                    if (dbList.isNotEmpty()) {
+                    val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    val anayticsRowCount = oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
+                    if (anayticsRowCount>0) {
                         AppState.session.lastAnalyticsTimestamp =
                             AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
                         syncAnalyticsData()
                     }
+
                 }catch (e:Exception){
                     DebugLogs.writeToFile("${e.message}")
                 }
@@ -281,7 +282,7 @@ class LampForegroundService : Service(),
         workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
         val periodicWork =
             PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
-                15 * 60 * 1000L, TimeUnit.MILLISECONDS
+                MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS
             )
                 .addTag(SYNC_WORK_MANAGER_TAG)
                 .build()
@@ -747,6 +748,7 @@ class LampForegroundService : Service(),
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
                 trackSingleEvent("API_Send_${sensorEventDataList.size}")
+                DebugLogs.writeToFile("API_Send from foreground service${sensorEventDataList.size}")
                 val basic = "Basic ${
                     Utils.toBase64(
                         AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(

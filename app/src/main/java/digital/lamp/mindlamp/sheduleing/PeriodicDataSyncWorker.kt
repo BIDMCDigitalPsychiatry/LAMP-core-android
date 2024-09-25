@@ -117,9 +117,9 @@ class PeriodicDataSyncWorker(
                 try {
                     LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
 
-                    val dbList =
-                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                    if (dbList.isNotEmpty()) {
+                    //val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    val anayticsRowCount = oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
+                    if (anayticsRowCount>0) {
                         LampLog.e("Sensor PeriodicDataSyncWorker: dbList is not empty")
                         val analytics =
                             oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
@@ -154,8 +154,7 @@ class PeriodicDataSyncWorker(
         )
             return
         if (NetworkUtils.isNetworkAvailable(context) && NetworkUtils.getBatteryPercentage(context) > 15) {
-            DebugLogs.writeToFile("API Send : ${sensorEventDataList.size}")
-            trackSingleEvent("API_Send_${sensorEventDataList.size}")
+            trackSingleEvent("API_Send ${sensorEventDataList.size}")
 
             val basic = "Basic ${
                 Utils.toBase64(
