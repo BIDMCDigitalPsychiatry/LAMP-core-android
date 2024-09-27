@@ -1412,7 +1412,7 @@ class HomeActivity : AppCompatActivity() {
                     } catch (e: ClientException) {
                         LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
-                            showApiErrorAlert(getString(R.string.user_not_found), e.statusCode)
+                            showApiErrorAlert(getString(R.string.something_went_wrong), e.statusCode)
                         }
 
 

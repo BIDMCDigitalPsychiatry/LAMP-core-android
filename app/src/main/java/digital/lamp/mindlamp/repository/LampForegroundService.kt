@@ -157,7 +157,6 @@ class LampForegroundService : Service(),
      * Send analytics data from db to server.
      */
     private fun syncAnalyticsData() {
-        DebugLogs.writeToFile("Send analytics data from db to server")
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
@@ -204,7 +203,6 @@ class LampForegroundService : Service(),
                             googleHealthConnectData
                         )
                         LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
-                        DebugLogs.writeToFile("Google Health connect sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
                     } else {
                         sensorEventDataList.add(
                             sensorEvent
@@ -516,7 +514,6 @@ class LampForegroundService : Service(),
                     }
                     11->{
                         if (AppState.session.isGoogleHealthConnectConnected) {
-                            DebugLogs.writeToFile("Health connect invoked")
                             GoogleHealthConnect(applicationContext,this@LampForegroundService,sensorSpecList)
                         }
                     }
@@ -620,7 +617,7 @@ class LampForegroundService : Service(),
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
                             mainIntent.putExtra(
                                 "message",
-                                getString(digital.lamp.mindlamp.R.string.user_not_found)
+                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
                             )
                             mainIntent.putExtra("code", e.statusCode)
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -779,7 +776,7 @@ class LampForegroundService : Service(),
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra(
                             "message",
-                            getString(digital.lamp.mindlamp.R.string.user_not_found)
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
                         )
                         mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1224,7 +1221,7 @@ class LampForegroundService : Service(),
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra(
                             "message",
-                            getString(digital.lamp.mindlamp.R.string.user_not_found)
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
                         )
                         mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1505,7 +1502,6 @@ class LampForegroundService : Service(),
     override fun getGoogleHealthConnect(sensorEventData: ArrayList<SensorEvent>) {
         val gson = GsonBuilder().serializeNulls().create()
         LampLog.e("Google Health connect 1: ${gson.toJson(sensorEventData)}")
-        DebugLogs.writeToFile("Google Health connect 1: ${gson.toJson(sensorEventData)}")
 
         val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
         GlobalScope.async {

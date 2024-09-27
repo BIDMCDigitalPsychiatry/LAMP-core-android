@@ -14,7 +14,7 @@ internal object AppConstants {
     const val NOTIFICATION_ACTIVITY = "lamp_activity"
     const val NOTIFICATION_ID = 101
     const val INITIAL_TRIGGER = 120000L //30 seconds
-    const val ALARM_INTERVAL = /*300000L*/ 600000L //10 Minutes
+    const val ALARM_INTERVAL = 300000L/* 600000L*/ //10 Minutes
     const val SYNC_TIME_STAMP_INTERVAL = 300000L//5 mins
     const val DAY_INTERVAL = 86400000L //24 Hours
     const val SYNC_SENSOR_SPEC_INTERVAL = 1 * 60 * 60 *1000L// 1hour
