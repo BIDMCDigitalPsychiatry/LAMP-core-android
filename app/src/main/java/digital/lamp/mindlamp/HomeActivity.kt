@@ -24,7 +24,6 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -59,10 +58,6 @@ import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.fitness.FitnessOptions
-import com.google.android.gms.fitness.data.DataType
-import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -111,7 +106,6 @@ import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.lang.reflect.Field
@@ -200,7 +194,7 @@ class HomeActivity : AppCompatActivity() {
                     if (url == BuildConfig.BASE_URL_WEB){
                         updateStreak(0,0)
                     }
-                    if (AppState.session.isLoggedIn && !activityEventUpdated){
+                    if (AppState.session.isLoggedIn && !activityEventUpdated && url.contains("activity")){
                         initialCallForActivityStreak()
                     }
 
