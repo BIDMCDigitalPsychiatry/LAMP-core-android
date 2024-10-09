@@ -746,7 +746,6 @@ class LampForegroundService : Service(),
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
                 trackSingleEvent("API_Send_${sensorEventDataList.size}")
-                DebugLogs.writeToFile("API_Send from foreground service${sensorEventDataList.size}")
                 val basic = "Basic ${
                     Utils.toBase64(
                         AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
