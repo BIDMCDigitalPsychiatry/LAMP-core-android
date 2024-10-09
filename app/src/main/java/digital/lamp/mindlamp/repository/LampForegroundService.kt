@@ -11,6 +11,7 @@ import android.content.Intent
 import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
+import androidx.work.PeriodicWorkRequest.Companion.MIN_PERIODIC_INTERVAL_MILLIS
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -157,7 +158,6 @@ class LampForegroundService : Service(),
      * Send analytics data from db to server.
      */
     private fun syncAnalyticsData() {
-        DebugLogs.writeToFile("Send analytics data from db to server")
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
@@ -204,7 +204,6 @@ class LampForegroundService : Service(),
                             googleHealthConnectData
                         )
                         LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
-                        DebugLogs.writeToFile("Google Health connect sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
                     } else {
                         sensorEventDataList.add(
                             sensorEvent
@@ -224,13 +223,14 @@ class LampForegroundService : Service(),
                 invokeAddSensorData(sensorEventDataList, false)
             else {
                 try {
-                    val dbList =
-                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                    if (dbList.isNotEmpty()) {
+                    val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    val anayticsRowCount = oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
+                    if (anayticsRowCount>0) {
                         AppState.session.lastAnalyticsTimestamp =
                             AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
                         syncAnalyticsData()
                     }
+
                 }catch (e:Exception){
                     DebugLogs.writeToFile("${e.message}")
                 }
@@ -281,7 +281,7 @@ class LampForegroundService : Service(),
         workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
         val periodicWork =
             PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
-                15 * 60 * 1000L, TimeUnit.MILLISECONDS
+                MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS
             )
                 .addTag(SYNC_WORK_MANAGER_TAG)
                 .build()
@@ -516,7 +516,6 @@ class LampForegroundService : Service(),
                     }
                     11->{
                         if (AppState.session.isGoogleHealthConnectConnected) {
-                            DebugLogs.writeToFile("Health connect invoked")
                             GoogleHealthConnect(applicationContext,this@LampForegroundService,sensorSpecList)
                         }
                     }
@@ -620,7 +619,7 @@ class LampForegroundService : Service(),
                                 Intent(this@LampForegroundService, ExceptionActivity::class.java)
                             mainIntent.putExtra(
                                 "message",
-                                getString(digital.lamp.mindlamp.R.string.user_not_found)
+                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
                             )
                             mainIntent.putExtra("code", e.statusCode)
                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -779,7 +778,7 @@ class LampForegroundService : Service(),
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra(
                             "message",
-                            getString(digital.lamp.mindlamp.R.string.user_not_found)
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
                         )
                         mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1224,7 +1223,7 @@ class LampForegroundService : Service(),
                             Intent(this@LampForegroundService, ExceptionActivity::class.java)
                         mainIntent.putExtra(
                             "message",
-                            getString(digital.lamp.mindlamp.R.string.user_not_found)
+                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
                         )
                         mainIntent.putExtra("code", e.statusCode)
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1505,7 +1504,6 @@ class LampForegroundService : Service(),
     override fun getGoogleHealthConnect(sensorEventData: ArrayList<SensorEvent>) {
         val gson = GsonBuilder().serializeNulls().create()
         LampLog.e("Google Health connect 1: ${gson.toJson(sensorEventData)}")
-        DebugLogs.writeToFile("Google Health connect 1: ${gson.toJson(sensorEventData)}")
 
         val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
         GlobalScope.async {

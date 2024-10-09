@@ -7,7 +7,6 @@ import digital.lamp.lamp_kotlin.lamp_core.models.DimensionData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.lamp_kotlin.sensor_core.WiFi
-import digital.lamp.mindlamp.utils.DebugLogs
 import digital.lamp.mindlamp.utils.LampLog
 import digital.lamp.mindlamp.utils.Sensors
 
@@ -60,7 +59,6 @@ class WifiData constructor(sensorListener: SensorListener, context: Context, fre
                             )
 
                         Log.e("Bluetooth :"," ${data.address}")
-                        DebugLogs.writeToFile("Bluetooth : ${data.address}")
 
                         sensorListener.getWifiData(sensorEventData)
 
@@ -97,8 +95,6 @@ class WifiData constructor(sensorListener: SensorListener, context: Context, fre
                             )
 
                         LampLog.e("Wifi : ${data.address}")
-                        DebugLogs.writeToFile("Wifi : ${data.address}")
-
                         sensorListener.getWifiData(sensorEventData)
 
                     }

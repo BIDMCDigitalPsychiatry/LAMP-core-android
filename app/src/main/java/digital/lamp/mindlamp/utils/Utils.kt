@@ -5,18 +5,14 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Context.ACTIVITY_SERVICE
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Environment
 import android.os.PowerManager
 import android.os.StatFs
 import android.util.Base64
 import androidx.core.app.ActivityCompat
-import androidx.core.location.LocationManagerCompat
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
 import java.io.File
@@ -212,7 +208,7 @@ object Utils {
                 return context.getString(R.string.you_dont_have_access)
             }
             404 -> {
-                return context.getString(R.string.user_not_found_here)
+                return context.getString(R.string.something_went_wrong)
             }
             408 -> {
                 return context.getString(R.string.request_timeout)
