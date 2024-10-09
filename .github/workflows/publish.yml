@@ -63,7 +63,7 @@ jobs:
           releaseDirectory: app/build/outputs/bundle/prodRelease
           signingKeyBase64: "${{secrets.SIGNING_KEY}}"
       -
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: mindLAMP
           path: app/build/outputs/bundle/prodRelease/app-prod-release.aab
@@ -123,7 +123,7 @@ jobs:
           releaseDirectory: app/build/outputs/bundle/qaRelease
           signingKeyBase64: "${{secrets.SIGNING_KEY}}"
       -
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: mindLAMP
           path: app/build/outputs/bundle/qaRelease/app-qa-release.aab
