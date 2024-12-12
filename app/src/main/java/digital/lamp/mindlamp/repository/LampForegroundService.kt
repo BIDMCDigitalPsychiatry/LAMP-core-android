@@ -8,6 +8,7 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.net.TrafficStats
 import android.os.*
 import androidx.work.*
@@ -112,21 +113,30 @@ class LampForegroundService : Service(),
         isActivitySchedule = intent?.extras?.getBoolean("set_activity_schedule") ?: false
         localNotificationId = intent?.extras?.getInt("notification_id") ?: 0
         if (!isAlarm && !isActivitySchedule && localNotificationId == 0) {
-            // Create and show the notification to make the service run in the foreground.
-            val notification =
-                LampNotificationManager.showNotification(
-                    this,
-                    getString(digital.lamp.mindlamp.R.string.active_data_collection)
-                )
+            try {
+                // Create and show the notification to make the service run in the foreground.
+                val notification =
+                    LampNotificationManager.showNotification(
+                        this,
+                        getString(digital.lamp.mindlamp.R.string.active_data_collection)
+                    )
 
-            startForeground(1010, notification)
-            setAlarmManager()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(1010, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+                } else {
+                    startForeground(1010, notification)
+                }
 
-            invokeSensorSpecData(true)
-            invokeActivitySchedules()
+                setAlarmManager()
 
-            setAlarmManagerForEvery24Hours()
-            setPeriodicSyncWorker()
+                invokeSensorSpecData(true)
+                invokeActivitySchedules()
+
+                setAlarmManagerForEvery24Hours()
+                setPeriodicSyncWorker()
+            }catch (e:Exception){
+                DebugLogs.writeToFile("foreground exception "+e.message)
+            }
 
         } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_DAILY) {
             LampLog.e(TAG, "Call Activity Schedule for every 24 hours")

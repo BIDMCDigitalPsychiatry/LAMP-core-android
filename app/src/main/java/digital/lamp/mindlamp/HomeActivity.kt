@@ -30,6 +30,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -756,9 +757,20 @@ class HomeActivity : AppCompatActivity() {
                 checkBackgroundLocationPermissionAPI30()
             }
             PERMISSION_REQUEST_CODE -> {
-                val specList = mSensorSpecsList.map { it.spec }
-                if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
-                    checkLocationAndBluetoothPermission()
+                val allPermissionsGranted = grantResults.isNotEmpty() &&
+                        grantResults.all { it == PackageManager.PERMISSION_GRANTED }
+                if (!allPermissionsGranted) {
+                    // Handle the case where permissions are denied.
+                }else{
+                    // Check if Bluetooth is enabled
+                    val bluetoothManager =
+                        getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                    val bluetoothAdapter = bluetoothManager.adapter
+                    if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+                        requestBluetooth()
+                    } else {
+                        checkHealthConnectSensorsAdded()
+                    }
                 }
             }
             AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS -> {
@@ -805,7 +817,6 @@ class HomeActivity : AppCompatActivity() {
     private fun checkLocation() {
         if (checkLocationPermission()) {
             AppState.session.isLocationPermissionAllowed = true
-            //Fit SignIn Auth
             checkHealthConnectSensorsAdded()
         } else {
             AppState.session.isLocationPermissionAllowed = false
@@ -816,7 +827,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * check google fit sensors
      */
-    private fun checkHealthConnectSensorsAdded() {
+    private fun checkHealthConnectSensorsAdded()  {
         val specList = mSensorSpecsList.map { it.spec }
 
         if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name) ||
@@ -868,7 +879,7 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
-    fun checkPermissionsAndRun(client: HealthConnectClient) {
+    private fun checkPermissionsAndRun(client: HealthConnectClient) {
         lifecycleScope.launch {
             val granted = client.permissionController.getGrantedPermissions()
             if (granted.containsAll(PERMISSIONS)) {
@@ -1088,6 +1099,9 @@ class HomeActivity : AppCompatActivity() {
             }else{
                 AppState.session.isGoogleHealthConnectConnected = false
                 checkPermissionsAndRun(healthConnectClient)
+                if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                    startLampService()
+                }
             }
         }
 
@@ -1493,6 +1507,50 @@ class HomeActivity : AppCompatActivity() {
             requestPermissions()
         }
     }
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun requestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (!permissionChecker.hasWifiPermissions()) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_WIFI_STATE)
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        if (!permissionChecker.hasBluetoothPermissions()) {
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH)
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
+                permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+    private fun requestBluetoothPermissions() {
+        val permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        val ungrantedPermissions = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+        if (ungrantedPermissions.isNotEmpty()) {
+            runOnUiThread {
+                permissionLauncher.launch(ungrantedPermissions.toTypedArray())
+            }
+        }else{
+            checkHealthConnectSensorsAdded()
+        }
+    }
 
     private fun requestLocation() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
@@ -1546,32 +1604,18 @@ class HomeActivity : AppCompatActivity() {
         return permissionChecker.hasWifiPermissions() && permissionChecker.hasBluetoothPermissions()
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    private fun requestPermissions() {
-        val permissionsToRequest = mutableListOf<String>()
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val allGranted = permissions.entries.all { it.value }
+            if (allGranted) {
+                // All permissions granted
+                checkHealthConnectSensorsAdded()
 
-        if (!permissionChecker.hasWifiPermissions()) {
-            permissionsToRequest.add(Manifest.permission.ACCESS_WIFI_STATE)
-            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
+            } else {
+                // Some permissions denied
 
-        if (!permissionChecker.hasBluetoothPermissions()) {
-            permissionsToRequest.add(Manifest.permission.BLUETOOTH)
-            permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN)
-                permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT)
             }
         }
-
-        if (permissionsToRequest.isNotEmpty()) {
-            ActivityCompat.requestPermissions(
-                this,
-                permissionsToRequest.toTypedArray(),
-                PERMISSION_REQUEST_CODE
-            )
-        }
-    }
 
 
     /**
