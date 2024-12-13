@@ -102,7 +102,6 @@ android {
 
 dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
-   // implementation 'com.github.anrwatchdog:anrwatchdog:1.4.0'
    // implementation project(":lamp_kotlin")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
@@ -116,15 +115,11 @@ dependencies {
 
 
 //    // Retrofit
-//    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-//    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
-//    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
 
     //Coroutines
-   //  implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation("androidx.lifecycle:lifecycle-process:$lifecycle_version")
 
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
@@ -153,11 +148,6 @@ dependencies {
 
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
-
-
-  //  implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:master-SNAPSHOT'
-
-//    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:Notification-SNAPSHOT'
     implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2024.08.27'
 
     //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'

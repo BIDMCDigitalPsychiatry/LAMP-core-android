@@ -51,6 +51,7 @@
     <uses-permission android:name="android.permission.health.READ_STEPS_CADENCE" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_HEALTH"
         android:maxSdkVersion="34" />
@@ -169,7 +170,7 @@
             android:name=".repository.LampForegroundService"
             android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="health">
+            android:foregroundServiceType="dataSync">
 
         </service>
 
