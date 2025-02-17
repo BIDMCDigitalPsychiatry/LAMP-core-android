@@ -66,6 +66,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
 import dagger.hilt.android.AndroidEntryPoint
 import digital.lamp.lamp_kotlin.lamp_core.apis.ActivityEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorAPI
@@ -109,6 +110,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.io.StringReader
 import java.lang.reflect.Field
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -322,7 +324,7 @@ class HomeActivity : AppCompatActivity() {
                         participantId = AppState.session.userId,
                         from = getMonthsFromNowInMillies(),
                         origin = null,
-                        to = null,
+                        to = System.currentTimeMillis(),
                         transform = null,
                         basic = basic
                     )
@@ -330,7 +332,7 @@ class HomeActivity : AppCompatActivity() {
                 try {
                     val gson = Gson()
                     val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
-                    val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
+                    val dataWrapper: DataWrapper = gson.fromJson(JsonReader(StringReader(state as String?)), dataWrapperType)
                     if (!dataWrapper.data.isNullOrEmpty()) {
                         val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
                         updateStreak(currentStreak, longestStreak)
