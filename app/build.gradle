@@ -101,7 +101,7 @@ android {
 }
 
 dependencies {
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+   // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
    // implementation project(":lamp_kotlin")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
@@ -148,7 +148,7 @@ dependencies {
 
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2024.08.27'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2025.02.27'
 
     //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'
     implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'
