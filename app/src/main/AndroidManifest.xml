@@ -54,13 +54,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_HEALTH"
-        android:maxSdkVersion="34" />
+          />
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
-        android:maxSdkVersion="34" />
+          />
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
-        android:maxSdkVersion="34" />
+         />
 
     <!-- Check if Health Connect is installed -->
     <queries>
