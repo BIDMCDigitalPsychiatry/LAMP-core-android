@@ -134,5 +134,5 @@ jobs:
           packageName: digital.lamp.mindlamp
           releaseFiles: app/build/outputs/bundle/qaRelease/app-qa-release.aab
           track: beta
-          changesNotSentForReview : true
+  
           status: completed
