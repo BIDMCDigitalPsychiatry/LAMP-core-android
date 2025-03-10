@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">mindLAMP</string>
     <string name="channel_description">Recopilación activa de datos de MindLamp</string>
-    <string name="local_notification_text">Esta aplicación recopila datos de ubicación para uso clínico y estudios de investigación incluso cuando la aplicación está cerrada o no está en uso. Sus datos cumplen con la HIPAA y están anónimos. Se almacenan en un formato seguro y encriptado al que solo pueden acceder su médico y/o los coordinadores del estudio de investigación.</string>
+    <string name="local_notification_text">Tienes una actividad mindLAMP esperándote: %s</string>
     <string name="notification_action">Abrir aplicación</string>
     <string name="location_status_background_allowed">Permitir todo el tiempo</string>
     <string name="location_status_allowed">Permitir solo mientras se usa la aplicación</string>
