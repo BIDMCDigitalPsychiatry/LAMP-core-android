@@ -34,4 +34,7 @@
     <string name="back">Indietro</string>
     <string name="retry">Riprova</string>
     <string name="app_disclosure">Questa app raccoglie dati sulla posizione per uso clinico e studi di ricerca anche quando l\'app è chiusa o non in uso. I tuoi dati sono conformi all\'HIPAA e anonimizzati. Sono archiviati in un formato protetto e crittografato accessibile solo al tuo medico e/o ai coordinatori degli studi di ricerca.</string>
+    <string name="battery_optimization_info">mindLAMP richiede un accesso illimitato alla batteria per raccogliere dati in modo efficace. Disattiva l\'ottimizzazione della batteria affinché l\'app funzioni correttamente.</string>
+    <string name="location_permission_info_for_wifi_access">Abilita la posizione del tuo dispositivo per raccogliere in modo efficace i dati Wi-Fi.</string>
+    <string name="hc_not_installed_description">Health Connect è supportato su questo dispositivo, ma non è installato oppure richiede un aggiornamento.</string>
 </resources>
