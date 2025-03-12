@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="channel_description">माइंडलैम्प सक्रिय डेटा संग्रह</string>
+    <string name="app_disclosure">यह ऐप क्लिनिकल उपयोग और शोध अध्ययनों के लिए स्थान डेटा एकत्र करता है, भले ही ऐप बंद हो या उपयोग में न हो। आपका डेटा HIPAA-अनुपालन और पहचान रहित है। यह एक सुरक्षित, एन्क्रिप्टेड प्रारूप में संग्रहीत है जो केवल आपके चिकित्सक और/या शोध अध्ययन समन्वयकों के लिए सुलभ है।</string>
+    <string name="local_notification_text">आपके लिए एक mindLAMP गतिविधि प्रतीक्षा कर रही है:%s</string>
+    <string name="notification_action">ऐप खोलें</string>
+    <string name="location_status_background_allowed">हर समय अनुमति दें</string>
+    <string name="location_status_allowed">केवल ऐप का उपयोग करते समय ही अनुमति दें</string>
+    <string name="location_status_denied">अस्वीकृत</string>
+    <string name="location_permission">स्थान की अनुमति आवश्यक</string>
+    <string name="ok">ठीक है</string>
+    <string name="gps_enable">आपके डिवाइस पर वर्तमान में स्थान सुविधा अक्षम है। कृपया इसे सक्षम करें।</string>
+    <string name="unexpected_error">कुछ गलत हो गया है। कृपया बाद में दोबारा प्रयास करें।</string>
+    <string name="txt_no_internet">आप इंटरनेट से कनेक्ट नहीं हैं.</string>
+    <string name="txt_unable_to_connect">सर्वर से कनेक्ट करने में असमर्थ। कृपया बाद में पुनः प्रयास करें।</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">इस ऐप के लिए सेवा अनुमतियाँ आवश्यक हैं</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="server_unreachable">सर्वर पहुंच से बाहर है</string>
+    <string name="user_not_found">उपयोगकर्ता नहीं मिला.</string>
+    <string name="something_went_wrong">कुछ गलत हो गया है। कृपया बाद में दोबारा प्रयास करें।</string>
+    <string name="something_went_wrong_on_server">सर्वर पर कुछ गड़बड़ी हुई है। कृपया बाद में पुनः प्रयास करें।</string>
+    <string name="invalid_request_please_try_again">अनुरोध अमान्य है। कृपया बाद में पुनः प्रयास करें</string>
+    <string name="you_are_not_authorized">तुम अधिकृत नहीं हो।</string>
+    <string name="you_dont_have_access">आपके पास पहुंच नहीं है.</string>
+    <string name="user_not_found_here">उपयोगकर्ता नहीं मिला.</string>
+    <string name="request_timeout">ब्रेक का अनुरोध।</string>
+    <string name="bad_gateway">खराब गेटवे।</string>
+    <string name="service_not_available">सेवा उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।</string>
+    <string name="active_data_collection">माइंडलैम्प सक्रिय डेटा संग्रह</string>
+    <string name="server_un_rechable">सर्वर पहुंच से बाहर है</string>
+    <string name="you_are_not_connected">आप इंटरनेट से कनेक्ट नहीं हैं.</string>
+    <string name="server_not_reachable">सर्वर पहुंच से बाहर है</string>
+    <string name="mindlamp_service">माइंडलैम्प सेवा</string>
+    <string name="back">पीछे</string>
+    <string name="retry">पुन: प्रयास करें</string>
+    <string name="battery_optimization_info">mindLAMP को प्रभावी ढंग से डेटा एकत्र करने के लिए अप्रतिबंधित बैटरी एक्सेस की आवश्यकता होती है। ऐप को ठीक से काम करने के लिए कृपया बैटरी ऑप्टिमाइज़ेशन अक्षम करें।</string>
+    <string name="location_permission_info_for_wifi_access">अपने डिवाइस के स्थान को वाई-फाई डेटा को प्रभावी ढंग से एकत्रित करने में सक्षम करें।</string>
+    <string name="hc_not_installed_description">इस डिवाइस पर हेल्थ कनेक्ट समर्थित है, लेकिन यह या तो इंस्टॉल नहीं है या इसे अपडेट करने की आवश्यकता है।</string>
+</resources>
