@@ -10,6 +10,7 @@
     <string name="location_status_denied">अस्वीकृत</string>
     <string name="location_permission">स्थान की अनुमति आवश्यक</string>
     <string name="ok">ठीक है</string>
+    <string name="hc_install">इंस्टॉल</string>
     <string name="gps_enable">आपके डिवाइस पर वर्तमान में स्थान सुविधा अक्षम है। कृपया इसे सक्षम करें।</string>
     <string name="unexpected_error">कुछ गलत हो गया है। कृपया बाद में दोबारा प्रयास करें।</string>
     <string name="txt_no_internet">आप इंटरनेट से कनेक्ट नहीं हैं.</string>

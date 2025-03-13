@@ -9,6 +9,7 @@
     <string name="location_status_denied">Negato</string>
     <string name="location_permission">Permesso di posizione necessario</string>
     <string name="ok">OK</string>
+    <string name="hc_install">Installa</string>
     <string name="gps_enable">La posizione è attualmente disabilitata sul tuo dispositivo. Abilitala.</string>
     <string name="unexpected_error">Qualcosa è andato storto. Riprova più tardi.</string>
     <string name="txt_no_internet">Non sei connesso a Internet.</string>
