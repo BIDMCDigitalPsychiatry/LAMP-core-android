@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">mindLAMP</string>
+    <string name="channel_description">Recopilación activa de datos de MindLamp</string>
+    <string name="local_notification_text">Tienes una actividad mindLAMP esperándote: %s</string>
+    <string name="notification_action">Abrir aplicación</string>
+    <string name="location_status_background_allowed">Permitir todo el tiempo</string>
+    <string name="location_status_allowed">Permitir solo mientras se usa la aplicación</string>
+    <string name="location_status_denied">Denegado</string>
+    <string name="location_permission">Se necesita permiso de ubicación</string>
+    <string name="ok">DE ACUERDO</string>
+    <string name="gps_enable">La ubicación está actualmente deshabilitada en tu dispositivo. Habilítala.</string>
+    <string name="unexpected_error">Algo salió mal. Inténtalo de nuevo más tarde.</string>
+    <string name="txt_no_internet">No estás conectado a Internet.</string>
+    <string name="txt_unable_to_connect">No se puede conectar al servidor. Inténtalo de nuevo más tarde.</string>
+    <string name="dialog_message_service_permissions_are_required_for_this_app">Se requieren permisos de servicio para esta aplicación</string>
+    <string name="cancel">Cancelar</string>
+    <string name="server_unreachable">El servidor no está disponible</string>
+    <string name="user_not_found">Usuario no encontrado.</string>
+    <string name="something_went_wrong">Algo salió mal. Inténtalo de nuevo más tarde.</string>
+    <string name="something_went_wrong_on_server">Algo salió mal en el servidor. Inténtalo de nuevo más tarde.</string>
+    <string name="invalid_request_please_try_again">Solicitud no válida. Inténtelo de nuevo más tarde.</string>
+    <string name="you_are_not_authorized">No estás autorizado.</string>
+    <string name="you_dont_have_access">No tienes acceso.</string>
+    <string name="user_not_found_here">Usuario no encontrado.</string>
+    <string name="request_timeout">Tiempo de espera de solicitud.</string>
+    <string name="bad_gateway">Puerta de enlace defectuosa.</string>
+    <string name="service_not_available">El servicio no está disponible. Inténtalo de nuevo más tarde.</string>
+    <string name="active_data_collection">Recopilación activa de datos de MindLamp</string>
+    <string name="server_un_rechable">El servidor no está disponible</string>
+    <string name="you_are_not_connected">No estás conectado a Internet.</string>
+    <string name="server_not_reachable">El servidor no está disponible</string>
+    <string name="mindlamp_service">Servicio MindLamp</string>
+    <string name="back">Atrás</string>
+    <string name="retry">Rever</string>
+    <string name="app_disclosure">Esta aplicación recopila datos de ubicación para uso clínico y estudios de investigación incluso cuando la aplicación está cerrada o no está en uso. Sus datos cumplen con la HIPAA y están anónimos. Se almacenan en un formato seguro y encriptado al que solo pueden acceder su médico y/o los coordinadores del estudio de investigación.</string>
+    <string name="battery_optimization_info">mindLAMP requiere acceso ilimitado a la batería para recopilar datos de manera eficaz. Desactive la optimización de la batería para que la aplicación funcione correctamente.</string>
+    <string name="location_permission_info_for_wifi_access">Habilite la ubicación de su dispositivo para recopilar datos de Wi-Fi de manera efectiva.</string>
+    <string name="hc_not_installed_description">Health Connect es compatible con este dispositivo, pero no está instalado o requiere una actualización.</string>
+</resources>
