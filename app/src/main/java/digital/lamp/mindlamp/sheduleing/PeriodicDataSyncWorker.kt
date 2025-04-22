@@ -155,6 +155,7 @@ class PeriodicDataSyncWorker(
             return
         if (NetworkUtils.isNetworkAvailable(context) && NetworkUtils.getBatteryPercentage(context) > 15) {
             trackSingleEvent("API_Send ${sensorEventDataList.size}")
+            DebugLogs.writeToFile("API_Send ${sensorEventDataList.size}")
 
             val basic = "Basic ${
                 Utils.toBase64(

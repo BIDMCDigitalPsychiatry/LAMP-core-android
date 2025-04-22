@@ -578,7 +578,6 @@ class LampForegroundService : Service(),
                 GlobalScope.launch(Dispatchers.IO) {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
                     try {
-
                         val state = SensorAPI(AppState.session.serverAddress).sensorAll(
                             AppState.session.userId,
                             basic

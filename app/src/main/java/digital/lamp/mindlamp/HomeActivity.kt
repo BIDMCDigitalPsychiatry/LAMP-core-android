@@ -59,6 +59,13 @@ import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -76,6 +83,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
+import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -89,7 +97,9 @@ import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
+import digital.lamp.mindlamp.sheduleing.PeriodicDataSyncWorker
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
+import digital.lamp.mindlamp.sheduleing.ScheduleConstants
 import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
 import digital.lamp.mindlamp.utils.*
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
@@ -104,6 +114,7 @@ import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
+import digital.lamp.mindlamp.workers.LampWorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -133,6 +144,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
     private var reloadWebpageTimer: Timer? = null
     private var wepPageLoadingTimerIsRunning = false
+    private lateinit var workManager: WorkManager
 
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
@@ -261,6 +273,7 @@ class HomeActivity : AppCompatActivity() {
 
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        workManager = WorkManager.getInstance(App.app)
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
         oActivityDao = AppDatabase.getInstance(this).activityDao()
@@ -290,10 +303,10 @@ class HomeActivity : AppCompatActivity() {
         } catch (e: java.lang.Exception) {
             DebugLogs.writeToFile("Exception: ${e.message}")
         }
-        if (!AppState.session.showDisclosureAlert) {
+       /* if (!AppState.session.showDisclosureAlert) {
             val batteryOptimizationHelper = BatteryOptimizationHelper(this)
             batteryOptimizationHelper.checkBatteryOptimization()
-        }
+        }*/
         val netwokStatus = NetworkConnectionLiveData(this)
         netwokStatus.observe(this) {
             if (it) {
@@ -845,7 +858,7 @@ class HomeActivity : AppCompatActivity() {
         } else {
             checkGPSPermission()
             if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                startLampService()
+                startLampDataCollection()
             }
         }
 
@@ -858,7 +871,7 @@ class HomeActivity : AppCompatActivity() {
                 viewModel.permissionsGranted.value = true
                 AppState.session.isGoogleHealthConnectConnected = true
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
+                    startLampDataCollection()
                 }
             } else {
                 try {
@@ -887,7 +900,7 @@ class HomeActivity : AppCompatActivity() {
                 viewModel.permissionsGranted.value = true
                 AppState.session.isGoogleHealthConnectConnected = true
                 if (!isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
+                    startLampDataCollection()
                 }
             } else {
                 AppState.session.isGoogleHealthConnectConnected = false
@@ -912,16 +925,45 @@ class HomeActivity : AppCompatActivity() {
     /**
      * to start service
      */
-    private fun startLampService() {
-        val batteryOptimizationHelper = BatteryOptimizationHelper(this)
-        batteryOptimizationHelper.checkBatteryOptimization()
-        val serviceIntent = Intent(this, LampForegroundService::class.java).apply {
-            putExtra("inputExtra", "Foreground Service Example in Android")
-            putExtra("set_alarm", false)
-            putExtra("set_activity_schedule", false)
-            putExtra("notification_id", 0)
-        }
-        ContextCompat.startForegroundService(this, serviceIntent)
+    private fun startLampDataCollection() {
+        val request = PeriodicWorkRequestBuilder<LampWorkManager>(
+            15, TimeUnit.MINUTES // ⏱ repeat interval
+        )
+            .setInputData(
+                workDataOf("initialCall" to true)
+            )
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED) // 📶 requires internet
+                    .setRequiresBatteryNotLow(true) // 🔋 skip if battery low
+                    .build()
+            )
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "LampWorkManager", // unique name to avoid duplicates
+            ExistingPeriodicWorkPolicy.KEEP, // KEEP or REPLACE
+            request
+        )
+
+        setPeriodicSyncWorker()
+
+    }
+    private fun setPeriodicSyncWorker() {
+        workManager.cancelAllWorkByTag(ScheduleConstants.SYNC_WORK_MANAGER_TAG)
+        val periodicWork =
+            PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
+                PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS
+            )
+                .addTag(ScheduleConstants.SYNC_WORK_MANAGER_TAG)
+                .build()
+
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(
+                ScheduleConstants.SYNC_DATA_WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                periodicWork
+            )
     }
 
     /**
@@ -1094,13 +1136,13 @@ class HomeActivity : AppCompatActivity() {
             if (viewModel.permissionsGranted.value == true){
                 AppState.session.isGoogleHealthConnectConnected = true
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
+                    startLampDataCollection()
                 }
             }else{
                 AppState.session.isGoogleHealthConnectConnected = false
                 checkPermissionsAndRun(healthConnectClient)
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
+                    startLampDataCollection()
                 }
             }
         }
@@ -1187,13 +1229,13 @@ class HomeActivity : AppCompatActivity() {
                 else {
                     AppState.session.isGoogleHealthConnectConnected = true
                     if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                        startLampService()
+                        startLampDataCollection()
                     }
                 }
             }
             else -> {
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
-                    startLampService()
+                    startLampDataCollection()
                 }
             }
         }
