@@ -1658,7 +1658,7 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing && isApiAlertDialogShown) {
+        if (!isFinishing && !isApiAlertDialogShown) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 isApiAlertDialogShown = false
                 if (errorCode == 404) {
