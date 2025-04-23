@@ -607,7 +607,7 @@ class HomeActivity : AppCompatActivity() {
             binding.webView.loadUrl(url)
         }
 
-        if (!isPageLoadedComplete && isRetryDialogShown)
+        if (!isPageLoadedComplete && !isRetryDialogShown)
             startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
         binding.webView.webViewClient = myWebViewClient
         binding.webView.webChromeClient = object : WebChromeClient() {
@@ -640,6 +640,7 @@ class HomeActivity : AppCompatActivity() {
                                         setMessage(errorMessage)
                                         setCancelable(false)
                                         setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                            isRetryDialogShown = false
                                             if (!isPageLoadedComplete) {
                                                 binding.webView.loadUrl("javascript:window.location.reload(true)")
                                             }
