@@ -108,61 +108,53 @@ class LampForegroundService : Service(),
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        try {
+            val notification = LampNotificationManager.showNotification(
+                this,
+                getString(digital.lamp.mindlamp.R.string.active_data_collection)
+            )
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(1010, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            } else {
+                startForeground(1010, notification)
+            }
+        } catch (e: Exception) {
+            DebugLogs.writeToFile("Foreground start exception: ${e.message}")
+            stopSelf() // fail gracefully
+            return START_NOT_STICKY
+        }
         isAlarm = intent?.extras?.getBoolean("set_alarm") ?: false
         isActivitySchedule = intent?.extras?.getBoolean("set_activity_schedule") ?: false
         localNotificationId = intent?.extras?.getInt("notification_id") ?: 0
-        if (!isAlarm && !isActivitySchedule && localNotificationId == 0) {
-            try {
-                // Create and show the notification to make the service run in the foreground.
-                val notification =
-                    LampNotificationManager.showNotification(
-                        this,
-                        getString(digital.lamp.mindlamp.R.string.active_data_collection)
-                    )
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    startForeground(1010, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-                } else {
-                    startForeground(1010, notification)
-                }
-
+        when {
+            !isAlarm && !isActivitySchedule && localNotificationId == 0 -> {
                 setAlarmManager()
-
                 invokeSensorSpecData(true)
                 invokeActivitySchedules()
-
                 setAlarmManagerForEvery24Hours()
                 setPeriodicSyncWorker()
-            }catch (e:Exception){
-                DebugLogs.writeToFile("foreground exception "+e.message)
             }
-
-        } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_DAILY) {
-            LampLog.e(TAG, "Call Activity Schedule for every 24 hours")
-            invokeActivitySchedules()
-
-        } else if (!isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_HOURLY) {
-            LampLog.e(TAG, "Call sensor spec every 1 hours")
-            DebugLogs.writeToFile("Call sensor spec every 1 hours")
-            invokeSensorSpecData()
-
-        } else if (!isAlarm && isActivitySchedule && localNotificationId != 0) {
-            LampLog.e(TAG, "Call for showing up the local notification")
-            LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification ")
-            invokeLocalNotification(localNotificationId)
-        } else {
-            //This will execute every 10 min if logged in
-            LampLog.e("Sensor : Trigger")
-            syncAnalyticsData()
-            //Fetch google fit data in 5 min interval
-            Lamp.stopLAMP(this)
-            collectSensorData()
+            !isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_DAILY -> {
+                invokeActivitySchedules()
+            }
+            !isAlarm && isActivitySchedule && localNotificationId == AppConstants.REPEAT_HOURLY -> {
+                invokeSensorSpecData()
+            }
+            !isAlarm && isActivitySchedule && localNotificationId != 0 -> {
+                invokeLocalNotification(localNotificationId)
+            }
+            else -> {
+                syncAnalyticsData()
+                Lamp.stopLAMP(this)
+                collectSensorData()
+            }
         }
-        // If the system kills the service, it will be restarted.
-        return START_STICKY
-    }
 
+        return START_STICKY
+
+    }
 
     /**
      * Send analytics data from db to server.
@@ -171,7 +163,8 @@ class LampForegroundService : Service(),
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
-        val googleHealthConnectSensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
+        val googleHealthConnectSensorEventDataList: ArrayList<SensorEvent> =
+            arrayListOf<SensorEvent>()
         googleHealthConnectSensorEventDataList.clear()
 
         val gson = GsonBuilder()
@@ -199,7 +192,7 @@ class LampForegroundService : Service(),
                     SensorEvent::class.java
                 )
 
-                sensorEvent?.sensor?.let {sensor->
+                sensorEvent?.sensor?.let { sensor ->
                     if (sensorEvent.sensor == Sensors.SLEEP.sensor_name || sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
                         sensorEvent.sensor == Sensors.STEPS.sensor_name || sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
                         sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name || sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name
@@ -233,15 +226,17 @@ class LampForegroundService : Service(),
                 invokeAddSensorData(sensorEventDataList, false)
             else {
                 try {
-                    val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                    val anayticsRowCount = oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
-                    if (anayticsRowCount>0) {
+                    val dbList =
+                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    val anayticsRowCount =
+                        oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
+                    if (anayticsRowCount > 0) {
                         AppState.session.lastAnalyticsTimestamp =
                             AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
                         syncAnalyticsData()
                     }
 
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     DebugLogs.writeToFile("${e.message}")
                 }
             }
@@ -289,10 +284,14 @@ class LampForegroundService : Service(),
      */
     private fun setPeriodicSyncWorker() {
         workManager.cancelAllWorkByTag(SYNC_WORK_MANAGER_TAG)
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED) // or .UNMETERED if you want Wi-Fi only
+            .build()
         val periodicWork =
             PeriodicWorkRequestBuilder<PeriodicDataSyncWorker>(
                 MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS
             )
+                .setConstraints(constraints)
                 .addTag(SYNC_WORK_MANAGER_TAG)
                 .build()
 
@@ -333,13 +332,13 @@ class LampForegroundService : Service(),
                             applicationContext, sensorSpecList
                         )*/
 
-                       /* if (AppState.session.isGoogleHealthConnectConnected) {
-                            GoogleHealthConnect(
-                                applicationContext,
-                                this@LampForegroundService,
-                                sensorSpecList
-                            )
-                        }*/
+                        /* if (AppState.session.isGoogleHealthConnectConnected) {
+                             GoogleHealthConnect(
+                                 applicationContext,
+                                 this@LampForegroundService,
+                                 sensorSpecList
+                             )
+                         }*/
                     }
 
                     2 -> {
@@ -524,9 +523,14 @@ class LampForegroundService : Service(),
                         }
 
                     }
-                    11->{
+
+                    11 -> {
                         if (AppState.session.isGoogleHealthConnectConnected) {
-                            GoogleHealthConnect(applicationContext,this@LampForegroundService,sensorSpecList)
+                            GoogleHealthConnect(
+                                applicationContext,
+                                this@LampForegroundService,
+                                sensorSpecList
+                            )
                         }
                     }
                 }

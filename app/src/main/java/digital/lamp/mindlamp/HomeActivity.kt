@@ -136,6 +136,8 @@ class HomeActivity : AppCompatActivity() {
 
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
+    private var isRetryDialogShown = false
+    private var isApiAlertDialogShown = false
 
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
@@ -605,7 +607,7 @@ class HomeActivity : AppCompatActivity() {
             binding.webView.loadUrl(url)
         }
 
-        if (!isPageLoadedComplete)
+        if (!isPageLoadedComplete && isRetryDialogShown)
             startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
         binding.webView.webViewClient = myWebViewClient
         binding.webView.webChromeClient = object : WebChromeClient() {
@@ -645,9 +647,11 @@ class HomeActivity : AppCompatActivity() {
                                         setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                                             binding.progressBar.visibility = View.GONE
                                             dialog.cancel()
+                                            isRetryDialogShown = false
                                             finish()
                                         }
                                         show()
+                                        isRetryDialogShown = true
                                     }
                                 }
                             }
@@ -1654,8 +1658,9 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing) {
+        if (!isFinishing && isApiAlertDialogShown) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                isApiAlertDialogShown = false
                 if (errorCode == 404) {
                     GlobalScope.launch(Dispatchers.IO) {
                         AppState.session.clearData()
@@ -1685,6 +1690,7 @@ class HomeActivity : AppCompatActivity() {
                     DialogInterface.OnClickListener(function = positiveButtonClick)
                 )
                 show()
+                isApiAlertDialogShown = true
             }
         }
     }
