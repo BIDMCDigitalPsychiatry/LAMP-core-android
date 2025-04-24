@@ -607,7 +607,7 @@ class HomeActivity : AppCompatActivity() {
             binding.webView.loadUrl(url)
         }
 
-        if (!isPageLoadedComplete && !isRetryDialogShown)
+        if (!isPageLoadedComplete)
             startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
         binding.webView.webViewClient = myWebViewClient
         binding.webView.webChromeClient = object : WebChromeClient() {
@@ -651,8 +651,10 @@ class HomeActivity : AppCompatActivity() {
                                             isRetryDialogShown = false
                                             finish()
                                         }
-                                        show()
-                                        isRetryDialogShown = true
+                                        if (!isRetryDialogShown) {
+                                            show()
+                                            isRetryDialogShown = true
+                                        }
                                     }
                                 }
                             }
@@ -1659,7 +1661,7 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing && !isApiAlertDialogShown) {
+        if (!isFinishing ) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 isApiAlertDialogShown = false
                 if (errorCode == 404) {
@@ -1690,8 +1692,10 @@ class HomeActivity : AppCompatActivity() {
                     getString(R.string.ok),
                     DialogInterface.OnClickListener(function = positiveButtonClick)
                 )
-                show()
-                isApiAlertDialogShown = true
+                if (!isApiAlertDialogShown) {
+                    show()
+                    isApiAlertDialogShown = true
+                }
             }
         }
     }
