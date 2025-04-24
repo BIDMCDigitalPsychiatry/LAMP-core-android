@@ -148,6 +148,8 @@ class HomeActivity : AppCompatActivity() {
 
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
+    private var isRetryDialogShown = false
+    private var isApiAlertDialogShown = false
 
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
@@ -651,6 +653,7 @@ class HomeActivity : AppCompatActivity() {
                                         setMessage(errorMessage)
                                         setCancelable(false)
                                         setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                            isRetryDialogShown = false
                                             if (!isPageLoadedComplete) {
                                                 binding.webView.loadUrl("javascript:window.location.reload(true)")
                                             }
@@ -658,9 +661,13 @@ class HomeActivity : AppCompatActivity() {
                                         setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                                             binding.progressBar.visibility = View.GONE
                                             dialog.cancel()
+                                            isRetryDialogShown = false
                                             finish()
                                         }
-                                        show()
+                                        if (!isRetryDialogShown) {
+                                            show()
+                                            isRetryDialogShown = true
+                                        }
                                     }
                                 }
                             }
@@ -1696,8 +1703,9 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing) {
+        if (!isFinishing ) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                isApiAlertDialogShown = false
                 if (errorCode == 404) {
                     GlobalScope.launch(Dispatchers.IO) {
                         AppState.session.clearData()
@@ -1726,7 +1734,10 @@ class HomeActivity : AppCompatActivity() {
                     getString(R.string.ok),
                     DialogInterface.OnClickListener(function = positiveButtonClick)
                 )
-                show()
+                if (!isApiAlertDialogShown) {
+                    show()
+                    isApiAlertDialogShown = true
+                }
             }
         }
     }
