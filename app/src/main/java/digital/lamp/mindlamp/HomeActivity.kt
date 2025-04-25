@@ -934,11 +934,8 @@ class HomeActivity : AppCompatActivity() {
      */
     private fun startLampDataCollection() {
         val request = PeriodicWorkRequestBuilder<LampWorkManager>(
-            15, TimeUnit.MINUTES // ⏱ repeat interval
+            PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS// ⏱ repeat interval
         )
-            .setInputData(
-                workDataOf("initialCall" to true)
-            )
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED) // 📶 requires internet
@@ -947,7 +944,8 @@ class HomeActivity : AppCompatActivity() {
             )
             .build()
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+        WorkManager.getInstance(this).
+        enqueueUniquePeriodicWork(
             "LampWorkManager", // unique name to avoid duplicates
             ExistingPeriodicWorkPolicy.KEEP, // KEEP or REPLACE
             request
@@ -1049,6 +1047,7 @@ class HomeActivity : AppCompatActivity() {
         }"
 
         Lamp.stopLAMP(this)
+        WorkManager.getInstance(this).cancelAllWorkByTag("ACCELEROMETER")
         stopLampService()
 
         GlobalScope.launch(Dispatchers.IO) {

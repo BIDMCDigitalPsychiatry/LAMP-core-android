@@ -9,6 +9,8 @@ object ScheduleConstants {
     const val SYNC_WORK_MANAGER_TAG = "sync_worker"
     const val SYNC_DATA_WORK_NAME = "sync_data_work"
 
+    const val LAMP_WORK_MANAGER_TAG = "lamp_work_manager"
+
     enum class WorkManagerParams(val value:String){
         NOTIFICATION_ID("notification_id"),
         REPEAT_INTERVAL("repeat_interval")

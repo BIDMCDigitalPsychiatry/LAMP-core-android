@@ -94,10 +94,10 @@ class LampWorkManager(
             DebugLogs.writeToFile("Sensor Spec Size - ${oSensorDao.getSensorsList().size}")
 
             // Handle initial call logic
-            if (inputData.getBoolean("initialCall", false)) {
-                val request = OneTimeWorkRequestBuilder<SensorCoordinatorWorker>().build()
-                WorkManager.getInstance(context).enqueue(request)
-            }
+            val request = OneTimeWorkRequestBuilder<SensorCoordinatorWorker>()
+                .build()
+            WorkManager.getInstance(context).enqueue(request)
+
 
             return@withContext Result.success()
 

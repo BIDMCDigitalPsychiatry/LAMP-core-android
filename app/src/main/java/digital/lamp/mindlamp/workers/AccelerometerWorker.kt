@@ -1,8 +1,11 @@
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
-import androidx.work.ForegroundInfo
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import digital.lamp.lamp_kotlin.lamp_core.models.AttitudeData
 import digital.lamp.lamp_kotlin.lamp_core.models.DeviceMotionData
@@ -13,11 +16,10 @@ import digital.lamp.lamp_kotlin.lamp_core.models.MotionData
 import digital.lamp.lamp_kotlin.lamp_core.models.RotationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.lamp_kotlin.sensor_core.Accelerometer
-import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.AnalyticsDao
 import digital.lamp.mindlamp.database.entity.Analytics
-import digital.lamp.mindlamp.notification.LampNotificationManager
+import digital.lamp.mindlamp.util.AccelerometerDataCollectWorkerManager
 import digital.lamp.mindlamp.utils.Sensors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,27 +33,31 @@ class AccelerometerDataWorker(
     private lateinit var oGson: Gson
     private lateinit var oAnalyticsDao: AnalyticsDao
     override suspend fun doWork(): Result {
-        val notification =
-            LampNotificationManager.showNotification(
-                context,
-                context.getString(digital.lamp.mindlamp.R.string.active_data_collection)
-            )
-        setForeground(ForegroundInfo(1010, notification))
+        Log.d("AccelerometerDataWorker", "Worker started ✅")
         oGson = Gson()
         oAnalyticsDao = AppDatabase.getInstance(context).analyticsDao()
-        val sensorSpec = inputData.getString("sensorSpec")
+        val sensorSpec = inputData.getString("spec")
         val frequency = inputData.getDouble("frequency", 0.0)
-
+        Log.d("AccelerometerDataWorker", "Spec: $sensorSpec | Frequency: $frequency")
         try {
             // Accelerometer settings
-            Lamp.startAccelerometer(context) // Start sensor
+            var interval = 0.0
             if (frequency > 0) {
-                val interval = (1 / frequency) * 1000
-                Accelerometer.setInterval(interval.toLong())
+                interval = (1 / frequency) * 1000
+                AccelerometerDataCollectWorkerManager.setInterval(interval.toLong())
             }
+            val data = workDataOf(
+                "interval" to interval,
+            )
+            val accelWorkerRequest = OneTimeWorkRequestBuilder<AccelerometerDataCollectWorkerManager>()
+                .addTag("ACCELEROMETER")
+                .setInputData(data)
+                .build()
 
+            WorkManager.getInstance(context).enqueue(accelWorkerRequest)
+            Log.d("AccelerometerDataWorker", "Accelerometer started ✅")
             // Sensor Observer
-            Accelerometer.setSensorObserver {
+            AccelerometerDataCollectWorkerManager.setSensorObserver {
                 val x = it.getAsDouble(Accelerometer.VALUES_0)
                 val y = it.getAsDouble(Accelerometer.VALUES_1)
                 val z = it.getAsDouble(Accelerometer.VALUES_2)
@@ -139,6 +145,7 @@ class AccelerometerDataWorker(
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         CoroutineScope(Dispatchers.IO).launch{
             val id = oAnalyticsDao.insertAnalytics(oAnalytics)
+            Log.e("data inserted","${sensorEventData.data}")
         }
     }
 }

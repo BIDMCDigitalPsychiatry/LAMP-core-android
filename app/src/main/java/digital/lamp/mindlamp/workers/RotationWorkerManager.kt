@@ -1,6 +1,7 @@
 package digital.lamp.mindlamp.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
@@ -72,6 +73,7 @@ class RotationWorkerManager(private val context: Context, workerParameters: Work
         oAnalytics.analyticsData = oGson.toJson(sensorEventData)
         CoroutineScope(Dispatchers.IO).launch {
             oAnalyticsDao.insertAnalytics(oAnalytics)
+            Log.e("rotation data inserted","${sensorEventData.data}")
         }
     }
 }

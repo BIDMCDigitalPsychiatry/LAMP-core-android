@@ -36,13 +36,11 @@ class SensorCoordinatorWorker(
                 Sensors.DEVICE_MOTION.sensor_name -> {
                     val data = workDataOf(
                         "frequency" to (sensor.frequency ?: 0.0),
-                        "spec" to (sensor.spec ?: "")
                     )
-                   /* val request = OneTimeWorkRequestBuilder<RotationWorkerManager>()
-                        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    val request = OneTimeWorkRequestBuilder<RotationWorkerManager>()
                         .setInputData(data)
                         .build()
-                    WorkManager.getInstance(context).enqueue(request)*/
+                    WorkManager.getInstance(context).enqueue(request)
                 }
 
                 Sensors.DEVICE_MOTION.sensor_name -> {
