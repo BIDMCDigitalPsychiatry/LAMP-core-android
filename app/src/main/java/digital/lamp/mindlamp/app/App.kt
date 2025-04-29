@@ -2,18 +2,13 @@ package digital.lamp.mindlamp.app
 
 import android.app.Application
 import android.content.Context
-import android.health.connect.HealthConnectManager
-
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.ProcessLifecycleOwner
-
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
-
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.appstate.Pref
-import digital.lamp.mindlamp.sensor.healthconnect.GoogleHealthConnect
 import digital.lamp.mindlamp.utils.AppLifeCycleListener
 import digital.lamp.mindlamp.utils.DebugLogs
 import java.io.PrintWriter

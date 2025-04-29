@@ -2,6 +2,7 @@ package digital.lamp.mindlamp.utils
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
@@ -74,6 +75,11 @@ object PermissionCheck {
         if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.TIRAMISU   &&notificationPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.POST_NOTIFICATIONS)
         }
+        // Activity Recognition (Android 10+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            !isPermissionGranted(context, Manifest.permission.ACTIVITY_RECOGNITION)) {
+            listPermissionsNeeded.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
 
 
         if (listPermissionsNeeded.isNotEmpty()) {
@@ -129,5 +135,8 @@ object PermissionCheck {
             context,
             permission
         ) === PackageManager.PERMISSION_GRANTED
+    }
+    private fun isPermissionGranted(context: Context, permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
     }
 }

@@ -9,11 +9,12 @@ buildscript {
         lifecycle_version = '2.6.1'
         room_version = "2.5.1"
 
-        compile_sdk = 34
-        target_sdk = 34
+        compile_sdk = 35
+        target_sdk = 35
         minimum_sdk = 26
         build_tools = "30.0.2"
         play_services_location = '17.0.0'
+        agp_version = '8.1.4'
     }
 
     repositories {
@@ -22,7 +23,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath "com.android.tools.build:gradle:$agp_version"
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0'
         classpath 'com.google.gms:google-services:4.3.15'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.4'
