@@ -30,6 +30,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -38,6 +39,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -136,6 +140,8 @@ class HomeActivity : AppCompatActivity() {
 
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
+    private var isRetryDialogShown = false
+    private var isApiAlertDialogShown = false
 
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
@@ -257,9 +263,10 @@ class HomeActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
         binding = ActivityHomeBinding.inflate(layoutInflater)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(binding.root)
         firebaseAnalytics = Firebase.analytics
         oSensorDao = AppDatabase.getInstance(this).sensorDao()
@@ -638,6 +645,7 @@ class HomeActivity : AppCompatActivity() {
                                         setMessage(errorMessage)
                                         setCancelable(false)
                                         setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                            isRetryDialogShown = false
                                             if (!isPageLoadedComplete) {
                                                 binding.webView.loadUrl("javascript:window.location.reload(true)")
                                             }
@@ -645,9 +653,13 @@ class HomeActivity : AppCompatActivity() {
                                         setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                                             binding.progressBar.visibility = View.GONE
                                             dialog.cancel()
+                                            isRetryDialogShown = false
                                             finish()
                                         }
-                                        show()
+                                        if (!isRetryDialogShown && !isFinishing && !isDestroyed) {
+                                            show()
+                                            isRetryDialogShown = true
+                                        }
                                     }
                                 }
                             }
@@ -709,19 +721,7 @@ class HomeActivity : AppCompatActivity() {
                                         Manifest.permission.ACTIVITY_RECOGNITION
                                     )
                                 ) {
-                                    // case 4 User has denied permission but not permanently
-                                    showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app),
-                                        DialogInterface.OnClickListener { _, which ->
-                                            when (which) {
-                                                DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
-                                                    this
-                                                )
-
-                                                DialogInterface.BUTTON_NEGATIVE ->
-                                                    // proceed with logic by disabling the related features or quit the app.
-                                                    finish()
-                                            }
-                                        })
+                                   showServicePermissionNeededDialog()
                                 } else {
                                     //  DebugLogs.writeToFile("Display settings screen")
                                     // case 5. Permission denied permanently.
@@ -811,6 +811,22 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun showServicePermissionNeededDialog(){
+        // case 4 User has denied permission but not permanently
+        showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app)
+        ) { _, which ->
+            when (which) {
+                DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
+                    this
+                )
+
+                DialogInterface.BUTTON_NEGATIVE ->
+                    // proceed with logic by disabling the related features or quit the app.
+                    finish()
+            }
+        }
+    }
+
     /**
      * check location permission is available
      */
@@ -874,7 +890,7 @@ class HomeActivity : AppCompatActivity() {
                         }
                     startActivity(intent)
                 }catch (e:Exception){
-                    DebugLogs.writeToFile("${e.message}")
+                    DebugLogs.writeToFile("health connect error :${e.message}")
                 }
             }
         }
@@ -1654,8 +1670,9 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing) {
+        if (!isFinishing ) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+                isApiAlertDialogShown = false
                 if (errorCode == 404) {
                     GlobalScope.launch(Dispatchers.IO) {
                         AppState.session.clearData()
@@ -1684,7 +1701,10 @@ class HomeActivity : AppCompatActivity() {
                     getString(R.string.ok),
                     DialogInterface.OnClickListener(function = positiveButtonClick)
                 )
-                show()
+                if (!isApiAlertDialogShown && !isFinishing && !isDestroyed) {
+                    show()
+                    isApiAlertDialogShown = true
+                }
             }
         }
     }
