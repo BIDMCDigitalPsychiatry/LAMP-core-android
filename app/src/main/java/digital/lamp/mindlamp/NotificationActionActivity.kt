@@ -1,13 +1,12 @@
 package digital.lamp.mindlamp
 
-import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.core.app.NotificationManagerCompat
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.databinding.ActivityWebviewOverviewBinding
@@ -20,13 +19,11 @@ import digital.lamp.mindlamp.utils.Utils
  * url will load in to webview
  */
 
-class NotificationActionActivity : AppCompatActivity() {
+class NotificationActionActivity : BaseActivity(){
     private lateinit var binding: ActivityWebviewOverviewBinding
 
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityWebviewOverviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -59,15 +56,17 @@ class NotificationActionActivity : AppCompatActivity() {
         NotificationManagerCompat.from(this).cancel(notificationId)
 
         binding.btnBack.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
-    }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        val intent = Intent(this, HomeActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(intent)
-        finish()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val intent = Intent(this@NotificationActionActivity, HomeActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                startActivity(intent)
+                finish()
+            }
+        })
     }
 }

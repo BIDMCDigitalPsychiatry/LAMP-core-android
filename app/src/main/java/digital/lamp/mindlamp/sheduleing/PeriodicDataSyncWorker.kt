@@ -13,11 +13,15 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.Analytics
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.Sensors
+import digital.lamp.mindlamp.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 /**
  * PeriodicDataSyncWorker used to send analytics data to server on a periodic basis
@@ -74,7 +78,7 @@ class PeriodicDataSyncWorker(
             val endTime =
                 AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
             LampLog.e("Sensor PeriodicDataSyncWorker: END TIME $endTime")
-            list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
+            list = oAnalyticsDao.getAnalyticsListForWorker(AppState.session.lastAnalyticsTimestamp, endTime)
 
 
             list.forEach {
@@ -117,7 +121,6 @@ class PeriodicDataSyncWorker(
                 try {
                     LampLog.e("Sensor PeriodicDataSyncWorker: sensorEventDataList is empty")
 
-                    //val dbList = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
                     val anayticsRowCount = oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
                     if (anayticsRowCount>0) {
                         LampLog.e("Sensor PeriodicDataSyncWorker: dbList is not empty")

@@ -29,19 +29,23 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.webkit.*
-import androidx.activity.enableEdgeToEdge
+import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
+import android.webkit.SslErrorHandler
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
+import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -95,7 +99,7 @@ import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewMod
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
 import digital.lamp.mindlamp.utils.AppConstants.HEALTH_CONNECT_PERMISSION_RESULT_CODE
@@ -104,9 +108,17 @@ import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.LOCATION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.PERMISSION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
+import digital.lamp.mindlamp.utils.BatteryOptimizationHelper
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.PermissionCheck
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
+import digital.lamp.mindlamp.utils.PermissionChecker
+import digital.lamp.mindlamp.utils.Sensors
+import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,9 +131,12 @@ import java.net.UnknownHostException
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.*
+import javax.net.ssl.SSLHandshakeException
 
 
 /**
@@ -129,7 +144,7 @@ import javax.net.ssl.*
  */
 
 @AndroidEntryPoint
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : BaseActivity() {
 
     private lateinit var oSensorDao: SensorDao
     private lateinit var oActivityDao: ActivityDao
@@ -167,6 +182,7 @@ class HomeActivity : AppCompatActivity() {
             HealthPermission.getReadPermission(RespiratoryRateRecord::class),
             HealthPermission.getReadPermission(HeartRateRecord::class)
         )
+
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
         private const val REQUEST_LOCATION_REQUEST_CODE = 1011
@@ -183,6 +199,7 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
+
     /**
      * webview client object lazy initialization
      */
@@ -198,19 +215,20 @@ class HomeActivity : AppCompatActivity() {
                         reloadWebpageTimer?.cancel()
                     }
                     wepPageLoadingTimerIsRunning = false
-                    if (url == BuildConfig.BASE_URL_WEB){
-                        updateStreak(0,0)
+                    if (url == BuildConfig.BASE_URL_WEB) {
+                        updateStreak(0, 0)
                     }
-                    if (AppState.session.isLoggedIn && !activityEventUpdated && url.contains("activity")){
+                    if (AppState.session.isLoggedIn && !activityEventUpdated && url.contains("activity")) {
                         initialCallForActivityStreak()
                     }
 
                 }
             }
 
+            @Deprecated("Deprecated in Java")
             override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
                 return if (url == null || url.startsWith("http://") || url.startsWith("https://")) false else try {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     view.context.startActivity(intent)
                     true
                 } catch (e: java.lang.Exception) {
@@ -247,14 +265,15 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
-    fun updateStreak(current: Int,longest:Int) {
+    fun updateStreak(current: Int, longest: Int) {
         AppState.session.currentStreakDays = current
         AppState.session.longestStreakDays = longest
         // Update the widget
         val intent = Intent(this, StreakWidgetProvider::class.java).apply {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
         }
-        val ids = AppWidgetManager.getInstance(this).getAppWidgetIds(ComponentName(this, StreakWidgetProvider::class.java))
+        val ids = AppWidgetManager.getInstance(this)
+            .getAppWidgetIds(ComponentName(this, StreakWidgetProvider::class.java))
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
         this.sendBroadcast(intent)
     }
@@ -263,7 +282,6 @@ class HomeActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -281,9 +299,9 @@ class HomeActivity : AppCompatActivity() {
             populateOnDisclosureARAlert()
         } else {
             checkAndRequestPermissions(this)
-            if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE"){
+            if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE") {
                 initializePrivacyPolicyWebview()
-            }else {
+            } else {
                 initializeWebview()
             }
 
@@ -307,14 +325,26 @@ class HomeActivity : AppCompatActivity() {
                 Log.e("connection status", "net connected")
             } else {
                 Log.e("connection status", "no net connected")
-                GlobalScope.launch(Dispatchers.Main) {
+                CoroutineScope(Dispatchers.Main).launch(Dispatchers.Main) {
                     showApiErrorAlert(getString(R.string.txt_no_internet))
                 }
             }
         }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.webView.canGoBack()) {
+                    binding.webView.goBack()
+                } else {
+                    // Finishes the activity
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
 
     }
-    private fun initialCallForActivityStreak(){
+
+    private fun initialCallForActivityStreak() {
         try {
             val basic = "Basic ${
                 Utils.toBase64(
@@ -338,20 +368,20 @@ class HomeActivity : AppCompatActivity() {
                     val gson = Gson()
                     val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
                     val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
-                    if (!dataWrapper.data.isNullOrEmpty()) {
+                    if (dataWrapper.data.isNotEmpty()) {
                         val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
                         updateStreak(currentStreak, longestStreak)
                     } else {
                         updateStreak(0, 0)
                     }
-                }catch (e:JsonSyntaxException){
+                } catch (e: JsonSyntaxException) {
                     LampLog.e(e.message)
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     LampLog.e(e.message)
                 }
 
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
             LampLog.e("${e.message}")
             DebugLogs.writeToFile("Exception in streak widget initialization webservice call")
         }
@@ -389,7 +419,7 @@ class HomeActivity : AppCompatActivity() {
 
         // Determine if the last date is part of the current streak
         val lastDate = sortedDatesAsc.last()
-        activityEventUpdated = isSameDay(today,lastDate)
+        activityEventUpdated = isSameDay(today, lastDate)
         if (isSameDay(today, lastDate) || isSameDay(previousDay, lastDate)) {
             currentStreak = tempStreak
         }
@@ -401,7 +431,9 @@ class HomeActivity : AppCompatActivity() {
         val calendar = Calendar.getInstance()
 
         dates.forEach { date ->
-            calendar.time = date
+            if (date != null) {
+                calendar.time = date
+            }
             calendar.set(Calendar.HOUR_OF_DAY, 0)
             calendar.set(Calendar.MINUTE, 0)
             calendar.set(Calendar.SECOND, 0)
@@ -424,9 +456,10 @@ class HomeActivity : AppCompatActivity() {
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
     }
+
     private fun getMonthsFromNowInMillies(): Long {
         try {
-            var monthsAgo: LocalDate
+            val monthsAgo: LocalDate
             val now = LocalDate.now()
             if (AppState.session.longestStreakDays == 0) {
                 monthsAgo = now.minus(12, ChronoUnit.MONTHS)
@@ -443,12 +476,13 @@ class HomeActivity : AppCompatActivity() {
             // Convert the timestamp to milliseconds
 
             return instantThreeMonthsAgo.toEpochMilli()
-        }catch (e:Exception){
+        } catch (e: Exception) {
             LampLog.e("${e.message}")
             return System.currentTimeMillis()
         }
 
     }
+
     /**
      * check location permission
      */
@@ -474,10 +508,7 @@ class HomeActivity : AppCompatActivity() {
      * Request for location permission
      */
     private fun requestLocationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var rationale = false
-            requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
-        }
+        requestPermissionAsPerVersion(REQUEST_LOCATION_REQUEST_CODE)
 
     }
 
@@ -489,9 +520,11 @@ class HomeActivity : AppCompatActivity() {
             Build.VERSION.SDK_INT <= Build.VERSION_CODES.P -> {
                 checkLocationPermissionAPI28(locationRequestCode)
             }
+
             Build.VERSION.SDK_INT == Build.VERSION_CODES.Q -> {
                 checkLocationPermissionAPI29(locationRequestCode)
             }
+
             Build.VERSION.SDK_INT >= 30 -> {
                 checkBackgroundLocationPermissionAPI30()
             }
@@ -518,7 +551,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * location permission for api 29
      */
-    @TargetApi(29)
+    @RequiresApi(29)
     private fun checkLocationPermissionAPI29(locationRequestCode: Int) {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this) &&
 
@@ -532,7 +565,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * location permission for api 30
      */
-    @TargetApi(30)
+    @RequiresApi(30)
     private fun checkBackgroundLocationPermissionAPI30() {
         if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
             if (checkSinglePermission(
@@ -549,11 +582,11 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun initializePrivacyPolicyWebview(){
+    private fun initializePrivacyPolicyWebview() {
         binding.webView.clearCache(true)
         binding.webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
-        binding.webView.settings.javaScriptEnabled = true
+       // binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
         binding.webView.settings.domStorageEnabled = true
         binding.webView.settings.allowFileAccess = true
@@ -575,6 +608,7 @@ class HomeActivity : AppCompatActivity() {
             }
         }
     }
+
     /**
      * initialize webview
      */
@@ -603,7 +637,7 @@ class HomeActivity : AppCompatActivity() {
                         "http://"
                     )
             )
-            Log.e("url","$url")
+            Log.e("url", "$url")
             binding.webView.loadUrl(url)
 
         } else {
@@ -670,16 +704,16 @@ class HomeActivity : AppCompatActivity() {
 
             wepPageLoadingTimerIsRunning = true
             reloadWebpageTimer = Timer()
-            reloadWebpageTimer!!.scheduleAtFixedRate(
+            reloadWebpageTimer?.schedule(
                 actionTask,
                 WEBPAGE_BEGINNING_DELAY,
                 WEBPAGE_RELOAD_INTERVAL_TIMER
             )
-        }catch (e:Exception){
+        } catch (e: Exception) {
             try {
                 binding.progressBar.visibility = View.GONE
                 DebugLogs.writeToFile("Exception in loader timer ${e.message}")
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 DebugLogs.writeToFile("${e.message}")
             }
         }
@@ -697,9 +731,9 @@ class HomeActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             REQUEST_ID_MULTIPLE_PERMISSIONS -> {
-                if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE"){
+                if (intent.action == "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" || intent.action == "android.intent.action.VIEW_PERMISSION_USAGE") {
                     initializePrivacyPolicyWebview()
-                }else {
+                } else {
                     try {
                         val perms = HashMap<String, Int>()
                         // Initialize the map with both permissions
@@ -721,7 +755,7 @@ class HomeActivity : AppCompatActivity() {
                                         Manifest.permission.ACTIVITY_RECOGNITION
                                     )
                                 ) {
-                                   showServicePermissionNeededDialog()
+                                    showServicePermissionNeededDialog()
                                 } else {
                                     //  DebugLogs.writeToFile("Display settings screen")
                                     // case 5. Permission denied permanently.
@@ -734,11 +768,12 @@ class HomeActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                    }catch (e:Exception){
+                    } catch (e: Exception) {
                         DebugLogs.writeToFile("${e.message}")
                     }
                 }
             }
+
             REQUEST_LOCATION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty()) {
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -753,15 +788,17 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
+
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
             }
+
             PERMISSION_REQUEST_CODE -> {
                 val allPermissionsGranted = grantResults.isNotEmpty() &&
                         grantResults.all { it == PackageManager.PERMISSION_GRANTED }
                 if (!allPermissionsGranted) {
                     // Handle the case where permissions are denied.
-                }else{
+                } else {
                     // Check if Bluetooth is enabled
                     val bluetoothManager =
                         getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -773,6 +810,7 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             }
+
             AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS -> {
                 if (grantResults.isNotEmpty()) {
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -811,9 +849,10 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun showServicePermissionNeededDialog(){
+    private fun showServicePermissionNeededDialog() {
         // case 4 User has denied permission but not permanently
-        showDialogOK(getString(R.string.dialog_message_service_permissions_are_required_for_this_app)
+        showDialogOK(
+            getString(R.string.dialog_message_service_permissions_are_required_for_this_app)
         ) { _, which ->
             when (which) {
                 DialogInterface.BUTTON_POSITIVE -> checkAndRequestPermissions(
@@ -843,7 +882,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * check google fit sensors
      */
-    private fun checkHealthConnectSensorsAdded()  {
+    private fun checkHealthConnectSensorsAdded() {
         val specList = mSensorSpecsList.map { it.spec }
 
         if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name) ||
@@ -855,7 +894,7 @@ class HomeActivity : AppCompatActivity() {
             specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
             specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
         ) {
-           // fitSignIn()
+            // fitSignIn()
             checkHealthConnectAvailable()
 
         } else {
@@ -866,7 +905,9 @@ class HomeActivity : AppCompatActivity() {
         }
 
     }
-    val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+
+    val requestPermissionActivityContract =
+        PermissionController.createRequestPermissionResultContract()
     val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
             if (granted.containsAll(PERMISSIONS)) {
@@ -889,7 +930,7 @@ class HomeActivity : AppCompatActivity() {
                             Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
                         }
                     startActivity(intent)
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     DebugLogs.writeToFile("health connect error :${e.message}")
                 }
             }
@@ -1027,7 +1068,7 @@ class HomeActivity : AppCompatActivity() {
                 )
                 if (state.isNotEmpty()) {
                     //Code for drop DB
-                    updateStreak(0,0)
+                    updateStreak(0, 0)
                     AppState.session.clearData()
                     LampLog.e(TAG, " Logout Response -  $state")
                 }
@@ -1072,8 +1113,9 @@ class HomeActivity : AppCompatActivity() {
      * google fit sign in
      */
 
-    private fun  checkHealthConnectAvailable(){
-        val availabilityStatus = HealthConnectClient.getSdkStatus(this, "com.google.android.apps.healthdata")
+    private fun checkHealthConnectAvailable() {
+        val availabilityStatus =
+            HealthConnectClient.getSdkStatus(this, "com.google.android.apps.healthdata")
         if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
             return // early return as there is no viable integration
         }
@@ -1081,7 +1123,8 @@ class HomeActivity : AppCompatActivity() {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 dialog.cancel()
                 // Optionally redirect to package installer to find a provider, for example:
-                val uriString = "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
+                val uriString =
+                    "market://details?id=com.google.android.apps.healthdata&url=healthconnect%3A%2F%2Fonboarding"
                 startActivityForResult(Intent(Intent.ACTION_VIEW).apply {
                     setPackage("com.android.vending")
                     data = Uri.parse(uriString)
@@ -1105,14 +1148,14 @@ class HomeActivity : AppCompatActivity() {
                 show()
             }
             return
-        }else if (availabilityStatus == HealthConnectClient.SDK_AVAILABLE){
+        } else if (availabilityStatus == HealthConnectClient.SDK_AVAILABLE) {
 
-            if (viewModel.permissionsGranted.value == true){
+            if (viewModel.permissionsGranted.value == true) {
                 AppState.session.isGoogleHealthConnectConnected = true
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
                     startLampService()
                 }
-            }else{
+            } else {
                 AppState.session.isGoogleHealthConnectConnected = false
                 checkPermissionsAndRun(healthConnectClient)
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
@@ -1145,6 +1188,7 @@ class HomeActivity : AppCompatActivity() {
                 }
 
             }
+
             BLUETOOTH_REQUEST_RESULT_CODE -> {
                 val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
                 if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
@@ -1153,12 +1197,13 @@ class HomeActivity : AppCompatActivity() {
                     checkHealthConnectSensorsAdded()
                 }
             }
-            HEALTH_CONNECT_PERMISSION_RESULT_CODE ->{
+
+            HEALTH_CONNECT_PERMISSION_RESULT_CODE -> {
                 if (viewModel.permissionsGranted.value == false) {
                     try {
                         AppState.session.isGoogleHealthConnectConnected = false
                         checkPermissionsAndRun(healthConnectClient)
-                    }catch (e:Exception) {
+                    } catch (e: Exception) {
                         try {
                             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                                 dialog.cancel()
@@ -1194,19 +1239,19 @@ class HomeActivity : AppCompatActivity() {
 
                                 show()
                             }
-                        }catch (e:Exception){
+                        } catch (e: Exception) {
 
                         }
                     }
 
-                }
-                else {
+                } else {
                     AppState.session.isGoogleHealthConnectConnected = true
                     if (!this.isServiceRunning(LampForegroundService::class.java)) {
                         startLampService()
                     }
                 }
             }
+
             else -> {
                 if (!this.isServiceRunning(LampForegroundService::class.java)) {
                     startLampService()
@@ -1293,16 +1338,7 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * handles the app back button press or device back button press
-     */
-    override fun onBackPressed() {
-        if (binding.webView.canGoBack()) {
-            binding.webView.goBack()
-        } else {
-            super.onBackPressed() // finishes activity
-        }
-    }
+
 
     /**
      * fetch intent data
@@ -1436,7 +1472,10 @@ class HomeActivity : AppCompatActivity() {
                     } catch (e: ClientException) {
                         LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
-                            showApiErrorAlert(getString(R.string.something_went_wrong), e.statusCode)
+                            showApiErrorAlert(
+                                getString(R.string.something_went_wrong),
+                                e.statusCode
+                            )
                         }
 
 
@@ -1523,6 +1562,7 @@ class HomeActivity : AppCompatActivity() {
             requestPermissions()
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.S)
     private fun requestPermissions() {
         val permissionsToRequest = mutableListOf<String>()
@@ -1549,6 +1589,7 @@ class HomeActivity : AppCompatActivity() {
             )
         }
     }
+
     private fun requestBluetoothPermissions() {
         val permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -1563,7 +1604,7 @@ class HomeActivity : AppCompatActivity() {
             runOnUiThread {
                 permissionLauncher.launch(ungrantedPermissions.toTypedArray())
             }
-        }else{
+        } else {
             checkHealthConnectSensorsAdded()
         }
     }
@@ -1606,7 +1647,7 @@ class HomeActivity : AppCompatActivity() {
                 ) {
                     startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
                 }
-            }else{
+            } else {
                 startActivityForResult(enableBtIntent, BLUETOOTH_REQUEST_RESULT_CODE)
             }
 
@@ -1670,7 +1711,7 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing ) {
+        if (!isFinishing) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 isApiAlertDialogShown = false
                 if (errorCode == 404) {

@@ -9,8 +9,8 @@ buildscript {
         lifecycle_version = '2.6.1'
         room_version = "2.5.1"
 
-        compile_sdk = 35
-        target_sdk = 35
+        compile_sdk = 36
+        target_sdk = 36
         minimum_sdk = 26
         build_tools = "30.0.2"
         play_services_location = '17.0.0'

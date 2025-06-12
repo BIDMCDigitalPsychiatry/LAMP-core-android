@@ -3,18 +3,14 @@ package digital.lamp.mindlamp
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import digital.lamp.mindlamp.databinding.ActivityHomeBinding
 import digital.lamp.mindlamp.databinding.ActivitySplashBinding
-import org.json.JSONException
 
 /**
  * SplashScreen that appears when the app is launched.
  * This activity is responsible for initializing essential resources
  * and navigating to the appropriate screen after a brief delay.
  */
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
 
 
     private var moveToHome: Boolean = true

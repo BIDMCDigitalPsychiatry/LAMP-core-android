@@ -105,7 +105,6 @@
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -118,7 +117,6 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
 
            <!--
@@ -155,7 +153,6 @@
         </activity>
         <activity
             android:name=".NotificationActionActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
             android:windowSoftInputMode="adjustResize">
 
@@ -169,7 +166,7 @@
         <service
             android:name=".repository.LampForegroundService"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:foregroundServiceType="health">
 
         </service>
@@ -196,7 +193,8 @@
         </receiver>
         <receiver
             android:name=".sheduleing.ActivityReceiver"
-            android:exported="false"></receiver>
+            android:exported="false">
+        </receiver>
         <receiver
             android:name=".sheduleing.PowerSaveModeReceiver"
             android:exported="true">

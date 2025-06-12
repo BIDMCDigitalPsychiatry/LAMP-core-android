@@ -28,6 +28,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.*
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.AlarmBroadCastReceiver
 import digital.lamp.mindlamp.ExceptionActivity
+import digital.lamp.mindlamp.R
 import digital.lamp.mindlamp.app.App
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.*
@@ -159,7 +160,7 @@ class LampForegroundService : Service(),
     /**
      * Send analytics data from db to server.
      */
-    private fun syncAnalyticsData() {
+/*    private fun syncAnalyticsData() {
         val sensorEventDataList: ArrayList<SensorEvent> = arrayListOf<SensorEvent>()
         sensorEventDataList.clear()
 
@@ -174,16 +175,13 @@ class LampForegroundService : Service(),
 
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
-            LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
             if (AppState.session.lastAnalyticsTimestamp == 1L) {
                 val analytics =
                     oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
                 AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond ?: 1L
             }
-            LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
             val endTime =
                 AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
-            LampLog.e("Sensor : END TIME $endTime")
             list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
 
             list.forEach {
@@ -206,7 +204,6 @@ class LampForegroundService : Service(),
                         googleHealthConnectSensorEventDataList.add(
                             googleHealthConnectData
                         )
-                        LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
                     } else {
                         sensorEventDataList.add(
                             sensorEvent
@@ -221,15 +218,11 @@ class LampForegroundService : Service(),
                     AppState.session.lastSyncWorkerTimestamp = it[0].datetimeMillisecond!!
                 }
             }
-            LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
             else {
                 try {
-                    val dbList =
-                        oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                    val anayticsRowCount =
-                        oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
+                    val anayticsRowCount = oAnalyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
                     if (anayticsRowCount > 0) {
                         AppState.session.lastAnalyticsTimestamp =
                             AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
@@ -243,6 +236,66 @@ class LampForegroundService : Service(),
             if (googleHealthConnectSensorEventDataList.isNotEmpty())
                 invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
 
+        }
+    }*/
+
+    private fun syncAnalyticsData() {
+        oScope.launch(Dispatchers.IO) {
+            val gson = GsonBuilder().create()
+            val gsonWithNull = GsonBuilder().serializeNulls().create()
+            var lastTimestamp = AppState.session.lastAnalyticsTimestamp
+            val batchSize = 200 // You can tune this value as needed
+            var hasMore = true
+
+            if (lastTimestamp == 1L) {
+                val analytics = oAnalyticsDao.getFirstAnalyticsRecord(lastTimestamp)
+                lastTimestamp = analytics?.datetimeMillisecond ?: 1L
+                AppState.session.lastAnalyticsTimestamp = lastTimestamp
+            }
+
+            while (hasMore) {
+                val endTime = lastTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
+                val list = oAnalyticsDao.getAnalyticsList(lastTimestamp, endTime)
+                val sensorEventDataList = arrayListOf<SensorEvent>()
+                val googleHealthConnectSensorEventDataList = arrayListOf<SensorEvent>()
+
+                list.forEach {
+                    val sensorEvent = gson.fromJson(it.analyticsData, SensorEvent::class.java)
+                    sensorEvent?.sensor?.let { sensor ->
+                        if (sensorEvent.sensor == Sensors.SLEEP.sensor_name ||
+                            sensorEvent.sensor == Sensors.NUTRITION.sensor_name ||
+                            sensorEvent.sensor == Sensors.STEPS.sensor_name ||
+                            sensorEvent.sensor == Sensors.HEART_RATE.sensor_name ||
+                            sensorEvent.sensor == Sensors.BLOOD_GLUCOSE.sensor_name ||
+                            sensorEvent.sensor == Sensors.BLOOD_PRESSURE.sensor_name ||
+                            sensorEvent.sensor == Sensors.OXYGEN_SATURATION.sensor_name ||
+                            sensorEvent.sensor == Sensors.BODY_TEMPERATURE.sensor_name
+                        ) {
+                            val googleHealthConnectData = gsonWithNull.fromJson(it.analyticsData, SensorEvent::class.java)
+                            googleHealthConnectSensorEventDataList.add(googleHealthConnectData)
+                        } else {
+                            sensorEventDataList.add(sensorEvent)
+                        }
+                    }
+                }
+
+                if (sensorEventDataList.isNotEmpty()) {
+                    invokeAddSensorData(sensorEventDataList, false)
+                }
+                if (googleHealthConnectSensorEventDataList.isNotEmpty()) {
+                    invokeAddSensorData(googleHealthConnectSensorEventDataList, true)
+                }
+
+                if (list.isNotEmpty()) {
+                    lastTimestamp = list.last().datetimeMillisecond!!
+                    AppState.session.lastAnalyticsTimestamp = lastTimestamp
+                    AppState.session.lastSyncWorkerTimestamp = lastTimestamp
+                }
+
+                hasMore = list.size == batchSize
+                sensorEventDataList.clear()
+                googleHealthConnectSensorEventDataList.clear()
+            }
         }
     }
 
@@ -565,358 +618,161 @@ class LampForegroundService : Service(),
     /**Method to perform the Sensor Spec or custom sensor data,
      *
      */
+
     private fun invokeSensorSpecData(initialCall: Boolean = false) {
         DebugLogs.writeToFile("Call sensor spec")
 
-        if (NetworkUtils.isNetworkAvailable(this)) {
-            if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
-                val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            showErrorDialog(getString(R.string.you_are_not_connected))
+            return
+        }
+        if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) <= 15) return
 
-                GlobalScope.launch(Dispatchers.IO) {
-                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
-                    try {
+        val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
+        val basic = "Basic ${
+            Utils.toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://")
+            )
+        }"
 
-                        val state = SensorAPI(AppState.session.serverAddress).sensorAll(
-                            AppState.session.userId,
-                            basic
-                        )
-                        val oSensorSpec: SensorSpec? = Gson().fromJson(
-                            state.toString(),
-                            SensorSpec::class.java
-                        )
-                        if (oSensorSpec?.data?.isNotEmpty() == true) {
-                            AppState.session.isCellularUploadAllowed =
-                                oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
-                        }
-                        oSensorSpec?.data?.forEach { sensor ->
-                            val sensorSpecs = SensorSpecs(
-                                null,
-                                sensor.id,
-                                sensor.spec,
-                                sensor.name,
-                                sensor.settings?.frequency,
-                                sensor.settings?.cellular_upload
-                            )
-                            sensorSpecsList.add(sensorSpecs)
-                        }
-                        oSensorDao.deleteSensorList()
-                        oSensorDao.insertAllSensors(sensorSpecsList)
-                        GlobalScope.launch(Dispatchers.Main) {
-                            if (initialCall)
-                                collectSensorData()
-                        }
-                        LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
-
-                    } catch (e: SSLHandshakeException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.server_un_rechable)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: ClientException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            DebugLogs.writeToFile("invokeSensorSpecData client exception")
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                            )
-                            mainIntent.putExtra("code", e.statusCode)
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: ServerException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: UnsupportedOperationException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: HttpException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            var message =
-                                Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
-                            if (message.isEmpty())
-                                message = e.message()
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra("message", message)
-                            mainIntent.putExtra("code", e.code())
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: SocketTimeoutException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: NetworkErrorException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: UnknownHostException) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    } catch (e: Exception) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.server_un_rechable)
-                            )
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
-                        }
-                    }
-                }
-            }
-        } else {
-
-            GlobalScope.launch(Dispatchers.Main) {
-                val mainIntent =
-                    Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra(
-                    "message",
-                    getString(digital.lamp.mindlamp.R.string.you_are_not_connected)
+        GlobalScope.launch(Dispatchers.IO) {
+            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+            try {
+                val state = SensorAPI(AppState.session.serverAddress).sensorAll(
+                    AppState.session.userId,
+                    basic
                 )
-                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                if (App.app.isApplicationInForeground()) {
-                    startActivity(mainIntent)
+                val oSensorSpec: SensorSpec? = Gson().fromJson(state.toString(), SensorSpec::class.java)
+                if (oSensorSpec?.data?.isNotEmpty() == true) {
+                    AppState.session.isCellularUploadAllowed =
+                        oSensorSpec.data.find { it.settings == null || it.settings?.cellular_upload == null || it.settings?.cellular_upload == true } != null
+
                 }
+                oSensorSpec?.data?.forEach { sensor ->
+                    val sensorSpecs = SensorSpecs(
+                        null,
+                        sensor.id,
+                        sensor.spec,
+                        sensor.name,
+                        sensor.settings?.frequency,
+                        sensor.settings?.cellular_upload
+                    )
+                    sensorSpecsList.add(sensorSpecs)
+                }
+                oSensorDao.deleteSensorList()
+                oSensorDao.insertAllSensors(sensorSpecsList)
+                GlobalScope.launch(Dispatchers.Main) {
+                    if (initialCall) collectSensorData()
+                }
+                LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
+            } catch (e: ClientException) {
+                DebugLogs.writeToFile("invokeSensorSpecData client exception")
+                showErrorDialog(getString(R.string.something_went_wrong), e.statusCode)
+            } catch (e: ServerException) {
+                DebugLogs.writeToFile("invokeSensorSpecData server exception")
+                showErrorDialog(getString(R.string.something_went_wrong))
+            } catch (e: UnsupportedOperationException) {
+                DebugLogs.writeToFile("invokeSensorSpecData UnsupportedOperationException")
+                showErrorDialog(getString(R.string.something_went_wrong))
+            } catch (e: HttpException) {
+                DebugLogs.writeToFile("invokeSensorSpecData HttpException")
+                var message = Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
+                if (message.isEmpty()) message = e.message()
+                showErrorDialog(message, e.code())
+            } catch (e: SocketTimeoutException) {
+                DebugLogs.writeToFile("invokeSensorSpecData SocketTimeoutException")
+                showErrorDialog(getString(R.string.txt_unable_to_connect))
+            } catch (e: NetworkErrorException) {
+                DebugLogs.writeToFile("invokeSensorSpecData NetworkErrorException")
+                showErrorDialog(getString(R.string.txt_unable_to_connect))
+            } catch (e: UnknownHostException) {
+                DebugLogs.writeToFile("invokeSensorSpecData UnknownHostException")
+                showErrorDialog(getString(R.string.txt_unable_to_connect))
+            } catch (e: SSLHandshakeException) {
+                DebugLogs.writeToFile("invokeSensorSpecData SSLHandshakeException")
+                showErrorDialog(getString(R.string.server_un_rechable))
+            } catch (e: Exception) {
+                DebugLogs.writeToFile("invokeSensorSpecData Exception ${e.message}")
+                showErrorDialog(getString(R.string.server_un_rechable))
             }
         }
     }
-
     /**Method to perform Sensor Data Webservice after fetching the details from DB
      *
      */
+
     private fun invokeAddSensorData(
         sensorEventDataList: ArrayList<SensorEvent>,
         isGogolefitData: Boolean
     ) {
         if (!AppState.session.isCellularUploadAllowed && !NetworkUtils.isWifiNetworkAvailable(this))
             return
-        if (NetworkUtils.isNetworkAvailable(this)) {
-            if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
-                trackSingleEvent("API_Send_${sensorEventDataList.size}")
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            showErrorDialog(getString(R.string.you_are_not_connected))
+            return
+        }
+        if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) <= 15) return
 
-                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
-                try {
-                    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                        AppState.session.userId,
-                        sensorEventDataList,
-                        basic, isGogolefitData
-                    )
+        trackSingleEvent("API_Send_${sensorEventDataList.size}")
+        val basic = "Basic ${
+            Utils.toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://").removePrefix("http://")
+            )
+        }"
 
-                    LampLog.e(TAG, " Lamp Core Response -  $state")
-                    if (state.isNotEmpty()) {
-                        //Code for drop DB
-                        GlobalScope.launch(Dispatchers.IO) {
-                            oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                            LampLog.e("Sensor : invokeAddSensorData")
-                            syncAnalyticsData()
-                        }
-                    }
-                } catch (e: ClientException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.putExtra("code", e.statusCode)
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: ServerException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: UnsupportedOperationException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: HttpException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        var message =
-                            Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
-                        if (message.isEmpty())
-                            message = e.message()
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", message)
-                        mainIntent.putExtra("code", e.code())
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: SocketTimeoutException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: NetworkErrorException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: UnknownHostException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: SSLHandshakeException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
-                } catch (e: Exception) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+        TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+        try {
+            val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                AppState.session.userId,
+                sensorEventDataList,
+                basic, isGogolefitData
+            )
+            if (state.isNotEmpty()) {
+                GlobalScope.launch(Dispatchers.IO) {
+                    oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
+                    syncAnalyticsData()
                 }
             }
+        } catch (e: ClientException) {
+            DebugLogs.writeToFile("invokeAddSensorData client exception")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.something_went_wrong), e.statusCode)
+        } catch (e: ServerException) {
+            DebugLogs.writeToFile("invokeAddSensorData server exception")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.something_went_wrong))
+        } catch (e: UnsupportedOperationException) {
+            DebugLogs.writeToFile("invokeAddSensorData UnsupportedOperationException")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.something_went_wrong))
+        } catch (e: HttpException) {
+            DebugLogs.writeToFile("invokeAddSensorData HttpException")
+            var message = Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
+            if (message.isEmpty()) message = e.message()
+            showErrorDialog(message, e.code())
+        } catch (e: SocketTimeoutException) {
+            DebugLogs.writeToFile("invokeAddSensorData SocketTimeoutException")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect))
+        } catch (e: NetworkErrorException) {
+            DebugLogs.writeToFile("invokeAddSensorData NetworkErrorException")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect))
+        } catch (e: UnknownHostException) {
+            DebugLogs.writeToFile("invokeAddSensorData UnknownHostException")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect))
+        } catch (e: SSLHandshakeException) {
+            DebugLogs.writeToFile("invokeAddSensorData SSLHandshakeException")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+        } catch (e: Exception) {
+            DebugLogs.writeToFile("invokeAddSensorData Exception ${e.message}")
+            showErrorDialog(getString(digital.lamp.mindlamp.R.string.server_not_reachable))
+        }
+    }
 
-        } else {
-
-            GlobalScope.launch(Dispatchers.Main) {
-                val mainIntent =
-                    Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                mainIntent.putExtra(
-                    "message",
-                    getString(digital.lamp.mindlamp.R.string.you_are_not_connected)
-                )
-                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                if (App.app.isApplicationInForeground()) {
-                    startActivity(mainIntent)
-                }
+    private fun showErrorDialog(message: String, code: Int? = null) {
+        GlobalScope.launch(Dispatchers.Main) {
+            val mainIntent = Intent(this@LampForegroundService, ExceptionActivity::class.java)
+            mainIntent.putExtra("message", message)
+            code?.let { mainIntent.putExtra("code", it) }
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (App.app.isApplicationInForeground()) {
+                startActivity(mainIntent)
             }
         }
     }
@@ -1231,126 +1087,29 @@ class LampForegroundService : Service(),
                         "Activity DB Size : ${oActivityDao.getActivityList().size.toString()}"
                     )
                 } catch (e: ClientException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.putExtra("code", e.statusCode)
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.something_went_wrong), e.statusCode)
                 } catch (e: ServerException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.something_went_wrong))
                 } catch (e: UnsupportedOperationException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.something_went_wrong))
                 } catch (e: HttpException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        var message =
-                            Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
-                        if (message.isEmpty())
-                            message = e.message()
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra("message", message)
-                        mainIntent.putExtra("code", e.code())
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground()) {
-                            startActivity(mainIntent)
-                        }
-                    }
+                    var message = Utils.getHttpErrorMessage(e.code(), this@LampForegroundService)
+                    if (message.isEmpty()) message = e.message()
+                    showErrorDialog(message, e.code())
                 } catch (e: SocketTimeoutException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground()) {
-                            startActivity(mainIntent)
-                        }
-                    }
+                    showErrorDialog(getString(R.string.something_went_wrong))
                 } catch (e: NetworkErrorException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.txt_unable_to_connect))
                 } catch (e: UnknownHostException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.txt_unable_to_connect)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.txt_unable_to_connect))
                 } catch (e: SSLHandshakeException) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.server_not_reachable))
                 } catch (e: Exception) {
-                    GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.server_not_reachable)
-                        )
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
-                    }
+                    showErrorDialog(getString(R.string.server_not_reachable))
                 }
             }
-        } else {
+        }
+         else {
 
             GlobalScope.launch(Dispatchers.Main) {
                 val mainIntent =
