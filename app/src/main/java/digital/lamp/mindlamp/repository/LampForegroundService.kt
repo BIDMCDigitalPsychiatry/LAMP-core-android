@@ -1603,6 +1603,7 @@ class LampForegroundService : Service(),
         if (reminderTime > System.currentTimeMillis()) {
             delay = reminderTime - System.currentTimeMillis()
         } else {
+
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = reminderTime
             calendar.add(Calendar.WEEK_OF_MONTH, 2)
