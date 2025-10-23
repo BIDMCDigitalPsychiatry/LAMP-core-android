@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'kotlin-kapt'
 android {
-    compileSdkVersion 33
+    compileSdkVersion 35
   //  buildToolsVersion "30.0.2"
     signingConfigs {
         release {
@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion 30
-        targetSdkVersion 33
+        targetSdkVersion 35
         versionCode 918
         versionName "1.1"
 
