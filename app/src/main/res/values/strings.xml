@@ -72,4 +72,7 @@
     <string name="current_streak_days" translatable="false">Current streak </string>
     <string name="longest_streak_days" translatable="false">Longest streak </string>
     <string name="way_to_go" translatable="false">Way To Go!</string>
+    <string name="health_permission_description">This application integrates with Google Health Connect to securely access and analyze health and fitness data already collected by other devices and applications on your device. The types of data accessed may include: Steps, Sleep, Distance, Calories Burned, Heart Rate, Blood Pressure, Blood Glucose, Oxygen Saturation, Body Temperature, Respiratory Rate, Body Fat, Hydration, Nutrition, and Movement Speed.   \n
+        All health data is accessed solely for use within authorized clinical research studies conducted by the Beth Israel Deaconess Medical Center Division of Digital Psychiatry and its collaborating healthcare institutions. No health data will be collected or transmitted without your explicit informed consent. You may revoke Health Connect permissions at any time through your device settings without affecting your participation in other aspects of the study.</string>
+    <string name="agree" translatable="false">Agree</string>
 </resources>

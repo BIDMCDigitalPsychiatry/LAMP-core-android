@@ -30,8 +30,13 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.webkit.*
-import androidx.activity.enableEdgeToEdge
+import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
+import android.webkit.SslErrorHandler
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -40,9 +45,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -96,7 +99,7 @@ import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewMod
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
 import digital.lamp.mindlamp.utils.AppConstants.HEALTH_CONNECT_PERMISSION_RESULT_CODE
@@ -105,9 +108,17 @@ import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.LOCATION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.PERMISSION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
+import digital.lamp.mindlamp.utils.BatteryOptimizationHelper
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.PermissionCheck
 import digital.lamp.mindlamp.utils.PermissionCheck.checkAndRequestPermissions
 import digital.lamp.mindlamp.utils.PermissionCheck.checkSinglePermission
 import digital.lamp.mindlamp.utils.PermissionCheck.checkTelephonyPermission
+import digital.lamp.mindlamp.utils.PermissionChecker
+import digital.lamp.mindlamp.utils.Sensors
+import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -120,9 +131,12 @@ import java.net.UnknownHostException
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.*
+import javax.net.ssl.SSLHandshakeException
 
 
 /**
@@ -1275,9 +1289,10 @@ class HomeActivity : AppCompatActivity() {
         val positiveButtonClick = { dialog: DialogInterface, _: Int ->
             dialog.cancel()
             AppState.session.showDisclosureAlert = false
-            if (checkAndRequestPermissions(this)) {
+            populateHealthConnectDataAlert()
+           /* if (checkAndRequestPermissions(this)) {
                 initializeWebview()
-            }
+            }*/
         }
 
         val builder = AlertDialog.Builder(this)
@@ -1291,6 +1306,30 @@ class HomeActivity : AppCompatActivity() {
                 getString(R.string.ok),
                 DialogInterface.OnClickListener(function = positiveButtonClick)
             )
+            show()
+        }
+    }
+
+    private fun populateHealthConnectDataAlert() {
+        val positiveButtonClick = { dialog: DialogInterface, _: Int ->
+            dialog.cancel()
+            if (checkAndRequestPermissions(this)) {
+                initializeWebview()
+            }
+        }
+
+        val builder = AlertDialog.Builder(this)
+
+        with(builder)
+        {
+            setTitle(getString(R.string.app_name))
+            setMessage(getString(R.string.health_permission_description))
+            setCancelable(false)
+            setPositiveButton(
+                getString(R.string.ok),
+                DialogInterface.OnClickListener(function = positiveButtonClick)
+            )
+
             show()
         }
     }
