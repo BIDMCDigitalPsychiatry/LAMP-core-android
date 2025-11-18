@@ -35,4 +35,6 @@
     <string name="server_unreachable">Le serveur n\'est pas atteignable.</string>
     <string name="invalid_request_please_try_again">Requête invalide. Veuillez réessayer plus tard.</string>
     <string name="retry">Réessayez</string>
+    <string name="health_permission_description">Cette application s’intègre à Google Health Connect afin d’accéder de manière sécurisée aux données de santé et de condition physique déjà collectées par d’autres appareils et applications sur votre appareil, et de les analyser. Les types de données auxquelles il peut être accédé incluent : nombre de pas, sommeil, distance, calories brûlées, fréquence cardiaque, tension artérielle, glycémie, saturation en oxygène, température corporelle, fréquence respiratoire, masse grasse, hydratation, nutrition et vitesse de mouvement. \n
+        Toutes les données de santé sont utilisées exclusivement dans le cadre d’études de recherche clinique autorisées, menées par la Division de psychiatrie numérique du Beth Israel Deaconess Medical Center et ses établissements de santé partenaires. Aucune donnée de santé ne sera collectée ni transmise sans votre consentement éclairé explicite. Vous pouvez révoquer les autorisations Health Connect à tout moment via les paramètres de votre appareil, sans que cela n’affecte votre participation aux autres aspects de l’étude.</string>
 </resources>

@@ -63,4 +63,7 @@
     <string name="mindlamp_service">MindLamp 服務</string>
     <string name="back" translatable="false">Back</string>
     <string name="retry">重試</string>
+    <string name="health_permission_description">此應用程式（APP）透過 Google Health Connect 安全地存取並分析您裝置上由其他裝置與應用程式已收集的健康與健身資料。可存取的資料類型可能包括：步數、睡眠、距離、消耗的卡路里、心率、血壓、血糖、血氧飽和度、體溫、呼吸頻率、體脂、水分狀況、營養與運動速度。\n
+
+所有健康資料僅用於由 Beth Israel Deaconess 醫療中心數位精神醫學部門及其合作醫療機構所進行的已授權臨床研究。未經您明確的知情同意，本應用程式不會收集或傳輸任何健康資料。您可隨時透過裝置設定撤銷 Health Connect 權限，且此操作不會影響您參與研究其他部分。</string>
 </resources>

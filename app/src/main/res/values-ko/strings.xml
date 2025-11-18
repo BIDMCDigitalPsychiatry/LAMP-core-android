@@ -34,4 +34,7 @@
     <string name="back">뒤쪽에</string>
     <string name="invalid_request_please_try_again">잘못된 요청. 나중에 다시 시도 해주십시오.</string>
     <string name="retry">재시도</string>
+    <string name="health_permission_description">이 애플리케이션은 Google Health Connect와 통합되어, 사용자의 기기에 있는 다른 기기나 애플리케이션에서 이미 수집된 건강 및 피트니스 데이터를 안전하게 접근하고 분석합니다. 접근할 수 있는 데이터 유형에는 다음이 포함될 수 있습니다: 걸음 수, 수면, 이동 거리, 소모된 칼로리, 심박수, 혈압, 혈당, 산소 포화도, 체온, 호흡수, 체지방, 수분 섭취, 영양 상태, 움직임 속도.\n
+
+모든 건강 데이터는 Beth Israel Deaconess Medical Center의 정신건강의학과와 협력 의료 기관에서 수행하는 승인된 임상 연구 내에서만 사용됩니다. 귀하의 동의 없이 없이 어떠한 건강 데이터도 수집되거나 전송되지 않습니다. 기기 설정을 통해 언제든지 Health Connect의 권한을 철회할 수 있으며, 이는 연구의 다른 부분에 대한 귀하의 참여에 영향을 미치지 않습니다.</string>
 </resources>

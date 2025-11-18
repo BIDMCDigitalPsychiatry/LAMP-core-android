@@ -37,4 +37,6 @@ Det er gemt i et sikret, krypteret format, som kun er tilgængeligt for din klin
     <string name="server_unreachable">Serveren er ikke tilgængelig.</string>
     <string name="invalid_request_please_try_again">Ugyldig forespørgsel. Prøv igen senere.</string>
     <string name="retry">Prøv igen</string>
+    <string name="health_permission_description">Denne applikation integrerer med Google Health Connect for sikkert at få adgang til og analysere sundheds- og fitnessdata, der allerede er indsamlet af andre enheder og applikationer på din enhed. De typer af data, der kan tilgås, omfatter: skridt, søvn, distance, forbrændte kalorier, puls, blodtryk, blodsukker, iltmætning, kropstemperatur, åndedrætsfrekvens, kropsfedt, væskebalance, ernæring og bevægelseshastighed.\n
+        Alle sundhedsdata tilgås udelukkende med henblik på brug i autoriserede kliniske forskningsprojekter udført af Beth Israel Deaconess Medical Center, Division of Digital Psychiatry, og dets samarbejdende sundhedsinstitutioner. Ingen sundhedsdata vil blive indsamlet eller overført uden dit udtrykkelige informerede samtykke. Du kan til enhver tid tilbagekalde Health Connect-tilladelser via dine enhedsindstillinger uden at det påvirker din deltagelse i andre dele af studiet.</string>
 </resources>
