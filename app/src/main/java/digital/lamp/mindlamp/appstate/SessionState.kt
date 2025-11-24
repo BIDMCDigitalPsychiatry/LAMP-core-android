@@ -28,15 +28,11 @@ class SessionState {
         const val PREF_LAST_SPEED_DATA_TIMESTAMP = "last_speed_data_timestamp"
         const val PREF_LAST_TOTAL_CALORIES__DATA_TIMESTAMP = "last_total_calories_data_timestamp"
         const val PREF_LAST_DISTANCE_DATA_TIMESTAMP = "last_distance_data_timestamp"
-        const val PREF_LAST_BASAL_METABOLIC_DATA_TIMESTAMP = "last_basal_metabolic_data_timestamp"
-        const val PREF_LAST_BODY_FAT_DATA_TIMESTAMP = "last_body_fat_data_timestamp"
         const val PREF_LAST_HYDRATION_DATA_TIMESTAMP = "last_hydration_data_timestamp"
         const val PREF_LAST_HEART_RATE_DATA_TIMESTAMP = "last_heart_rate_data_timestamp"
         const val PREF_LAST_NUTRITION_DATA_TIMESTAMP = "last_nutrition_data_timestamp"
         const val PREF_LAST_BLOOD_GLUCOSE_DATA_TIMESTAMP = "last_blood_glucose_data_timestamp"
         const val PREF_LAST_BLOOD_PRESSURE_DATA_TIMESTAMP = "last_blood_pressure_data_timestamp"
-        const val PREF_LAST_OXYGEN_SATURATION_DATA_TIMESTAMP =
-            "last_oxygen_saturation_data_timestamp"
         const val PREF_LAST_BODY_TEMPERATURE_DATA_TIMESTAMP = "last_body_temperature_data_timestamp"
         const val PREF_LAST_STEPS_CADENCE_DATA_TIMESTAMP = "last_steps_cadence_data_timestamp"
         const val PREF_LAST_RESPIRATORY_DATA_TIMESTAMP = "last_respiratory_data_timestamp"
@@ -81,14 +77,11 @@ class SessionState {
     var lastSpeedDataTimestamp by Pref(PREF_LAST_SPEED_DATA_TIMESTAMP, 1L)
     var lastTotalCaloriesBurnedDataTimestamp by Pref(PREF_LAST_TOTAL_CALORIES__DATA_TIMESTAMP, 1L)
     var lastDistanceDataTimestamp by Pref(PREF_LAST_DISTANCE_DATA_TIMESTAMP, 1L)
-    var lastBasalMetabolicRateDataTimestamp by Pref(PREF_LAST_BASAL_METABOLIC_DATA_TIMESTAMP, 1L)
-    var lastBodyFatDataTimestamp by Pref(PREF_LAST_BODY_FAT_DATA_TIMESTAMP, 1L)
     var lastHydrationTimestamp by Pref(PREF_LAST_HYDRATION_DATA_TIMESTAMP, 1L)
     var lastHeartRateTimestamp by Pref(PREF_LAST_HEART_RATE_DATA_TIMESTAMP, 1L)
     var lastNutritionTimestamp by Pref(PREF_LAST_NUTRITION_DATA_TIMESTAMP, 1L)
     var lastGlucoseTimestamp by Pref(PREF_LAST_BLOOD_GLUCOSE_DATA_TIMESTAMP, 1L)
     var lastPressureTimestamp by Pref(PREF_LAST_BLOOD_PRESSURE_DATA_TIMESTAMP, 1L)
-    var lastOxygenSaturationTimestamp by Pref(PREF_LAST_OXYGEN_SATURATION_DATA_TIMESTAMP, 1L)
     var lastBodyTemperatureTimestamp by Pref(PREF_LAST_BODY_TEMPERATURE_DATA_TIMESTAMP, 1L)
     var lastStepsCadenceTimestamp by Pref(PREF_LAST_STEPS_CADENCE_DATA_TIMESTAMP, 1L)
     var lastRespiratoryTimestamp by Pref(PREF_LAST_RESPIRATORY_DATA_TIMESTAMP, 1L)
@@ -111,15 +104,12 @@ class SessionState {
         isTelephonyPermissionAllowed = false
         lastSensorDataTimestamp = 1L
         isGoogleHealthConnectConnected = false
-        lastBasalMetabolicRateDataTimestamp = 1L
         lastDistanceDataTimestamp = 1L
         lastGlucoseTimestamp = 1L
         lastBodyTemperatureTimestamp = 1L
-        lastBodyFatDataTimestamp = 1L
         lastHydrationTimestamp = 1L
         lastHeartRateTimestamp = 1L
         lastNutritionTimestamp = 1L
-        lastOxygenSaturationTimestamp = 1L
         lastPressureTimestamp = 1L
         lastSpeedDataTimestamp = 1L
         lastStepsCadenceTimestamp = 1L

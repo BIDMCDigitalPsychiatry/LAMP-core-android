@@ -12,8 +12,8 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion minimum_sdk
         targetSdkVersion target_sdk
-        versionCode 939
-        versionName "2022.02.18"
+        versionCode 1038
+        versionName "2025.11.18"
         buildConfigField 'boolean', 'DO_LOG', 'true'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk.abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
