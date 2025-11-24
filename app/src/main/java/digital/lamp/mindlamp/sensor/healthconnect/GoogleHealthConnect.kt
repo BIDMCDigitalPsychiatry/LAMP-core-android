@@ -5,13 +5,11 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
-import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HydrationRecord
 import androidx.health.connect.client.records.NutritionRecord
-import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
@@ -275,27 +273,6 @@ class GoogleHealthConnect(
                         }
                     }
 
-                    if (AppState.session.lastBodyFatDataTimestamp == 1L)
-                        AppState.session.lastBodyFatDataTimestamp =
-                            System.currentTimeMillis() - 60000
-
-                    val timeRangeFilterBodyFat =
-                        getTimeRangeFilter(AppState.session.lastBodyFatDataTimestamp)
-                    val bodyFatData = readData<BodyFatRecord>(timeRangeFilterBodyFat)
-                    if (bodyFatData.isNotEmpty()) {
-                        val endTimeList = bodyFatData.map { it.time.toEpochMilli() }
-                        AppState.session.lastBodyFatDataTimestamp = Collections.max(endTimeList) + 1
-                        bodyFatData.forEach { bodyFatRecord ->
-                            val sensorEvenData: SensorEvent =
-                                getBodyFatPercentage(
-                                    bodyFatRecord.percentage.value,
-                                    bodyFatRecord.metadata.dataOrigin.packageName,
-                                    bodyFatRecord.time.toEpochMilli().toDouble()
-                                )
-                            sensorEventDataList.add(sensorEvenData)
-                        }
-                    }
-
                     if (AppState.session.lastHydrationTimestamp == 1L)
                         AppState.session.lastHydrationTimestamp = System.currentTimeMillis() - 60000
 
@@ -496,30 +473,6 @@ class GoogleHealthConnect(
                         }
                     }
                 }
-                if (sensorSpecs.spec == Sensors.OXYGEN_SATURATION.sensor_name) {
-                    if (AppState.session.lastOxygenSaturationTimestamp == 1L)
-                        AppState.session.lastOxygenSaturationTimestamp =
-                            System.currentTimeMillis() - 60000
-
-
-                    val timeRangeFilter =
-                        getTimeRangeFilter(AppState.session.lastOxygenSaturationTimestamp)
-                    val oxygenSaturationRecord = readData<OxygenSaturationRecord>(timeRangeFilter)
-                    if (oxygenSaturationRecord.isNotEmpty()) {
-                        val endTimeList = oxygenSaturationRecord.map { it.time.toEpochMilli() }
-                        AppState.session.lastOxygenSaturationTimestamp =
-                            Collections.max(endTimeList) + 1
-                        oxygenSaturationRecord.forEach { oxygenSaturationRecord ->
-                            val sensorEvenData: SensorEvent =
-                                getOxygenSaturation(
-                                    oxygenSaturationRecord.percentage.value,
-                                    oxygenSaturationRecord.metadata.dataOrigin.packageName,
-                                    oxygenSaturationRecord.time.toEpochMilli().toDouble()
-                                )
-                            sensorEventDataList.add(sensorEvenData)
-                        }
-                    }
-                }
 
                 if (sensorSpecs.spec == Sensors.BODY_TEMPERATURE.sensor_name) {
                     if (AppState.session.lastBodyTemperatureTimestamp == 1L)
@@ -589,32 +542,6 @@ class GoogleHealthConnect(
         return SensorEvent(
             dimensionData,
             Sensors.BODY_TEMPERATURE.sensor_name,
-            timeStamp
-        )
-    }
-
-    /**
-     * Creates a SensorEvent for oxygenSaturation-related data.
-     *
-     * @param oxygenSaturation The value representing the oxygenSaturation related data.
-     * @param source The source of the oxygenSaturation data.
-     * @return A SensorEvent representing oxygenSaturation-related data.
-     */
-    //18
-    private fun getOxygenSaturation(
-        oxygenSaturation: Double,
-        source: String?,
-        timeStamp: Double
-    ): SensorEvent {
-        val dimensionData =
-            GoogleHealthConnectData(
-
-                "percentage",
-                oxygenSaturation.toFloat(), source
-            )
-        return SensorEvent(
-            dimensionData,
-            Sensors.OXYGEN_SATURATION.sensor_name,
             timeStamp
         )
     }
@@ -822,31 +749,6 @@ class GoogleHealthConnect(
             NutritionData(
                 "liters",
                 hydration.toFloat(), "hydration", source
-            )
-        return SensorEvent(
-            dimensionData,
-            Sensors.NUTRITION.sensor_name,
-            timeStamp
-        )
-    }
-
-    /**
-     * Creates a SensorEvent for body_fat_percentage-related data.
-     *
-     * @param body_fat_percentage The value representing the change in body_fat_percentage.
-     * @param source The source of the body_fat_percentage data.
-     * @return A SensorEvent representing body_fat_percentage-related data.
-     */
-    //10
-    private fun getBodyFatPercentage(
-        body_fat_percentage: Double,
-        source: String?,
-        timeStamp: Double
-    ): SensorEvent {
-        val dimensionData =
-            NutritionData(
-                "Percentage",
-                body_fat_percentage.toFloat(), "body_fat_percentage", source
             )
         return SensorEvent(
             dimensionData,
