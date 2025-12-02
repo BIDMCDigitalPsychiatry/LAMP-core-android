@@ -44,21 +44,25 @@ class PowerSaveModeReceiver : BroadcastReceiver() {
             if (AppState.session.isLoggedIn) {
                 if (NetworkUtils.isNetworkAvailable(context)) {
 
-                    val basic = "Basic ${
-                        Utils.toBase64(
-                            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                                "https://"
-                            ).removePrefix("http://")
-                        )
-                    }"
-
                     try {
-                        val state =
+                        val state = Utils.apiWithRetry {
+                            val basic = if (AppState.session.accessToken.isNotEmpty()){
+                                "Bearer ${AppState.session.accessToken}"
+                            }else {
+                                "Basic ${
+                                    Utils.toBase64(
+                                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                            "https://"
+                                        ).removePrefix("http://")
+                                    )
+                                }"
+                            }
                             SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                                 AppState.session.userId,
                                 lowPowerModeEvent,
                                 basic
                             )
+                        }
                     } catch (e: Exception) {
 
                     }

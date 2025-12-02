@@ -8,6 +8,10 @@ class SessionState {
     companion object {
         const val PREF_KEY_IS_USER_LOGGED_IN = "isUserLoggedIn"
         const val PREF_KEY_TOKEN = "token"
+
+        const val PREF_KEY_REFRESH_TOKEN = "refreshToken"
+
+        const val PREF_KEY_ACCESS_TOKEN = "accessToken"
         const val PREF_KEY_USER_ID = "user_id"
         const val PREF_KEY_SERVER_ADDRESS = "serverAddress"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
@@ -48,6 +52,17 @@ class SessionState {
         PREF_KEY_TOKEN,
         ""
     )
+
+    var refreshtoken by Pref(
+        PREF_KEY_REFRESH_TOKEN,
+        ""
+    )
+
+    var accessToken by Pref(
+        PREF_KEY_ACCESS_TOKEN,
+        ""
+    )
+
     var userId by Pref(
         PREF_KEY_USER_ID,
         ""
@@ -90,6 +105,8 @@ class SessionState {
     fun clearData() {
         isLoggedIn = false
         token = ""
+        refreshtoken = ""
+        accessToken = ""
         userId = ""
         serverAddress = ""
         crashValue = ""

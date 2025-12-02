@@ -45,7 +45,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -91,6 +92,7 @@ import digital.lamp.mindlamp.databinding.ActivityHomeBinding
 import digital.lamp.mindlamp.model.ActivityEventData
 import digital.lamp.mindlamp.model.DataWrapper
 import digital.lamp.mindlamp.model.LoginResponse
+import digital.lamp.mindlamp.model.RefreshTokenResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
@@ -102,6 +104,7 @@ import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_RESULT_CODE
 import digital.lamp.mindlamp.utils.AppConstants.HEALTH_CONNECT_PERMISSION_RESULT_CODE
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
+import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_RENEWTOKEN
 import digital.lamp.mindlamp.utils.AppConstants.LOCATION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.PERMISSION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
@@ -154,7 +157,7 @@ class HomeActivity : AppCompatActivity() {
     private var isPageLoadedComplete = false
     private var isRetryDialogShown = false
     private var isApiAlertDialogShown = false
-
+    private var permissionCheckDone = false
     private lateinit var binding: ActivityHomeBinding
     private val permissionChecker by lazy { PermissionChecker(this) }
     private val viewModel: HealthConnectViewModel by viewModels()
@@ -275,7 +278,7 @@ class HomeActivity : AppCompatActivity() {
         //enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
-        WindowCompat.setDecorFitsSystemWindows(window, true)
+        //WindowCompat.setDecorFitsSystemWindows(window, true)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
         firebaseAnalytics = Firebase.analytics
@@ -322,19 +325,37 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
         }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.parentLayout) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Apply both top (status bar) and bottom (nav bar) padding
+            view.setPadding(
+                view.paddingLeft,
+                systemBars.top,
+                view.paddingRight,
+                systemBars.bottom
+            )
+
+            insets
+        }
+
 
     }
     private fun initialCallForActivityStreak(){
         try {
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+
             CoroutineScope(Dispatchers.IO).launch {
-                val state =
+                val state = Utils.apiWithRetry {
+                    val basic = if (AppState.session.accessToken.isNotEmpty()) {
+                        "Bearer ${AppState.session.accessToken}"
+                    } else {
+                        "Basic ${
+                            Utils.toBase64(
+                                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                    "https://"
+                                ).removePrefix("http://")
+                            )
+                        }"
+                    }
                     ActivityEventAPI(AppState.session.serverAddress).activityEventAllByParticipant(
                         participantId = AppState.session.userId,
                         from = getMonthsFromNowInMillies(),
@@ -343,11 +364,13 @@ class HomeActivity : AppCompatActivity() {
                         transform = null,
                         basic = basic
                     )
+                }
 
                 try {
                     val gson = Gson()
                     val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
                     val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
+                    Log.e("dataWrapper", "$dataWrapper")
                     if (!dataWrapper.data.isNullOrEmpty()) {
                         val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
                         updateStreak(currentStreak, longestStreak)
@@ -572,9 +595,6 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         binding.progressBar.visibility = View.VISIBLE
 
-        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
-        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
-
         var url = BuildConfig.PRIVACY_POLICY_PAGE_URL
         binding.webView.loadUrl(url)
 
@@ -604,6 +624,7 @@ class HomeActivity : AppCompatActivity() {
 
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
+        binding.webView.addJavascriptInterface(WebAppInterface(this),JAVASCRIPT_OBJ_RENEWTOKEN)
 
         var url = ""
         if (AppState.session.isLoggedIn) {
@@ -987,6 +1008,25 @@ class HomeActivity : AppCompatActivity() {
             }
 
         }
+        @JavascriptInterface
+        fun postRenewToken(jsonString: String) {
+            Log.e(TAG, "RenewToken: $jsonString")
+            try {
+                val renewResponse = Gson().fromJson(jsonString, RefreshTokenResponse::class.java)
+                homeActivity.onRenewAuthenticationToken(renewResponse)
+            } catch (ex: Exception) {
+                LampLog.printStackTrace(ex)
+            }
+        }
+    }
+    fun onRenewAuthenticationToken(response: RefreshTokenResponse) {
+        DebugLogs.writeToFile("Renew token received")
+
+        // Save tokens
+        AppState.session.accessToken = response.access_token
+        AppState.session.refreshtoken = response.refresh_token
+
+        // Optionally update shared preferences
     }
 
 
@@ -1017,24 +1057,29 @@ class HomeActivity : AppCompatActivity() {
             System.currentTimeMillis().toDouble()
         )
 
-        val basic = "Basic ${
-            Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                    "https://"
-                ).removePrefix("http://")
-            )
-        }"
-
         Lamp.stopLAMP(this)
         stopLampService()
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    sendTokenRequest,
-                    basic
-                )
+                val state = Utils.apiWithRetry {
+                    val basic = if (AppState.session.accessToken.isNotEmpty()){
+                        "Bearer ${AppState.session.accessToken}"
+                    }else {
+                        "Basic ${
+                            Utils.toBase64(
+                                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                    "https://"
+                                ).removePrefix("http://")
+                            )
+                        }"
+                    }
+                    SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                        AppState.session.userId,
+                        sendTokenRequest,
+                        basic
+                    )
+                }
                 if (state.isNotEmpty()) {
                     //Code for drop DB
                     updateStreak(0,0)
@@ -1061,6 +1106,8 @@ class HomeActivity : AppCompatActivity() {
 
         AppState.session.isLoggedIn = true
         AppState.session.token = oLoginResponse.authorizationToken
+        AppState.session.refreshtoken = oLoginResponse.refreshToken
+        AppState.session.accessToken = oLoginResponse.accessToken
         AppState.session.userId = oLoginResponse.identityObject.id
         if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
                 "http://"
@@ -1246,27 +1293,35 @@ class HomeActivity : AppCompatActivity() {
                     System.currentTimeMillis().toDouble()
                 )
 
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
-
                 GlobalScope.launch {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
                     try {
-                        val state =
+                        val state = Utils.apiWithRetry {
+                            val basic = if (AppState.session.accessToken.isNotEmpty()){
+                                "Bearer ${AppState.session.accessToken}"
+                            }else {
+                                "Basic ${
+                                    Utils.toBase64(
+                                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                            "https://"
+                                        ).removePrefix("http://")
+                                    )
+                                }"
+                            }
+
                             SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                                 AppState.session.userId,
                                 sendTokenRequest,
                                 basic
                             )
+                        }
+
                         LampLog.e(TAG, " Token Send Response -  $state")
-                    } catch (e: Exception) {
+                    }
+                    catch (e: Exception) {
                         DebugLogs.writeToFile("Exception SensorEventAPI HomeActivity retrieveCurrentToken:${e.printStackTrace()}\n ${e.message}")
                         LampLog.printStackTrace(e)
+
                     }
                 }
                 //Setting User Attributes for Firebase
@@ -1398,25 +1453,30 @@ class HomeActivity : AppCompatActivity() {
      * fetch sensors from server
      */
     private fun invokeSensorSpecData() {
-
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this) > 15) {
                 val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
 
                 GlobalScope.launch(Dispatchers.IO) {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
                     try {
-                        val state = SensorAPI(AppState.session.serverAddress).sensorAll(
-                            AppState.session.userId,
-                            basic
-                        )
+                        val state = Utils.apiWithRetry {
+                            val basic = if (AppState.session.accessToken.isNotEmpty()){
+                                "Bearer ${AppState.session.accessToken}"
+                            }else{
+                                "Basic ${
+                                    Utils.toBase64(
+                                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                            "https://"
+                                        ).removePrefix("http://")
+                                    )
+                                }"
+                            }
+                            SensorAPI(AppState.session.serverAddress).sensorAll(
+                                AppState.session.userId,
+                                basic
+                            )
+                        }
                         val oSensorSpec: SensorSpec? = Gson().fromJson(
                             state.toString(),
                             SensorSpec::class.java
@@ -1441,25 +1501,28 @@ class HomeActivity : AppCompatActivity() {
                         mSensorSpecsList = sensorSpecsList
                         val specList = mSensorSpecsList.map { it.spec }
                         GlobalScope.launch(Dispatchers.Main) {
-                            if (specList.contains(Sensors.TELEPHONY.sensor_name)) {
-                                if (checkTelephonyPermission(this@HomeActivity)) {
-                                    AppState.session.isTelephonyPermissionAllowed = true
-                                    if (specList.contains(Sensors.GPS.sensor_name)) {
-                                        checkLocation()
-                                    } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
-                                        checkLocationAndBluetoothPermission()
-                                    } else {
-                                        checkHealthConnectSensorsAdded()
+                            if (!permissionCheckDone) {
+                                permissionCheckDone = true
+                                if (specList.contains(Sensors.TELEPHONY.sensor_name)) {
+                                    if (checkTelephonyPermission(this@HomeActivity)) {
+                                        AppState.session.isTelephonyPermissionAllowed = true
+                                        if (specList.contains(Sensors.GPS.sensor_name)) {
+                                            checkLocation()
+                                        } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                                            checkLocationAndBluetoothPermission()
+                                        } else {
+                                            checkHealthConnectSensorsAdded()
+                                        }
+
                                     }
 
+                                } else if (specList.contains(Sensors.GPS.sensor_name)) {
+                                    checkLocation()
+                                } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                                    checkLocationAndBluetoothPermission()
+                                } else {
+                                    checkHealthConnectSensorsAdded()
                                 }
-
-                            } else if (specList.contains(Sensors.GPS.sensor_name)) {
-                                checkLocation()
-                            } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
-                                checkLocationAndBluetoothPermission()
-                            } else {
-                                checkHealthConnectSensorsAdded()
                             }
                         }
                         LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
@@ -1470,10 +1533,9 @@ class HomeActivity : AppCompatActivity() {
                         }
                     } catch (e: ClientException) {
                         LampLog.printStackTrace(e)
-                        GlobalScope.launch(Dispatchers.Main) {
+                        /*GlobalScope.launch(Dispatchers.Main) {
                             showApiErrorAlert(getString(R.string.something_went_wrong), e.statusCode)
-                        }
-
+                        }*/
 
                     } catch (e: ServerException) {
                         LampLog.printStackTrace(e)

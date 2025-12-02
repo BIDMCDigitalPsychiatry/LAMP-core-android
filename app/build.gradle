@@ -12,7 +12,7 @@ android {
         applicationId "digital.lamp.mindlamp"
         minSdkVersion minimum_sdk
         targetSdkVersion target_sdk
-        versionCode 1039
+        versionCode 1040
         versionName "2025.11.24"
         buildConfigField 'boolean', 'DO_LOG', 'true'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -89,6 +89,28 @@ android {
 
         }
 
+        army{
+            dimension "tier"
+            buildConfigField 'String', 'HOST', project.armyBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.armyLogUrl
+            buildConfigField 'String', 'BASE_URL_WEB', project.armyBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.armyMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.armyPrivacyPolicyUrl
+            buildConfigField 'String','ACTIVITY_EVENT_URL', project.armyActivityEvent
+            buildConfigField 'boolean', 'DO_LOG', 'false'
+        }
+
+        prodArmy{
+            dimension "tier"
+            buildConfigField 'String', 'HOST', project.prodArmyBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.prodArmyLogUrl
+            buildConfigField 'String', 'BASE_URL_WEB', project.prodArmyBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.prodArmyMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.prodArmyPrivacyPolicyUrl
+            buildConfigField 'String','ACTIVITY_EVENT_URL', project.prodArmyActivityEvent
+            buildConfigField 'boolean', 'DO_LOG', 'false'
+        }
+
     }
     lint {
         abortOnError false
@@ -148,7 +170,7 @@ dependencies {
 
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2025.02.27'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2025.12.01'
 
     //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'
     implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'

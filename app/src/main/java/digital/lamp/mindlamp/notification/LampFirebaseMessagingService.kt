@@ -164,13 +164,17 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                     "lamp.analytics", System.currentTimeMillis().toDouble()
                 )
 
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            val basic = if (AppState.session.accessToken.isNotEmpty()){
+                "Bearer ${AppState.session.accessToken}"
+            }else {
+                "Basic ${
+                    Utils.toBase64(
+                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                            "https://"
+                        ).removePrefix("http://")
+                    )
+                }"
+            }
             try {
                 val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,

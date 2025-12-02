@@ -12,14 +12,20 @@ import android.os.Environment
 import android.os.PowerManager
 import android.os.StatFs
 import android.util.Base64
+import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.google.gson.Gson
+import digital.lamp.lamp_kotlin.lamp_core.apis.RenewAccessTokenAPI
+import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ClientException
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
+import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.model.TokenResponseData
 import java.io.File
 import java.io.UnsupportedEncodingException
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.TimeZone
 
 /**
  * This class responsible for common util methods.
@@ -223,6 +229,58 @@ object Utils {
                 return context.getString(R.string.service_not_available)
             }
             else -> return ""
+        }
+    }
+    fun serverUsesAccessToken(): Boolean {
+        return AppState.session.accessToken.isNotEmpty()
+    }
+
+    suspend fun <T> apiWithRetry(apiCall: suspend () -> T): T {
+        return try {
+            apiCall()
+        } catch (e: ClientException) {
+            LampLog.printStackTrace(e)
+
+            // If server does NOT use access token → no retry
+            if (!serverUsesAccessToken()) {
+                throw e
+            }
+
+            // If server uses token but error is NOT 401 → no retry
+            if (e.statusCode != 401) {
+                throw e
+            }
+
+            // Refresh token
+            val refreshed = refreshToken()
+            if (!refreshed) throw e
+
+            // Retry the original API call with the new token
+            apiCall()
+        }
+    }
+
+    suspend fun refreshToken(): Boolean {
+        return try {
+            val authHeader = "Bearer ${AppState.session.refreshtoken}"
+
+            val body = mapOf(
+                "refreshToken" to AppState.session.refreshtoken
+            )
+
+            val response = RenewAccessTokenAPI(AppState.session.serverAddress)
+                .renewAccessToken(authHeader, body)
+
+            val resObj = Gson().fromJson(response.toString(), TokenResponseData::class.java)
+            Log.e("refreshToken", "response: $response")
+
+            AppState.session.refreshtoken = resObj.data.refresh_token
+            AppState.session.accessToken = resObj.data.access_token
+
+            true
+        } catch (ex: Exception) {
+            LampLog.printStackTrace(ex)
+            false
         }
     }
 }

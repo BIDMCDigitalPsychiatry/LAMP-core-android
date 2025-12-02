@@ -13,11 +13,15 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.Analytics
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.AppConstants
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.Sensors
+import digital.lamp.mindlamp.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.*
 
 /**
  * PeriodicDataSyncWorker used to send analytics data to server on a periodic basis
@@ -143,7 +147,7 @@ class PeriodicDataSyncWorker(
     /**
      * Send data to api
      */
-    private fun invokeAddSensorData(
+    private suspend fun invokeAddSensorData(
         sensorEventDataList: ArrayList<SensorEvent>,
         context: Context,
         isGogolefitData: Boolean
@@ -156,21 +160,26 @@ class PeriodicDataSyncWorker(
         if (NetworkUtils.isNetworkAvailable(context) && NetworkUtils.getBatteryPercentage(context) > 15) {
             trackSingleEvent("API_Send ${sensorEventDataList.size}")
 
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
-
             TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
             try {
-                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    sensorEventDataList,
-                    basic, isGogolefitData
-                )
+                val state = Utils.apiWithRetry {
+                    val basic = if (AppState.session.accessToken.isNotEmpty()){
+                        "Bearer ${AppState.session.accessToken}"
+                    }else {
+                        "Basic ${
+                            Utils.toBase64(
+                                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                    "https://"
+                                ).removePrefix("http://")
+                            )
+                        }"
+                    }
+                    SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                        AppState.session.userId,
+                        sensorEventDataList,
+                        basic, isGogolefitData
+                    )
+                }
                 LampLog.e("PeriodicDataSyncWorker", " Lamp Core Response -  $state")
                 if (state.isNotEmpty()) {
                     //Code for drop DB

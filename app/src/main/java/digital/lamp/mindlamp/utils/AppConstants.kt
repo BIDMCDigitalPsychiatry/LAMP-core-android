@@ -30,7 +30,11 @@ internal object AppConstants {
 
 
     const val JAVASCRIPT_OBJ_LOGIN = "login"
+
     const val JAVASCRIPT_OBJ_LOGOUT = "logout"
+
+    const val JAVASCRIPT_OBJ_RENEWTOKEN = "renewToken"
+
     const val BASE_URL_WEB = "https://dashboard.lamp.digital/#/"
     const val MAIN_PAGE_URL = "https://dashboard.lamp.digital/#/?a="
 
