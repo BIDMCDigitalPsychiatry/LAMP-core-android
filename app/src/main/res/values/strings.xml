@@ -72,7 +72,28 @@
     <string name="current_streak_days" translatable="false">Current streak </string>
     <string name="longest_streak_days" translatable="false">Longest streak </string>
     <string name="way_to_go" translatable="false">Way To Go!</string>
-    <string name="health_permission_description">This application integrates with Google Health Connect to securely access and analyze health and fitness data already collected by other devices and applications on your device. The types of data accessed may include: Steps, Sleep, Distance, Calories Burned, Heart Rate, Blood Pressure, Blood Glucose, Oxygen Saturation, Body Temperature, Respiratory Rate, Body Fat, Hydration, Nutrition, and Movement Speed.   \n
-        All health data is accessed solely for use within authorized clinical research studies conducted by the Beth Israel Deaconess Medical Center Division of Digital Psychiatry and its collaborating healthcare institutions. No health data will be collected or transmitted without your explicit informed consent. You may revoke Health Connect permissions at any time through your device settings without affecting your participation in other aspects of the study.</string>
+    <string name="health_permission_description">This app integrates with Google Health Connect to securely access health and fitness data already stored on your device. These permissions are required for core features used in approved clinical research programs at Beth Israel Deaconess Medical Center’s Division of Digital Psychiatry.\n
+
+Why each data type is requested\n
+
+        1.<b>Steps, Distance, Activity</b> — used to understand daily mobility patterns for research.\n
+        2.<b>Speed</b> — used to analyze transportation and mobility trends.\n
+        3.<b>Heart Rate</b> — used to study stress physiology and mental-health–related heart rate changes.\n
+        4.<b>Respiratory Rate</b> — used to assess exercise levels and cardiorespiratory fitness.\n
+        5.<b>Sleep</b> — used to understand the impact of sleep duration and patterns on wellbeing.\n
+        6.<b>Active &amp; Total Calories, Basal Metabolic Rate</b> — used to study physical activity and energy use.\n
+        7.<b>Body Temperature</b> — used to evaluate physiological trends related to stress.\n
+        8.<b>Body Fat</b> — used for body-composition insights relevant to wellness research.\n
+        9.<b>Hydration</b> — used to understand hydration patterns that may affect mood and cognition.\n
+        10.<b>Nutrition</b> — used to assess dietary patterns related to mental health outcomes.\n
+        11.<b>Blood Pressure</b> — used only in specific clinical studies involving cardiovascular factors.\n
+        12.<b>Blood Glucose</b> — used only in approved programs studying metabolic factors.\n
+        13.<b>Oxygen Saturation</b> — used in research involving breathing, sleep, and physiological patterns.\n
+How your data is handled\n
+
+1.Data is used only within authorized clinical research studies.\n
+2.Data is not collected, shared, or transmitted without your explicit informed consent.\n
+3.You may revoke Health Connect permissions at any time in your device settings.\n
+4.Removing permissions does not affect your ability to participate in other non-data features of the study.\n</string>
     <string name="agree" translatable="false">Agree</string>
 </resources>
