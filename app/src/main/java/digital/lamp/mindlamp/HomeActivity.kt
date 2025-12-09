@@ -370,7 +370,6 @@ class HomeActivity : AppCompatActivity() {
                     val gson = Gson()
                     val dataWrapperType = object : TypeToken<DataWrapper>() {}.type
                     val dataWrapper: DataWrapper = gson.fromJson(state.toString(), dataWrapperType)
-                    Log.e("dataWrapper", "$dataWrapper")
                     if (!dataWrapper.data.isNullOrEmpty()) {
                         val (currentStreak, longestStreak) = findLongestAndCurrentStreak(dataWrapper.data)
                         updateStreak(currentStreak, longestStreak)
