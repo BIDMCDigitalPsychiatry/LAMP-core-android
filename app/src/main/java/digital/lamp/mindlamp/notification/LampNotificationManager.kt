@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.RemoteMessage
 import digital.lamp.mindlamp.HomeActivity
@@ -190,7 +189,6 @@ object LampNotificationManager {
      * @param remoteMessage The message to display in the notification.
      */
     fun notificationOpenApp(context: Context, remoteMessage: RemoteMessage) {
-        Log.e("remote message","${remoteMessage.data}")
         val homeIntent = Intent(context, HomeActivity::class.java)
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
 

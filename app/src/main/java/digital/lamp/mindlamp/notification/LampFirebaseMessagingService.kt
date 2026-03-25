@@ -42,7 +42,6 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        Log.e("remote message","${remoteMessage}")
         DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
         var actionList: List<ActionData> = listOf()
