@@ -111,6 +111,16 @@ android {
             buildConfigField 'boolean', 'DO_LOG', 'false'
         }
 
+        development{
+            dimension "tier"
+            buildConfigField 'String', 'HOST', project.developmentBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.developmentLogUrl
+            buildConfigField 'String', 'BASE_URL_WEB', project.developmentBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.developmentMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.developmentPrivacyPolicyUrl
+            buildConfigField 'String','ACTIVITY_EVENT_URL', project.developmentMainActivityEventUrl
+            buildConfigField 'boolean', 'DO_LOG', 'false'
+        }
     }
     lint {
         abortOnError false
