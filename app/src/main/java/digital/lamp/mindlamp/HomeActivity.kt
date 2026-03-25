@@ -34,6 +34,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -202,6 +203,7 @@ class HomeActivity : AppCompatActivity() {
         object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 Log.e(TAG, "webview progress${view.progress}")
+                Log.e(TAG, "webview url${url}")
                 if (view.progress == 100) {
                     isPageLoadedComplete = true
                     Log.e(TAG, " : $url")
@@ -220,7 +222,54 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView,
+                request: WebResourceRequest
+            ): Boolean {
+                val url = request.url.toString()
+                Log.e("url","$url")
+                return try {
+                    when {
+                        (url.contains("meet.google.com")) ->{
+                            openInBrowser(view.context, url)
+                            return true
+                        }
+                        (url.startsWith("intent://")) -> {
+                            try {
+                                val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+
+                                // Prefer browser fallback URL
+                                val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                                val httpsUrl = fallbackUrl ?: intent.dataString
+
+                                if (!httpsUrl.isNullOrEmpty()) {
+                                    openInBrowser(view.context, httpsUrl)
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            return true
+                        }
+
+                        // Normal web links → stay inside WebView
+                        url.startsWith("http://") || url.startsWith("https://") -> {
+                            false
+                        }
+
+                        else -> {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            view.context.startActivity(intent)
+                            true
+                        }
+                    }
+                } catch (e: Exception) {
+                    LampLog.printStackTrace(e)
+                    true
+                }
+            }
+
+
+           /* override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
                 return if (url == null || url.startsWith("http://") || url.startsWith("https://")) false else try {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     view.context.startActivity(intent)
@@ -229,7 +278,7 @@ class HomeActivity : AppCompatActivity() {
                     LampLog.printStackTrace(e)
                     true
                 }
-            }
+            }*/
 
             override fun onReceivedSslError(
                 view: WebView?,
@@ -257,6 +306,11 @@ class HomeActivity : AppCompatActivity() {
 
         }
 
+    }
+    private fun openInBrowser(context: Context, url: String) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(browserIntent)
     }
 
     fun updateStreak(current: Int,longest:Int) {
@@ -582,8 +636,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun initializePrivacyPolicyWebview(){
-        binding.webView.clearCache(true)
-        binding.webView.clearHistory()
+      /*  binding.webView.clearCache(true)
+        binding.webView.clearHistory()*/
         WebView.setWebContentsDebuggingEnabled(true)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
@@ -621,6 +675,13 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         binding.progressBar.visibility = View.VISIBLE
 
+        binding.webView.webViewClient = myWebViewClient
+        binding.webView.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                request.grant(request.resources)
+            }
+        }
+
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
         binding.webView.addJavascriptInterface(WebAppInterface(this),JAVASCRIPT_OBJ_RENEWTOKEN)
@@ -644,12 +705,7 @@ class HomeActivity : AppCompatActivity() {
 
         if (!isPageLoadedComplete)
             startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
-        binding.webView.webViewClient = myWebViewClient
-        binding.webView.webChromeClient = object : WebChromeClient() {
-            override fun onPermissionRequest(request: PermissionRequest) {
-                request.grant(request.resources)
-            }
-        }
+
     }
 
     /**

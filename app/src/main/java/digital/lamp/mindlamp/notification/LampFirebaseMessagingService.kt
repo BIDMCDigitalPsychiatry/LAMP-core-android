@@ -12,9 +12,17 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.SensorSpecs
-import digital.lamp.mindlamp.model.*
+import digital.lamp.mindlamp.model.ActionData
+import digital.lamp.mindlamp.model.DiagnosticData
+import digital.lamp.mindlamp.model.DiagnosticDataContent
+import digital.lamp.mindlamp.model.DiagnosticStorage
+import digital.lamp.mindlamp.model.PendingData
 import digital.lamp.mindlamp.repository.LampForegroundService
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.Sensors
+import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -34,6 +42,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
+        Log.e("remote message","${remoteMessage}")
         DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
         var actionList: List<ActionData> = listOf()

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.RemoteMessage
 import digital.lamp.mindlamp.HomeActivity
@@ -189,6 +190,7 @@ object LampNotificationManager {
      * @param remoteMessage The message to display in the notification.
      */
     fun notificationOpenApp(context: Context, remoteMessage: RemoteMessage) {
+        Log.e("remote message","${remoteMessage.data}")
         val homeIntent = Intent(context, HomeActivity::class.java)
         homeIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
@@ -198,24 +200,26 @@ object LampNotificationManager {
         )
 
         val notification =
-            NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
-                .setContentTitle(remoteMessage.data["title"])
-                .setContentText(
-                    String.format(
-                        context.getString(R.string.local_notification_text),
-                        remoteMessage.data["title"]
+            remoteMessage.data["expiry"]?.toLong()?.let {
+                NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
+                    .setContentTitle(remoteMessage.data["title"])
+                    .setContentText(
+                        String.format(
+                            context.getString(R.string.local_notification_text),
+                            remoteMessage.data["title"]
+                        )
                     )
-                )
-                .setSmallIcon(R.drawable.ic_noti_icon)
-                .setLargeIcon(
-                    BitmapFactory.decodeResource(
-                        context.resources,
-                        R.drawable.ic_launcher_round
+                    .setSmallIcon(R.drawable.ic_noti_icon)
+                    .setLargeIcon(
+                        BitmapFactory.decodeResource(
+                            context.resources,
+                            R.drawable.ic_launcher_round
+                        )
                     )
-                )
-                .setAutoCancel(true)
-                .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
-                .setContentIntent(homePendingIntent)
+                    .setAutoCancel(true)
+                    .setTimeoutAfter(it)
+            }
+                ?.setContentIntent(homePendingIntent)
 
         val manager =
             context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -231,7 +235,7 @@ object LampNotificationManager {
 
         val index = remoteMessage.data["notificationId"]?.toInt() ?: 0
         DebugLogs.writeToFile("online 3  notificationId $notificationId index $index");
-        manager.notify(index, notification.build())
+        manager.notify(index, notification?.build())
     }
 
     /**

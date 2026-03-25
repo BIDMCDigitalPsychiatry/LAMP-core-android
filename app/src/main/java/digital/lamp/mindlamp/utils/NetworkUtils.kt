@@ -1,87 +1,104 @@
-package digital.lamp.mindlamp.utils;
+package digital.lamp.mindlamp.utils
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.os.BatteryManager;
-import android.os.Build;
-
-import static android.content.Context.BATTERY_SERVICE;
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
+import android.os.BatteryManager
+import android.os.Build
 
 /**
- * This class is responsible to check the device network connection.
+ * Utility class responsible for checking device network connection,
+ * Wi-Fi status, and battery percentage.
  */
-public class NetworkUtils {
-    /**
-     * Check network connection is available or not
-     *
-     * @param context
-     * @return true - if net connected
-     * @return false - not connected
-     */
-    public static boolean isNetworkAvailable(Context context) {
-        ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivity != null) {
-            @SuppressLint("MissingPermission") NetworkInfo netInfo = connectivity.getActiveNetworkInfo();
-            if (netInfo != null && netInfo.isConnected()) {
-                return true;
-            }
-        }
-        return false;
-    }
+object NetworkUtils {
 
     /**
-     * This method is responsible for wifi network is available or not
+     * Check whether any network connection (mobile data or Wi-Fi) is available
+     * and has validated internet access.
      *
-     * @param context
-     * @return true - if connected to an access point
-     * @return false - Wi-Fi adapter is off
+     * @param context Application or Activity context
+     * @return true if internet is available, false otherwise
      */
-    public static boolean isWifiNetworkAvailable(Context context) {
-        WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+    fun isNetworkAvailable(context: Context): Boolean {
+        val connectivity =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        if (wifiMgr.isWifiEnabled()) { // Wi-Fi adapter is ON
-
-            WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
-
-            if (wifiInfo.getNetworkId() == -1) {
-                return false; // Not connected to an access point
-            }
-            return true; // Connected to an access point
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivity.activeNetwork ?: return false
+            val capabilities =
+                connectivity.getNetworkCapabilities(network) ?: return false
+            // NET_CAPABILITY_INTERNET   → network is supposed to have internet
+            // NET_CAPABILITY_VALIDATED  → Android confirmed real traffic can flow
+            //                            (catches captive portals like hotel Wi-Fi)
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         } else {
-            return false; // Wi-Fi adapter is OFF
+            // Fallback for API < 23 — deprecated but still functional
+            @Suppress("DEPRECATION")
+            val netInfo = connectivity.activeNetworkInfo ?: return false
+            @Suppress("DEPRECATION")
+            netInfo.isConnected
         }
     }
 
     /**
-     * This method is responsible to fetch device battery percentage.
+     * Check whether the device is connected to a Wi-Fi access point.
      *
-     * @param context
-     * @return
+     * Uses NetworkCapabilities on API 29+ to avoid deprecated WifiManager APIs.
+     *
+     * @param context Application or Activity context
+     * @return true if connected to Wi-Fi, false otherwise
      */
-    public static int getBatteryPercentage(Context context) {
+    fun isWifiNetworkAvailable(context: Context): Boolean {
+        val connectivity =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        if (Build.VERSION.SDK_INT >= 21) {
-
-            BatteryManager bm = (BatteryManager) context.getSystemService(BATTERY_SERVICE);
-            return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivity.activeNetwork ?: return false
+            val capabilities =
+                connectivity.getNetworkCapabilities(network) ?: return false
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
         } else {
+            // Fallback for API < 23
+            @Suppress("DEPRECATION")
+            val wifiMgr =
+                context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            @Suppress("DEPRECATION")
+            if (wifiMgr.isWifiEnabled) {
+                @Suppress("DEPRECATION")
+                wifiMgr.connectionInfo.networkId != -1
+            } else {
+                false
+            }
+        }
+    }
 
-            IntentFilter iFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-            Intent batteryStatus = context.registerReceiver(null, iFilter);
+    /**
+     * Fetch the current device battery percentage.
+     *
+     * Uses BatteryManager directly on API 21+, falls back to
+     * broadcast receiver for older devices.
+     *
+     * @param context Application or Activity context
+     * @return Battery level as an integer (0–100), or -1 if unavailable
+     */
+    fun getBatteryPercentage(context: Context): Int {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        } else {
+            // Fallback for API < 21 — use sticky broadcast
+            val iFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            val batteryStatus = context.registerReceiver(null, iFilter)
 
-            int level = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) : -1;
-            int scale = batteryStatus != null ? batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1) : -1;
+            val level = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
 
-            double batteryPct = level / (double) scale;
-            return (int) (batteryPct * 100);
+            if (level == -1 || scale == -1) return -1
+            ((level / scale.toDouble()) * 100).toInt()
         }
     }
 }
