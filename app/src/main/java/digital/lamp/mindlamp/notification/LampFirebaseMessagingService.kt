@@ -40,48 +40,62 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
      * @param remoteMessage The remote message received from Firebase Cloud Messaging.
      */
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        super.onMessageReceived(remoteMessage)
+        try {
+            super.onMessageReceived(remoteMessage)
+            Log.e("remote message", "${remoteMessage.data}")
+            DebugLogs.writeToFile(remoteMessage.data.toString())
+            val gson = Gson()
+            var actionList: List<ActionData> = listOf()
+            if (remoteMessage.data["actions"] != null)
+                actionList = try {
+                    gson.fromJson(
+                        remoteMessage.data["actions"],
+                        object : TypeToken<List<ActionData?>?>() {}.type
+                    ) as? List<ActionData> ?: listOf()
+                } catch (e: Exception) {
+                    DebugLogs.writeToFile("actions parse error: ${e.message}")
+                    listOf()
+                }
 
-        DebugLogs.writeToFile(remoteMessage.data.toString())
-        val gson = Gson()
-        var actionList: List<ActionData> = listOf()
-        if (remoteMessage.data["actions"] != null)
-            actionList = gson.fromJson(
-                remoteMessage.data["actions"],
-                object : TypeToken<List<ActionData?>?>() {}.type
-            ) as List<ActionData>
-
-        //Notification with page and action Button
-        if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty() && actionList.isNotEmpty()) {
-            LampNotificationManager.notificationWithActionButton(this, remoteMessage, actionList)
-        }
-        //Notification with page and no action Button
-        else if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty()) {
-            LampNotificationManager.notificationWithoutAction(this, remoteMessage)
-        } else if (remoteMessage.data["command"] != null) {
-            invokeDiagnosticData()
-        }
-        //Notification with page empty or action empty
-        else {
-            LampNotificationManager.notificationOpenApp(this, remoteMessage)
-        }
-
-
-        //Call Analytics API
-        if (AppState.session.isLoggedIn) {
-            val notificationData =
-                NotificationData(
-                    "notification",
-                    remoteMessage.data.toString(),
-                    Utils.getUserAgent()
+            //Notification with page and action Button
+            if (remoteMessage.data["page"] != null && remoteMessage.data["page"]?.isNotEmpty() == true && actionList.isNotEmpty()) {
+                LampNotificationManager.notificationWithActionButton(
+                    this,
+                    remoteMessage,
+                    actionList
                 )
+            }
+            //Notification with page and no action Button
+            else if (remoteMessage.data["page"] != null && remoteMessage.data["page"]?.isNotEmpty() == true) {
+                LampNotificationManager.notificationWithoutAction(this, remoteMessage)
+            } else if (remoteMessage.data["command"] != null) {
+                invokeDiagnosticData()
+            }
+            //Notification with page empty or action empty
+            else {
+                LampNotificationManager.notificationOpenApp(this, remoteMessage)
+            }
 
-            val notificationEvent =
-                SensorEvent(
-                    notificationData,
-                    "lamp.analytics", System.currentTimeMillis().toDouble()
-                )
-            invokeNotificationData(notificationEvent)
+
+            //Call Analytics API
+            if (AppState.session.isLoggedIn) {
+                val notificationData =
+                    NotificationData(
+                        "notification",
+                        remoteMessage.data.toString(),
+                        Utils.getUserAgent()
+                    )
+
+                val notificationEvent =
+                    SensorEvent(
+                        notificationData,
+                        "lamp.analytics", System.currentTimeMillis().toDouble()
+                    )
+                invokeNotificationData(notificationEvent)
+            }
+        }catch (e: Exception){
+            LampLog.printStackTrace(e)
+            DebugLogs.writeToFile("onMessageReceived error: ${e.message}")
         }
     }
     /**
@@ -99,102 +113,123 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun invokeNotificationData(notificationEventRequest: SensorEvent) {
-        val basic = "Basic ${
-            Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                    "https://"
-                ).removePrefix("http://")
-            )
-        }"
-        Thread {
-            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
-            try {
-                // Do network action in this function
-                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    notificationEventRequest,
-                    basic
+        try {
+            val basic = "Basic ${
+                Utils.toBase64(
+                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                        "https://"
+                    ).removePrefix("http://")
                 )
-                LampLog.e(TAG, " Notification Data Send -  $state")
-            } catch (e: Exception) {
+            }"
+            Thread {
+                TrafficStats.setThreadStatsTag((Thread.currentThread().id % Int.MAX_VALUE).toInt())
+                try {
+                    // Do network action in this function
+                    val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                        AppState.session.userId,
+                        notificationEventRequest,
+                        basic
+                    )
+                    LampLog.e(TAG, " Notification Data Send -  $state")
+                } catch (e: Exception) {
 
-            }
-        }.start()
+                }
+            }.start()
+        }catch (e: Exception){
+            LampLog.printStackTrace(e)
+            DebugLogs.writeToFile("invokeNotificationData error: ${e.message}")
+        }
 
 
     }
 
     private fun invokeDiagnosticData() {
-        val storage = DiagnosticStorage(
-            Utils.getTotalInternalMemorySize(this@LampFirebaseMessagingService),
-            Utils.getAvailableInternalMemorySize(this@LampFirebaseMessagingService)
-        )
-        val sensorDao = AppDatabase.getInstance(this).sensorDao()
-        val analyticsDao = AppDatabase.getInstance(this).analyticsDao()
-        var sensorSpecList = listOf<SensorSpecs>()
-        var configuredSensors = listOf<String>()
-        var pendingRecordCount = 0
-        GlobalScope.launch(Dispatchers.IO) {
-            sensorSpecList = sensorDao.getSensorsList()
-            pendingRecordCount =
-                analyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
-
-            val pendingData = PendingData(
-                AppState.session.lastAnalyticsTimestamp.toString(),
-                pendingRecordCount.toString()
+        try {
+            val storage = DiagnosticStorage(
+                Utils.getTotalInternalMemorySize(this@LampFirebaseMessagingService),
+                Utils.getAvailableInternalMemorySize(this@LampFirebaseMessagingService)
             )
+            val sensorDao = AppDatabase.getInstance(this).sensorDao()
+            val analyticsDao = AppDatabase.getInstance(this).analyticsDao()
+            var sensorSpecList = listOf<SensorSpecs>()
+            var configuredSensors = listOf<String>()
+            var pendingRecordCount = 0
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    sensorSpecList = sensorDao.getSensorsList()
+                    pendingRecordCount =
+                        analyticsDao.getNumberOfRecordsToSync(AppState.session.lastAnalyticsTimestamp)
 
-            if (sensorSpecList.isEmpty()) {
-                val sensorsList: Array<Sensors> = Sensors.values()
-                sensorsList.toCollection(ArrayList())
-                configuredSensors = sensorsList.map { it.sensor_name }
-            } else {
-                configuredSensors = sensorSpecList.map { it.spec!! }
-            }
-
-            val diagnosticDataContent = DiagnosticDataContent(
-                storage,
-                configuredSensors,
-                false,
-                AppState.session.isLoggedIn,
-                Utils.isDeviceIsInPowerSaveMode(this@LampFirebaseMessagingService),
-                this@LampFirebaseMessagingService.isServiceRunning(LampForegroundService::class.java),
-                NetworkUtils.isWifiNetworkAvailable(this@LampFirebaseMessagingService),
-                Utils.getLocationAuthorizationStatus(this@LampFirebaseMessagingService),
-                pendingData
-            )
-            val diagnosticData =
-                DiagnosticData("diagnostic", diagnosticDataContent, "Android", Utils.getUserAgent())
-
-            val diagnosticEvent =
-                SensorEvent(
-                    diagnosticData,
-                    "lamp.analytics", System.currentTimeMillis().toDouble()
-                )
-
-            val basic = if (AppState.session.accessToken.isNotEmpty()){
-                "Bearer ${AppState.session.accessToken}"
-            }else {
-                "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
+                    val pendingData = PendingData(
+                        AppState.session.lastAnalyticsTimestamp.toString(),
+                        pendingRecordCount.toString()
                     )
-                }"
-            }
-            try {
-                val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
-                    AppState.session.userId,
-                    diagnosticEvent,
-                    basic
-                )
-                LampLog.e(TAG, "diagnostic data send -  $state")
-                DebugLogs.writeToFile("Diagnostic Data Send $state")
 
-            } catch (e: Exception) {
+                    if (sensorSpecList.isEmpty()) {
+                        val sensorsList: Array<Sensors> = Sensors.values()
+                        sensorsList.toCollection(ArrayList())
+                        configuredSensors = sensorsList.map { it.sensor_name }
+                    } else {
+                        configuredSensors = sensorSpecList.mapNotNull { it.spec }
+                    }
 
+                    val diagnosticDataContent = DiagnosticDataContent(
+                        storage,
+                        configuredSensors,
+                        false,
+                        AppState.session.isLoggedIn,
+                        Utils.isDeviceIsInPowerSaveMode(this@LampFirebaseMessagingService),
+                        this@LampFirebaseMessagingService.isServiceRunning(LampForegroundService::class.java),
+                        NetworkUtils.isWifiNetworkAvailable(this@LampFirebaseMessagingService),
+                        Utils.getLocationAuthorizationStatus(this@LampFirebaseMessagingService),
+                        pendingData
+                    )
+                    val diagnosticData =
+                        DiagnosticData(
+                            "diagnostic",
+                            diagnosticDataContent,
+                            "Android",
+                            Utils.getUserAgent()
+                        )
+
+                    val diagnosticEvent =
+                        SensorEvent(
+                            diagnosticData,
+                            "lamp.analytics", System.currentTimeMillis().toDouble()
+                        )
+
+                    val basic = if (AppState.session.accessToken.isNotEmpty()) {
+                        "Bearer ${AppState.session.accessToken}"
+                    } else {
+                        "Basic ${
+                            Utils.toBase64(
+                                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
+                                    "https://"
+                                ).removePrefix("http://")
+                            )
+                        }"
+                    }
+                    try {
+                        val state =
+                            SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
+                                AppState.session.userId,
+                                diagnosticEvent,
+                                basic
+                            )
+                        LampLog.e(TAG, "diagnostic data send -  $state")
+                        DebugLogs.writeToFile("Diagnostic Data Send $state")
+
+                    } catch (e: Exception) {
+                        DebugLogs.writeToFile("Diagnostic Data Send $e")
+                    }
+                }catch (e: Exception){
+                    LampLog.printStackTrace(e)
+                    DebugLogs.writeToFile("invokeDiagnosticData inner error: ${e.message}")
+                }
             }
+        } catch (e: Exception) {
+            LampLog.printStackTrace(e)
+            DebugLogs.writeToFile("invokeDiagnosticData error: ${e.message}")
         }
     }
 }

@@ -486,7 +486,7 @@ class HomeActivity : AppCompatActivity() {
         val uniqueDates = mutableSetOf<Date>()
         val calendar = Calendar.getInstance()
 
-        dates.forEach { date ->
+        dates.filterNotNull().forEach { date ->
             calendar.time = date
             calendar.set(Calendar.HOUR_OF_DAY, 0)
             calendar.set(Calendar.MINUTE, 0)
@@ -636,8 +636,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun initializePrivacyPolicyWebview(){
-      /*  binding.webView.clearCache(true)
-        binding.webView.clearHistory()*/
+        binding.webView.clearCache(true)
+        binding.webView.clearHistory()
         WebView.setWebContentsDebuggingEnabled(true)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
@@ -1146,10 +1146,15 @@ class HomeActivity : AppCompatActivity() {
                 AppState.session.clearData()
             }
 
-
-            oSensorDao.deleteSensorList()
-            oActivityDao.deleteActivityList()
-            oAnalyticsDao.dropAnalyticsList()
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    oSensorDao.deleteSensorList()
+                    oActivityDao.deleteActivityList()
+                    oAnalyticsDao.dropAnalyticsList()
+                } catch (e: Exception) {
+                    DebugLogs.writeToFile("showSignedOut DB error: ${e.message}")
+                }
+            }
             NotificationManagerCompat.from(this@HomeActivity).cancelAll();
         }
     }
@@ -1349,7 +1354,7 @@ class HomeActivity : AppCompatActivity() {
                 )
 
                 GlobalScope.launch {
-                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
+                    TrafficStats.setThreadStatsTag((Thread.currentThread().id % Int.MAX_VALUE).toInt())
                     try {
                         val state = Utils.apiWithRetry {
                             val basic = if (AppState.session.accessToken.isNotEmpty()){
@@ -1461,38 +1466,43 @@ class HomeActivity : AppCompatActivity() {
      * Handles notifications
      */
     private fun handleNotification(intent: Intent?) {
-        hideKeyboard()
-        if (intent?.hasExtra("survey_path") == true) {
-            val surveyUrl = intent.getStringExtra("survey_path")
-            val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
+        try {
+            hideKeyboard()
+            if (intent?.hasExtra("survey_path") == true) {
+                val surveyUrl = intent.getStringExtra("survey_path")
+                val notificationId =
+                    intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
 
-            val oSurveyUrl =
-                BuildConfig.BASE_URL_WEB.dropLast(1) + surveyUrl + "?a=" + Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
-                        .removePrefix("http://")
-                )
+                val oSurveyUrl =
+                    BuildConfig.BASE_URL_WEB.dropLast(1) + surveyUrl + "?a=" + Utils.toBase64(
+                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
+                            .removePrefix("http://")
+                    )
 
-            DebugLogs.writeToFile("URL : $oSurveyUrl")
+                DebugLogs.writeToFile("URL : $oSurveyUrl")
 
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.cancel(notificationId)
+                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.cancel(notificationId)
 
-            binding.webView.clearCache(true)
-            binding.webView.clearHistory()
-            binding.webView.settings.javaScriptEnabled = true
-            binding.webView.settings.domStorageEnabled = true
-            binding.webView.settings.allowFileAccess = true
-            binding.webView.clearHistory()
-            binding.webView.loadUrl(oSurveyUrl);
+                binding.webView.clearCache(true)
+                binding.webView.clearHistory()
+                binding.webView.settings.javaScriptEnabled = true
+                binding.webView.settings.domStorageEnabled = true
+                binding.webView.settings.allowFileAccess = true
+                binding.webView.clearHistory()
+                binding.webView.loadUrl(oSurveyUrl);
 
-            binding.webView.webChromeClient = object : WebChromeClient() {
-                override fun onPermissionRequest(request: PermissionRequest) {
-                    request.grant(request.resources)
+                binding.webView.webChromeClient = object : WebChromeClient() {
+                    override fun onPermissionRequest(request: PermissionRequest) {
+                        request.grant(request.resources)
+                    }
                 }
+
+                NotificationManagerCompat.from(this).cancel(notificationId)
+
             }
-
-            NotificationManagerCompat.from(this).cancel(notificationId)
-
+        }catch (e:Exception){
+            DebugLogs.writeToFile("Exception in handleNotification ${e.message}")
         }
     }
 
@@ -1513,7 +1523,7 @@ class HomeActivity : AppCompatActivity() {
                 val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+                    TrafficStats.setThreadStatsTag((Thread.currentThread().id % Int.MAX_VALUE).toInt())
                     try {
                         val state = Utils.apiWithRetry {
                             val basic = if (AppState.session.accessToken.isNotEmpty()){
@@ -1640,10 +1650,7 @@ class HomeActivity : AppCompatActivity() {
         } else {
 
             GlobalScope.launch(Dispatchers.Main) {
-
-                GlobalScope.launch(Dispatchers.Main) {
-                    showApiErrorAlert(getString(R.string.txt_no_internet))
-                }
+                showApiErrorAlert(getString(R.string.txt_no_internet))
             }
         }
     }
