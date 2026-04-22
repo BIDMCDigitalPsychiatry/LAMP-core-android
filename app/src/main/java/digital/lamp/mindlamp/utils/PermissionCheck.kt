@@ -2,7 +2,6 @@ package digital.lamp.mindlamp.utils
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
@@ -30,13 +29,6 @@ object PermissionCheck {
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_SETTINGS)
         val readSyncStatPermission =
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SYNC_STATS)
-        //Android 10
-        val activityRecognitionPermission =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION)
-        val audioRecordPermission =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)
-        val modifyAudioSettingsPermission =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.MODIFY_AUDIO_SETTINGS)
         val writeStorage =
             ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         val notificationPermission =
@@ -59,28 +51,12 @@ object PermissionCheck {
         if (readSyncStatPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_SYNC_STATS)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && activityRecognitionPermission != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.ACTIVITY_RECOGNITION)
-        }
-
-        if (audioRecordPermission != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO)
-        }
-        if (modifyAudioSettingsPermission != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.MODIFY_AUDIO_SETTINGS)
-        }
         if (writeStorage != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
         if (Build.VERSION.SDK_INT >=  Build.VERSION_CODES.TIRAMISU   &&notificationPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.POST_NOTIFICATIONS)
         }
-        // Activity Recognition (Android 10+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            !isPermissionGranted(context, Manifest.permission.ACTIVITY_RECOGNITION)) {
-            listPermissionsNeeded.add(Manifest.permission.ACTIVITY_RECOGNITION)
-        }
-
 
         if (listPermissionsNeeded.isNotEmpty()) {
             ActivityCompat.requestPermissions(
@@ -135,8 +111,5 @@ object PermissionCheck {
             context,
             permission
         ) === PackageManager.PERMISSION_GRANTED
-    }
-    private fun isPermissionGranted(context: Context, permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
     }
 }

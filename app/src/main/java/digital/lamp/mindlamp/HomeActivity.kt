@@ -163,6 +163,7 @@ class HomeActivity : AppCompatActivity() {
     private val permissionChecker by lazy { PermissionChecker(this) }
     private val viewModel: HealthConnectViewModel by viewModels()
     private var activityEventUpdated = false
+    private var pendingWebPermissionRequest: PermissionRequest? = null
     val PERMISSIONS =
         setOf(
             HealthPermission.getReadPermission(StepsRecord::class),
@@ -182,6 +183,9 @@ class HomeActivity : AppCompatActivity() {
         )
     companion object {
         private val TAG = HomeActivity::class.java.simpleName
+
+        private const val REQUEST_RECORD_AUDIO_FOR_WEBVIEW = 1014
+        private const val REQUEST_ACTIVITY_RECOGNITION_FOR_HEALTH_CONNECT = 1015
         private const val REQUEST_LOCATION_REQUEST_CODE = 1011
         private const val REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE = 1013
         private const val WEBPAGE_RELOAD_INTERVAL_TIMER = 20 * 1000L
@@ -654,7 +658,7 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.webViewClient = myWebViewClient
         binding.webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
-                request.grant(request.resources)
+                handleWebViewPermissionRequest(request)
             }
         }
     }
@@ -678,14 +682,14 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.webViewClient = myWebViewClient
         binding.webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
-                request.grant(request.resources)
+                handleWebViewPermissionRequest(request)
             }
         }
 
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
-        binding.webView.addJavascriptInterface(WebAppInterface(this),JAVASCRIPT_OBJ_RENEWTOKEN)
-
+        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_RENEWTOKEN)
+       // WebView.setWebContentsDebuggingEnabled(true);
         var url = ""
         if (AppState.session.isLoggedIn) {
             url = BuildConfig.MAIN_PAGE_URL + Utils.toBase64(
@@ -787,41 +791,48 @@ class HomeActivity : AppCompatActivity() {
                     initializePrivacyPolicyWebview()
                 }else {
                     try {
+                        val activityRecognitionRequested = permissions.contains(Manifest.permission.ACTIVITY_RECOGNITION)
                         val perms = HashMap<String, Int>()
-                        // Initialize the map with both permissions
-                        perms[Manifest.permission.ACTIVITY_RECOGNITION] =
-                            PackageManager.PERMISSION_GRANTED
-
                         if (grantResults.isNotEmpty()) {
-                            for (i in permissions.indices)
+                            for (i in permissions.indices) {
                                 perms[permissions[i]] = grantResults[i]
-                            // Check for both permissions
-                            if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
-                                initializeWebview()
-                                //else any one or both the permissions are not granted
-                            } else {
-                                initializeWebview()
-                                //Now further we check if used denied permanently or not
-                                if (ActivityCompat.shouldShowRequestPermissionRationale(
-                                        this,
-                                        Manifest.permission.ACTIVITY_RECOGNITION
-                                    )
-                                ) {
-                                   showServicePermissionNeededDialog()
-                                } else {
-                                    //  DebugLogs.writeToFile("Display settings screen")
-                                    // case 5. Permission denied permanently.
-                                    // You can open Permission setting's page from here now.
-                                    val intent = Intent()
-                                    intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                                    val uri = Uri.fromParts("package", packageName, null)
-                                    intent.data = uri
-                                    startActivity(intent)
-                                }
                             }
                         }
-                    }catch (e:Exception){
+                        if (!activityRecognitionRequested) {
+                            initializeWebview()
+                        } else if (perms[Manifest.permission.ACTIVITY_RECOGNITION] == PackageManager.PERMISSION_GRANTED) {
+                            initializeWebview()
+                        } else {
+                            initializeWebview()
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                    this,
+                                    Manifest.permission.ACTIVITY_RECOGNITION
+                                )
+                            ) {
+                                showServicePermissionNeededDialog()
+                            } else {
+                                val intent = Intent()
+                                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                val uri = Uri.fromParts("package", packageName, null)
+                                intent.data = uri
+                                startActivity(intent)
+                            }
+                        }
+                    } catch (e: Exception) {
                         DebugLogs.writeToFile("${e.message}")
+                    }
+                }
+            } //T
+            REQUEST_ACTIVITY_RECOGNITION_FOR_HEALTH_CONNECT -> {
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+                    checkPermissionsAndRun(healthConnectClient)
+                } else {
+                    AppState.session.isGoogleHealthConnectConnected = false
+                    checkGPSPermission()
+                    if (!this.isServiceRunning(LampForegroundService::class.java)) {
+                        startLampService()
                     }
                 }
             }
@@ -841,6 +852,20 @@ class HomeActivity : AppCompatActivity() {
             }
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
+            }
+            REQUEST_RECORD_AUDIO_FOR_WEBVIEW -> {
+                val granted = grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                LampLog.d(TAG, "WebView: RECORD_AUDIO granted=$granted")
+                val webRequest = pendingWebPermissionRequest
+                pendingWebPermissionRequest = null
+                if (webRequest != null) {
+                    if (granted) {
+                        webRequest.grant(webRequest.resources)
+                    } else {
+                        webRequest.deny()
+                    }
+                }
             }
             PERMISSION_REQUEST_CODE -> {
                 val allPermissionsGranted = grantResults.isNotEmpty() &&
@@ -982,6 +1007,17 @@ class HomeActivity : AppCompatActivity() {
         }
 
     private fun checkPermissionsAndRun(client: HealthConnectClient) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                REQUEST_ACTIVITY_RECOGNITION_FOR_HEALTH_CONNECT
+            )
+            return
+        }
         lifecycleScope.launch {
             val granted = client.permissionController.getGrantedPermissions()
             if (granted.containsAll(PERMISSIONS)) {
@@ -1046,7 +1082,7 @@ class HomeActivity : AppCompatActivity() {
         /** Show a toast from the web page  */
         @JavascriptInterface
         fun postMessage(jsonString: String) {
-            Log.e(TAG, " : $jsonString")
+            Log.e(TAG, " JavascriptInterface PostMessage: $jsonString")
             try {
                 val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
                 if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
@@ -1074,6 +1110,33 @@ class HomeActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun handleWebViewPermissionRequest(request: PermissionRequest) {
+        // WebView permissions (e.g. navigator.mediaDevices.getUserMedia).
+        // Android still needs runtime permission for RECORD_AUDIO.
+        val wantsAudio = request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)
+        if (!wantsAudio) {
+            request.grant(request.resources)
+            return
+        }
+
+        val hasAudioPermission =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+        if (hasAudioPermission) {
+            request.grant(request.resources)
+            return
+        }
+
+        pendingWebPermissionRequest?.deny()
+        pendingWebPermissionRequest = request
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            REQUEST_RECORD_AUDIO_FOR_WEBVIEW
+        )
+    }
+
     fun onRenewAuthenticationToken(response: RefreshTokenResponse) {
         DebugLogs.writeToFile("Renew token received")
 
@@ -1494,7 +1557,7 @@ class HomeActivity : AppCompatActivity() {
 
                 binding.webView.webChromeClient = object : WebChromeClient() {
                     override fun onPermissionRequest(request: PermissionRequest) {
-                        request.grant(request.resources)
+                        handleWebViewPermissionRequest(request)
                     }
                 }
 
