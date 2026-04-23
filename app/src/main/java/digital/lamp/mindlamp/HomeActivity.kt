@@ -642,7 +642,7 @@ class HomeActivity : AppCompatActivity() {
     private fun initializePrivacyPolicyWebview(){
         binding.webView.clearCache(true)
         binding.webView.clearHistory()
-        WebView.setWebContentsDebuggingEnabled(true)
+        //WebView.setWebContentsDebuggingEnabled(true)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
         binding.webView.settings.domStorageEnabled = true
@@ -804,7 +804,7 @@ class HomeActivity : AppCompatActivity() {
                             initializeWebview()
                         } else {
                             initializeWebview()
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                           if (ActivityCompat.shouldShowRequestPermissionRationale(
                                     this,
                                     Manifest.permission.ACTIVITY_RECOGNITION
                                 )
@@ -823,7 +823,7 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
             } //T
-            REQUEST_ACTIVITY_RECOGNITION_FOR_HEALTH_CONNECT -> {
+          REQUEST_ACTIVITY_RECOGNITION_FOR_HEALTH_CONNECT -> {
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
@@ -957,15 +957,7 @@ class HomeActivity : AppCompatActivity() {
     private fun checkHealthConnectSensorsAdded()  {
         val specList = mSensorSpecsList.map { it.spec }
 
-        if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name) ||
-            specList.contains(Sensors.NUTRITION.sensor_name) ||
-            specList.contains(Sensors.STEPS.sensor_name) ||
-            specList.contains(Sensors.HEART_RATE.sensor_name) ||
-            specList.contains(Sensors.BLOOD_GLUCOSE.sensor_name) ||
-            specList.contains(Sensors.BLOOD_PRESSURE.sensor_name) ||
-            specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
-            specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
-        ) {
+        if (shouldRequestHealthConnectPermissions(specList)) {
            // fitSignIn()
             checkHealthConnectAvailable()
 
@@ -976,6 +968,17 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun shouldRequestHealthConnectPermissions(specList: List<String?>): Boolean {
+        return specList.contains(Sensors.NEARBY_DEVICES.sensor_name) ||
+            specList.contains(Sensors.NUTRITION.sensor_name) ||
+            specList.contains(Sensors.STEPS.sensor_name) ||
+            specList.contains(Sensors.HEART_RATE.sensor_name) ||
+            specList.contains(Sensors.BLOOD_GLUCOSE.sensor_name) ||
+            specList.contains(Sensors.BLOOD_PRESSURE.sensor_name) ||
+            specList.contains(Sensors.OXYGEN_SATURATION.sensor_name) ||
+            specList.contains(Sensors.BODY_TEMPERATURE.sensor_name)
     }
     val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
     val requestPermissions =
@@ -1007,6 +1010,13 @@ class HomeActivity : AppCompatActivity() {
         }
 
     private fun checkPermissionsAndRun(client: HealthConnectClient) {
+        val specList = mSensorSpecsList.map { it.spec }
+        LampLog.d(TAG, "HealthConnect specList=$specList")
+        LampLog.d(TAG, "ActivityRecognition Senor =" + shouldRequestHealthConnectPermissions(specList))
+        if (!shouldRequestHealthConnectPermissions(specList)) {
+            AppState.session.isGoogleHealthConnectConnected = false
+            return
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) !=
             PackageManager.PERMISSION_GRANTED
