@@ -613,7 +613,6 @@ class HomeActivity : AppCompatActivity() {
                         "http://"
                     )
             )
-            Log.e("url","$url")
             binding.webView.loadUrl(url)
 
         } else {
@@ -970,7 +969,6 @@ class HomeActivity : AppCompatActivity() {
         /** Show a toast from the web page  */
         @JavascriptInterface
         fun postMessage(jsonString: String) {
-            Log.e(TAG, " : $jsonString")
             try {
                 val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
                 if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
@@ -1361,8 +1359,6 @@ class HomeActivity : AppCompatActivity() {
                     AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
                         .removePrefix("http://")
                 )
-
-            DebugLogs.writeToFile("URL : $oSurveyUrl")
 
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.cancel(notificationId)

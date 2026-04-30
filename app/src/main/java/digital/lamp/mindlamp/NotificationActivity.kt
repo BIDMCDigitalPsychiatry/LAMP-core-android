@@ -42,7 +42,6 @@ class NotificationActivity : AppCompatActivity() {
                 .removePrefix("http://")
         )
 
-        DebugLogs.writeToFile("URL : $oSurveyUrl")
         binding.customWebview.clearCache(true)
         binding.customWebview.clearHistory()
         binding.customWebview.settings.javaScriptEnabled = true

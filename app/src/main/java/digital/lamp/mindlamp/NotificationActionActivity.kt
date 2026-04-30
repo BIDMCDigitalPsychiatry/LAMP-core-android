@@ -38,8 +38,6 @@ class NotificationActionActivity : AppCompatActivity() {
                 .removePrefix("http://")
         )
 
-        DebugLogs.writeToFile("URL : $oSurveyUrl")
-
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(notificationId)
 
