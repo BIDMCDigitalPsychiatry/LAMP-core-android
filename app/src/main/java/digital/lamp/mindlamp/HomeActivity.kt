@@ -562,7 +562,7 @@ class HomeActivity : AppCompatActivity() {
     private fun initializePrivacyPolicyWebview(){
         binding.webView.clearCache(true)
         binding.webView.clearHistory()
-        WebView.setWebContentsDebuggingEnabled(true)
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
         binding.webView.settings.domStorageEnabled = true
@@ -592,7 +592,7 @@ class HomeActivity : AppCompatActivity() {
     private fun initializeWebview() {
         binding.webView.clearCache(true)
         binding.webView.clearHistory()
-        WebView.setWebContentsDebuggingEnabled(true)
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
         binding.webView.settings.domStorageEnabled = true
