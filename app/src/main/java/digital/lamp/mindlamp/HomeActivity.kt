@@ -24,6 +24,7 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
+import android.os.Message
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -315,6 +316,101 @@ class HomeActivity : AppCompatActivity() {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(browserIntent)
+    }
+
+    /**
+     * WebChromeClient for the main WebView: media permissions plus opening
+     * target=_blank / window.open navigations in the system browser (WebViewTransport pattern).
+     */
+    private fun webChromeClientForMainWebView(): WebChromeClient {
+        return object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest) {
+                handleWebViewPermissionRequest(request)
+            }
+
+            override fun onCreateWindow(
+                view: WebView,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: Message
+            ): Boolean {
+                val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
+                val newWebView = WebView(view.context).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                }
+                newWebView.webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        v: WebView,
+                        request: WebResourceRequest
+                    ): Boolean {
+                        val url = request.url.toString()
+                        when {
+                            url.startsWith("http://") || url.startsWith("https://") ->
+                                openInBrowser(v.context, url)
+                            url.startsWith("intent://") -> {
+                                try {
+                                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                                    val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                                    val httpsUrl = fallbackUrl ?: intent.dataString
+                                    if (!httpsUrl.isNullOrEmpty()) {
+                                        openInBrowser(v.context, httpsUrl)
+                                    }
+                                } catch (e: Exception) {
+                                    LampLog.printStackTrace(e)
+                                }
+                            }
+                            else -> {
+                                try {
+                                    v.context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, request.url)
+                                    )
+                                } catch (e: Exception) {
+                                    LampLog.printStackTrace(e)
+                                }
+                            }
+                        }
+                        v.destroy()
+                        return true
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun shouldOverrideUrlLoading(v: WebView, url: String?): Boolean {
+                        if (url.isNullOrEmpty()) return false
+                        when {
+                            url.startsWith("http://") || url.startsWith("https://") ->
+                                openInBrowser(v.context, url)
+                            url.startsWith("intent://") -> {
+                                try {
+                                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                                    val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                                    val httpsUrl = fallbackUrl ?: intent.dataString
+                                    if (!httpsUrl.isNullOrEmpty()) {
+                                        openInBrowser(v.context, httpsUrl)
+                                    }
+                                } catch (e: Exception) {
+                                    LampLog.printStackTrace(e)
+                                }
+                            }
+                            else -> {
+                                try {
+                                    v.context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    )
+                                } catch (e: Exception) {
+                                    LampLog.printStackTrace(e)
+                                }
+                            }
+                        }
+                        v.destroy()
+                        return true
+                    }
+                }
+                transport.webView = newWebView
+                resultMsg.sendToTarget()
+                return true
+            }
+        }
     }
 
     fun updateStreak(current: Int,longest:Int) {
@@ -649,6 +745,7 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.settings.allowFileAccess = true
         binding.webView.settings.allowContentAccess = true
         binding.webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        binding.webView.settings.setSupportMultipleWindows(true)
         binding.webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         binding.progressBar.visibility = View.VISIBLE
 
@@ -656,11 +753,7 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.loadUrl(url)
 
         binding.webView.webViewClient = myWebViewClient
-        binding.webView.webChromeClient = object : WebChromeClient() {
-            override fun onPermissionRequest(request: PermissionRequest) {
-                handleWebViewPermissionRequest(request)
-            }
-        }
+        binding.webView.webChromeClient = webChromeClientForMainWebView()
     }
     /**
      * initialize webview
@@ -676,15 +769,12 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.settings.allowFileAccess = true
         binding.webView.settings.allowContentAccess = true
         binding.webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        binding.webView.settings.setSupportMultipleWindows(true)
         binding.webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         binding.progressBar.visibility = View.VISIBLE
 
         binding.webView.webViewClient = myWebViewClient
-        binding.webView.webChromeClient = object : WebChromeClient() {
-            override fun onPermissionRequest(request: PermissionRequest) {
-                handleWebViewPermissionRequest(request)
-            }
-        }
+        binding.webView.webChromeClient = webChromeClientForMainWebView()
 
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
@@ -1562,14 +1652,11 @@ class HomeActivity : AppCompatActivity() {
                 binding.webView.settings.javaScriptEnabled = true
                 binding.webView.settings.domStorageEnabled = true
                 binding.webView.settings.allowFileAccess = true
+                binding.webView.settings.setSupportMultipleWindows(true)
                 binding.webView.clearHistory()
                 binding.webView.loadUrl(oSurveyUrl);
 
-                binding.webView.webChromeClient = object : WebChromeClient() {
-                    override fun onPermissionRequest(request: PermissionRequest) {
-                        handleWebViewPermissionRequest(request)
-                    }
-                }
+                binding.webView.webChromeClient = webChromeClientForMainWebView()
 
                 NotificationManagerCompat.from(this).cancel(notificationId)
 
