@@ -1070,8 +1070,6 @@ class HomeActivity : AppCompatActivity() {
         //Updating current user token
         retrieveCurrentToken()
 
-        //Setting User Attributes for Firebase
-        firebaseAnalytics.setUserProperty("user_token", oLoginResponse.authorizationToken)
         invokeSensorSpecData()
         initialCallForActivityStreak()
     }
@@ -1267,8 +1265,6 @@ class HomeActivity : AppCompatActivity() {
                         LampLog.printStackTrace(e)
                     }
                 }
-                //Setting User Attributes for Firebase
-                firebaseAnalytics.setUserProperty("user_fcm_token", token)
             }
 
         }
