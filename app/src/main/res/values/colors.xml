@@ -9,4 +9,5 @@
     <color name="black_50_trans">#80000000</color>
     <color name="black_80_trans">#CC000000</color>
     <color name="black_20_trans">#33000000</color>
+    <color name="red_primary">#E53935</color>
 </resources>

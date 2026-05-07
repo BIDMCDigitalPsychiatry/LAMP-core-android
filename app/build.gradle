@@ -121,20 +121,39 @@ android {
             buildConfigField 'String','ACTIVITY_EVENT_URL', project.developmentMainActivityEventUrl
             buildConfigField 'boolean', 'DO_LOG', 'false'
         }
+
+        zcodemo{
+            dimension "tier"
+            buildConfigField 'String', 'HOST', project.zcoDemoBaseUrl
+            buildConfigField 'String', 'HOST_LOG', project.zcoDemoLogUrl
+            buildConfigField 'String', 'BASE_URL_WEB', project.zcoDemoBaseUrlWeb
+            buildConfigField 'String', 'MAIN_PAGE_URL', project.zcoDemoMainPageUrlWeb
+            buildConfigField 'String', 'PRIVACY_POLICY_PAGE_URL', project.zcoDemoPrivacyPolicyUrl
+            buildConfigField 'String','ACTIVITY_EVENT_URL', project.zcoDemoMainActivityEvent
+            buildConfigField 'boolean', 'DO_LOG', 'true'
+        }
     }
     lint {
         abortOnError false
         checkReleaseBuilds false
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging false
+        }
     }
     buildFeatures {
         viewBinding true
     }
     namespace 'digital.lamp.mindlamp'
 }
+configurations.all {
+    exclude group: "com.google.guava", module: "listenablefuture"
+}
 
 dependencies {
    // debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
-   // implementation project(":lamp_kotlin")
+    implementation project(":lamp_kotlin")
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -169,7 +188,7 @@ dependencies {
     // Import the BoM for the Firebase platform
     implementation platform('com.google.firebase:firebase-bom:29.0.4')
     implementation 'com.google.firebase:firebase-messaging-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+   // implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation ("com.google.firebase:firebase-analytics-ktx"){
         exclude module: "play-services-ads-identifier"
     }
@@ -180,7 +199,7 @@ dependencies {
 
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2025.12.01'
+   // implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2025.12.01'
 
     //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'
     implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'
@@ -194,6 +213,14 @@ dependencies {
     implementation 'androidx.hilt:hilt-work:1.0.0'
 
     implementation "androidx.activity:activity-ktx:1.8.2"
+
+    def camerax_version = "1.4.0"
+
+    implementation "androidx.camera:camera-core:$camerax_version"
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    implementation "androidx.camera:camera-video:$camerax_version"
+    implementation "androidx.camera:camera-view:$camerax_version"
 
 }
 apply plugin: 'com.google.gms.google-services'

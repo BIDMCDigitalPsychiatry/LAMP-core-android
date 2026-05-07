@@ -35,6 +35,13 @@ internal object AppConstants {
 
     const val JAVASCRIPT_OBJ_RENEWTOKEN = "renewToken"
 
+    const val JAVASCRIPT_OBJ_VIDEO_RECORDING = "beginVideoDiary"
+
+    const val VIDEO_DIARY_UPLOAD_TOKEN = "Basic emNvLW1pY2hhZWw6YjU3NDJmNzgtM2ZlYy0xMWYxLWFiNzItZGZmZDA4Mzc1MTY3"
+
+    const val VIDEO_DIARY_UPLOAD_URL = "https://video.dev.lamp.digital/"
+
+
     const val BASE_URL_WEB = "https://dashboard.lamp.digital/#/"
     const val MAIN_PAGE_URL = "https://dashboard.lamp.digital/#/?a="
 

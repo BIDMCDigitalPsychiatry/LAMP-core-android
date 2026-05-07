@@ -17,8 +17,7 @@ import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_WIFI_PERMISSIONS
 object PermissionCheck {
 
     fun checkAndRequestPermissions(context: Activity): Boolean {
-        val cameraPermission =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+
         val contactPermission =
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS)
         val permissionLocation =
@@ -35,9 +34,6 @@ object PermissionCheck {
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
         val listPermissionsNeeded = ArrayList<String>()
 
-        if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(Manifest.permission.CAMERA)
-        }
         if (contactPermission != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_CONTACTS)
         }

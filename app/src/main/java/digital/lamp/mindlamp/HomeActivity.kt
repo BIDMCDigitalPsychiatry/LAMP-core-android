@@ -67,6 +67,8 @@ import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.lifecycleScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -95,10 +97,12 @@ import digital.lamp.mindlamp.model.ActivityEventData
 import digital.lamp.mindlamp.model.DataWrapper
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.model.RefreshTokenResponse
+import digital.lamp.mindlamp.model.SessionConfig
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
+import digital.lamp.mindlamp.sheduleing.VideoUploadWorker
 import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
 import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.AppConstants.BLUETOOTH_REQUEST_CODE
@@ -107,6 +111,7 @@ import digital.lamp.mindlamp.utils.AppConstants.HEALTH_CONNECT_PERMISSION_RESULT
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGIN
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_LOGOUT
 import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_RENEWTOKEN
+import digital.lamp.mindlamp.utils.AppConstants.JAVASCRIPT_OBJ_VIDEO_RECORDING
 import digital.lamp.mindlamp.utils.AppConstants.LOCATION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.PERMISSION_REQUEST_CODE
 import digital.lamp.mindlamp.utils.AppConstants.REQUEST_ID_MULTIPLE_PERMISSIONS
@@ -126,6 +131,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import retrofit2.HttpException
 import java.lang.reflect.Field
 import java.net.SocketTimeoutException
@@ -779,6 +785,7 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_RENEWTOKEN)
+        binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_VIDEO_RECORDING)
        // WebView.setWebContentsDebuggingEnabled(true);
         var url = ""
         if (AppState.session.isLoggedIn) {
@@ -800,6 +807,69 @@ class HomeActivity : AppCompatActivity() {
         if (!isPageLoadedComplete)
             startTimerForReloadWebpage(getString(R.string.txt_unable_to_connect))
 
+        observeVideoDiaryUploads()
+    }
+
+    private val reportedVideoDiaryWorkIds = mutableSetOf<String>()
+
+    private fun observeVideoDiaryUploads() {
+        WorkManager.getInstance(applicationContext)
+            .getWorkInfosByTagLiveData(VideoUploadWorker.TAG_VIDEO_UPLOAD)
+            .observe(this) { infos ->
+                infos?.forEach { info ->
+                    if (!info.state.isFinished) return@forEach
+                    val key = info.id.toString()
+                    if (key in reportedVideoDiaryWorkIds) return@forEach
+                    reportedVideoDiaryWorkIds += key
+
+                    when (info.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            val out = info.outputData
+                            val metadata = JSONObject().apply {
+                                put("duration", out.getString(VideoUploadWorker.KEY_OUTPUT_DURATION).orEmpty())
+                                put("resolution", out.getString(VideoUploadWorker.KEY_OUTPUT_RESOLUTION).orEmpty())
+                                put("fileSize", out.getString(VideoUploadWorker.KEY_OUTPUT_FILE_SIZE).orEmpty())
+                                put("timestamp", out.getString(VideoUploadWorker.KEY_OUTPUT_VIDEO_TIMESTAMP).orEmpty())
+                                put("mimeType", out.getString(VideoUploadWorker.KEY_OUTPUT_MIME_TYPE).orEmpty())
+                            }
+                            val staticData = JSONObject().apply {
+                                put("videoKey", out.getString(VideoUploadWorker.KEY_OUTPUT_VIDEO_KEY).orEmpty())
+                                put("metadata", metadata)
+                            }
+                            val payload = JSONObject().apply {
+                                put("static_data", staticData)
+                                put(
+                                    "timestamp",
+                                    out.getLong(
+                                        VideoUploadWorker.KEY_OUTPUT_EVENT_TIMESTAMP,
+                                        System.currentTimeMillis()
+                                    )
+                                )
+                                put("done", true)
+                            }
+                            postToWebView(payload.toString())
+                        }
+                        WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                            Log.w(
+                                TAG,
+                                "Video diary upload ${info.state.name}: " +
+                                    info.outputData.getString(VideoUploadWorker.KEY_OUTPUT_ERROR).orEmpty()
+                            )
+                        }
+                        else -> return@forEach
+                    }
+                }
+            }
+    }
+
+    private fun postToWebView(payloadJson: String) {
+        runOnUiThread {
+            Log.e("payload json","$payloadJson")
+            binding.webView.evaluateJavascript(
+                "if (typeof window.onVideoDiaryUploadSubmitted === 'function') { window.onVideoDiaryUploadSubmitted($payloadJson); }",
+                null
+            )
+        }
     }
 
     /**
@@ -1180,7 +1250,7 @@ class HomeActivity : AppCompatActivity() {
     /** Instantiate the interface and set the context  */
     class WebAppInterface(private val homeActivity: HomeActivity) {
         /** Show a toast from the web page  */
-        @JavascriptInterface
+      /*  @JavascriptInterface
         fun postMessage(jsonString: String) {
             Log.e(TAG, " JavascriptInterface PostMessage: $jsonString")
             try {
@@ -1205,6 +1275,65 @@ class HomeActivity : AppCompatActivity() {
             try {
                 val renewResponse = Gson().fromJson(jsonString, RefreshTokenResponse::class.java)
                 homeActivity.onRenewAuthenticationToken(renewResponse)
+            } catch (ex: Exception) {
+                LampLog.printStackTrace(ex)
+            }
+        }
+        @JavascriptInterface
+        fun startVideoDiary(jsonString: String){
+            Log.e(TAG, "startVideoDiary: $jsonString")
+            try{
+
+            }catch (e: Exception){
+                LampLog.printStackTrace(e)
+            }
+        }*/
+
+
+        @JavascriptInterface
+        fun postMessage(jsonString: String) {
+            Log.e(TAG, "JavascriptInterface PostMessage: $jsonString")
+            try {
+                val jsonObject = JSONObject(jsonString)
+
+                when {
+                    // Video diary start command
+                    jsonObject.has("activityId") && jsonObject.has("settings") -> {
+                        val sessionConfig = Gson().fromJson(jsonString, SessionConfig::class.java)
+                        homeActivity.runOnUiThread {
+                            homeActivity.onStartVideoDiary(sessionConfig)
+                        }
+                    }
+
+                    // Renew token command
+                    jsonObject.has("refreshToken") -> {
+                        val renewResponse = Gson().fromJson(jsonString, RefreshTokenResponse::class.java)
+                        homeActivity.runOnUiThread {
+                            homeActivity.onRenewAuthenticationToken(renewResponse)
+                        }
+                    }
+
+                    // Login / logout
+                    jsonObject.has("authorizationToken") || jsonObject.has("deleteCache") -> {
+                        val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
+                        if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
+                            homeActivity.runOnUiThread {
+                                homeActivity.onAuthenticationStateChanged(
+                                    AuthenticationState.StoredCredentials(loginResponse)
+                                )
+                            }
+                        } else if (loginResponse.deleteCache) {
+                            homeActivity.runOnUiThread {
+                                homeActivity.onAuthenticationStateChanged(AuthenticationState.SignedOut)
+                            }
+                        }
+                    }
+
+                    else -> {
+                        Log.e(TAG, "Unknown postMessage payload: $jsonString")
+                    }
+                }
+
             } catch (ex: Exception) {
                 LampLog.printStackTrace(ex)
             }
@@ -1255,6 +1384,22 @@ class HomeActivity : AppCompatActivity() {
         is AuthenticationState.SignedIn -> showSignedIn()
         is AuthenticationState.StoredCredentials -> showSignedIn(newState.credentials)
         AuthenticationState.SignedOut -> showSignedOut()
+    }
+
+    fun onStartVideoDiary(config: SessionConfig) {
+        // Start your video recording intent/fragment here
+        Log.e(TAG, "Starting Video Diary | activityId: ${config.activityId} | resolution: ${config.settings.resolution}")
+
+        val intent = Intent(this, VideoDiaryActivity::class.java).apply {
+            putExtra("ACTIVITY_ID", config.activityId)
+            putExtra("PARTICIPANT_ID", config.participantId)
+            putExtra("MAX_DURATION", config.settings.maxDurationInSec)
+            putExtra("RESOLUTION", config.settings.resolution)
+            putExtra("FRAME_RATE", config.settings.frameRate)
+            putExtra("MAX_BITRATE", config.settings.maxBitrateMbps)
+            putExtra("METADATA_CAPTURE", config.settings.metadataCapture)
+        }
+        startActivity(intent)
     }
 
     private fun showSignedIn() {
@@ -1329,8 +1474,8 @@ class HomeActivity : AppCompatActivity() {
 
         AppState.session.isLoggedIn = true
         AppState.session.token = oLoginResponse.authorizationToken
-        AppState.session.refreshtoken = oLoginResponse.refreshToken
-        AppState.session.accessToken = oLoginResponse.accessToken
+        AppState.session.refreshtoken = oLoginResponse.refreshToken?:""
+        AppState.session.accessToken = oLoginResponse.accessToken?:""
         AppState.session.userId = oLoginResponse.identityObject.id
         if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
                 "http://"
@@ -1620,7 +1765,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * fetch intent data
      */
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleNotification(intent)
     }

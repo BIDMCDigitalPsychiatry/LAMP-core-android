@@ -16,8 +16,8 @@ data class LoginResponse(
     val identityObject: IdentityObject,
     val serverAddress: String,
     val deleteCache: Boolean = false,
-    val refreshToken: String = "",
-    val accessToken: String = ""
+    val refreshToken: String? = "",
+    val accessToken: String? = ""
 )
 /**
  * Data class representing an identity object.

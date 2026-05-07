@@ -21,6 +21,12 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-feature android:name="android.hardware.wifi" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MICROPHONE" />
@@ -48,18 +54,10 @@
     <uses-permission android:name="android.permission.health.READ_STEPS_CADENCE" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
-    <uses-permission
-        android:name="android.permission.FOREGROUND_SERVICE_HEALTH"
-          />
-    <uses-permission
-        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
-          />
-    <uses-permission
-        android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"
-         />
-
-    <!-- Check if Health Connect is installed -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" /> <!-- Check if Health Connect is installed -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
 
@@ -78,7 +76,11 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-
+        <activity
+            android:name=".VideoDiaryActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
         <!--
          <provider
             android:name="androidx.work.impl.WorkManagerInitializer"
@@ -118,7 +120,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
 
-           <!--
+            <!--
            The app needs to handle this intent and display an appropriate privacy policy
            explaining how the user's data will be used and handled.
 
@@ -136,27 +138,28 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity>
-        <receiver android:name=".streakwidget.StreakWidgetProvider" android:exported="true">
+
+        <receiver
+            android:name=".streakwidget.StreakWidgetProvider"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/streak_widget_info" />
         </receiver>
+
         <activity
             android:name=".NotificationActivity"
             android:theme="@style/Theme.AppCompat.Light.Dialog"
-            android:windowSoftInputMode="adjustResize">
-
-        </activity>
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity
             android:name=".NotificationActionActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
-            android:windowSoftInputMode="adjustResize">
-
-        </activity>
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity
             android:name=".ExceptionActivity"
             android:excludeFromRecents="true"
@@ -167,9 +170,7 @@
             android:name=".repository.LampForegroundService"
             android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="health">
-
-        </service>
+            android:foregroundServiceType="health"></service>
 
         <receiver
             android:name=".AlarmBroadCastReceiver"
@@ -193,7 +194,7 @@
         </receiver>
         <receiver
             android:name=".sheduleing.ActivityReceiver"
-            android:exported="false"></receiver>
+            android:exported="false" />
         <receiver
             android:name=".sheduleing.PowerSaveModeReceiver"
             android:exported="true">

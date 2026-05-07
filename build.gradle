@@ -14,7 +14,7 @@ buildscript {
         minimum_sdk = 26
         build_tools = "30.0.2"
         play_services_location = '17.0.0'
-        agp_version = '8.1.4'
+        agp_version = '8.5.2'
     }
 
     repositories {
