@@ -7,8 +7,10 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
@@ -136,6 +138,55 @@ class VideoDiaryActivity : AppCompatActivity() {
         }
         binding.btnFlipCamera.setOnClickListener {
             flipCamera()
+        }
+
+        binding.btnClose.setOnClickListener {
+            handleCloseRequested()
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleCloseRequested()
+            }
+        })
+    }
+
+    private fun handleCloseRequested() {
+        when (recordingState) {
+            RecordingState.IDLE -> finish()
+
+            RecordingState.RECORDING -> {
+                AlertDialog.Builder(this)
+                    .setTitle("Discard recording?")
+                    .setMessage("Recording is in progress. Closing will discard it.")
+                    .setPositiveButton("Discard") { _, _ ->
+                        try {
+                            countUpTimer?.cancel()
+                            activeRecording?.stop()
+                            activeRecording = null
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error stopping recording on close", e)
+                        }
+                        savedVideoFile?.delete()
+                        savedVideoFile = null
+                        finish()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+
+            RecordingState.STOPPED -> {
+                AlertDialog.Builder(this)
+                    .setTitle("Discard recording?")
+                    .setMessage("Your recorded video will be discarded.")
+                    .setPositiveButton("Discard") { _, _ ->
+                        savedVideoFile?.delete()
+                        savedVideoFile = null
+                        finish()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
         }
     }
 
@@ -294,9 +345,9 @@ class VideoDiaryActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
                     this@VideoDiaryActivity,
-                    currentCamera,
+                    CameraSelector.DEFAULT_FRONT_CAMERA,
                     preview,
-                    videoCapture!! // ✅ bind videoCapture too
+                    videoCapture // ✅ bind videoCapture too
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Camera binding failed", e)
