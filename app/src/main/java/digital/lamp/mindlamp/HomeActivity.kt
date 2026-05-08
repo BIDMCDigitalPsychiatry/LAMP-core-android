@@ -837,6 +837,14 @@ class HomeActivity : AppCompatActivity() {
                                 put("metadata", metadata)
                             }
                             val payload = JSONObject().apply {
+                                put(
+                                    "participantId",
+                                    out.getString(VideoUploadWorker.KEY_OUTPUT_PARTICIPANT_ID).orEmpty()
+                                )
+                                put(
+                                    "activityId",
+                                    out.getString(VideoUploadWorker.KEY_OUTPUT_ACTIVITY_ID).orEmpty()
+                                )
                                 put("static_data", staticData)
                                 put(
                                     "timestamp",
@@ -852,7 +860,9 @@ class HomeActivity : AppCompatActivity() {
                         WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
                             Log.w(
                                 TAG,
-                                "Video diary upload ${info.state.name}: " +
+                                "Video diary upload ${info.state.name} " +
+                                    "(participantId=${info.outputData.getString(VideoUploadWorker.KEY_OUTPUT_PARTICIPANT_ID).orEmpty()}, " +
+                                    "activityId=${info.outputData.getString(VideoUploadWorker.KEY_OUTPUT_ACTIVITY_ID).orEmpty()}): " +
                                     info.outputData.getString(VideoUploadWorker.KEY_OUTPUT_ERROR).orEmpty()
                             )
                         }

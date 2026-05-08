@@ -49,6 +49,7 @@ class VideoUploadWorker(
         const val KEY_ELAPSED_SECONDS = "elapsed_seconds"
 
         const val KEY_OUTPUT_UPLOAD_ID = "out_upload_id"
+        const val KEY_OUTPUT_PARTICIPANT_ID = "out_participant_id"
         const val KEY_OUTPUT_ACTIVITY_ID = "out_activity_id"
         const val KEY_OUTPUT_FILE_PATH = "out_file_path"
         const val KEY_OUTPUT_VIDEO_KEY = "out_video_key"
@@ -104,6 +105,7 @@ class VideoUploadWorker(
 
     private fun failureData(activityId: String, filePath: String, message: String?): Data =
         workDataOf(
+            KEY_OUTPUT_PARTICIPANT_ID to participantId,
             KEY_OUTPUT_ACTIVITY_ID to activityId,
             KEY_OUTPUT_FILE_PATH to filePath,
             KEY_OUTPUT_ERROR to (message ?: "unknown_error")
@@ -129,6 +131,7 @@ class VideoUploadWorker(
         val recordedAtMs = file.lastModified().takeIf { it > 0 } ?: System.currentTimeMillis()
         return workDataOf(
             KEY_OUTPUT_UPLOAD_ID to outcome.uploadId,
+            KEY_OUTPUT_PARTICIPANT_ID to participantId,
             KEY_OUTPUT_ACTIVITY_ID to activityId,
             KEY_OUTPUT_FILE_PATH to file.absolutePath,
             KEY_OUTPUT_VIDEO_KEY to outcome.uploadId,
