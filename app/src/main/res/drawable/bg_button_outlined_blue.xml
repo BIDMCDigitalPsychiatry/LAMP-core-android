@@ -1,7 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <corners android:radius="28dp" />
-    <stroke android:width="2dp" android:color="#2196F3" />
-    <solid android:color="#FFFFFF" />
-</shape>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Pressed / hovered state -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <stroke android:width="2dp" android:color="#7599FF" />
+            <solid android:color="#7599FF" />
+        </shape>
+    </item>
+    <item android:state_hovered="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <stroke android:width="2dp" android:color="#7599FF" />
+            <solid android:color="#7599FF" />
+        </shape>
+    </item>
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <stroke android:width="2dp" android:color="#2196F3" />
+            <solid android:color="#2196F3" />
+        </shape>
+    </item>
+
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <stroke android:width="2dp" android:color="#2196F3" />
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+</selector>

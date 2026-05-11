@@ -157,8 +157,8 @@ class VideoDiaryActivity : AppCompatActivity() {
 
             RecordingState.RECORDING -> {
                 AlertDialog.Builder(this)
-                    .setTitle("Discard recording?")
-                    .setMessage("Recording is in progress. Closing will discard it.")
+                    .setTitle("Leave activity?")
+                    .setMessage("Video recording is in progress. If you leave now, the recorded data might be lost.")
                     .setPositiveButton("Discard") { _, _ ->
                         try {
                             countUpTimer?.cancel()
@@ -177,8 +177,8 @@ class VideoDiaryActivity : AppCompatActivity() {
 
             RecordingState.STOPPED -> {
                 AlertDialog.Builder(this)
-                    .setTitle("Discard recording?")
-                    .setMessage("Your recorded video will be discarded.")
+                    .setTitle("Leave activity?")
+                    .setMessage("If you leave now, the recorded data might be lost.")
                     .setPositiveButton("Discard") { _, _ ->
                         savedVideoFile?.delete()
                         savedVideoFile = null

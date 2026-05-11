@@ -75,4 +75,7 @@
     <string name="health_permission_description">This application integrates with Google Health Connect to securely access and analyze health and fitness data already collected by other devices and applications on your device. The types of data accessed may include: Steps, Sleep, Distance, Calories Burned, Heart Rate, Blood Pressure, Blood Glucose, Oxygen Saturation, Body Temperature, Respiratory Rate, Body Fat, Hydration, Nutrition, and Movement Speed.   \n
         All health data is accessed solely for use within authorized clinical research studies conducted by the Beth Israel Deaconess Medical Center Division of Digital Psychiatry and its collaborating healthcare institutions. No health data will be collected or transmitted without your explicit informed consent. You may revoke Health Connect permissions at any time through your device settings without affecting your participation in other aspects of the study.</string>
     <string name="agree" translatable="false">Agree</string>
+    <string name="txt_start_recording">Start Recording</string>
+    <string name="txt_submit">Upload And Submit</string>
+    <string name="txt_video_recording">Video Recording</string>
 </resources>
