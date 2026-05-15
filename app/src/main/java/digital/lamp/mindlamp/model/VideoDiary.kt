@@ -4,28 +4,31 @@ import com.google.gson.annotations.SerializedName
 
 data class SessionConfig(
     @SerializedName("settings")
-    val settings: Settings,
+    val settings: Settings?,
 
     @SerializedName("activityId")
-    val activityId: String,
+    val activityId: String?,
 
     @SerializedName("participantId")
-    val participantId: String
+    val participantId: String?,
+
+    @SerializedName("activityName")
+    val activityName : String?
 )
 
 data class Settings(
     @SerializedName("maxDurationInSec")
-    val maxDurationInSec: Int,
+    val maxDurationInSec: Int?,
 
     @SerializedName("resolution")
-    val resolution: Int,
+    val resolution: Int?,
 
     @SerializedName("maxBitrateMbps")
-    val maxBitrateMbps: Int,
+    val maxBitrateMbps: Int?,
 
     @SerializedName("frameRate")
-    val frameRate: Int,
+    val frameRate: Int?,
 
     @SerializedName("metadataCapture")
-    val metadataCapture: Boolean
+    val metadataCapture: Boolean?
 )

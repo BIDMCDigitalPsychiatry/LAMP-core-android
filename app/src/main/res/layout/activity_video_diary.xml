@@ -21,7 +21,7 @@
         android:id="@+id/topBorder"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:background="#7599FF"
+        android:background="@color/video_diary_header"
         app:layout_constraintTop_toTopOf="@id/previewView"
         app:layout_constraintStart_toStartOf="@id/previewView"
         app:layout_constraintEnd_toEndOf="@id/previewView" />

@@ -10,4 +10,5 @@
     <color name="black_80_trans">#CC000000</color>
     <color name="black_20_trans">#33000000</color>
     <color name="red_primary">#E53935</color>
+    <color name="video_diary_header">#7599FF</color>
 </resources>

@@ -40,6 +40,10 @@ class VideoUploadWorker(
 
         const val TAG_VIDEO_UPLOAD = "video_diary_upload"
 
+        // Cap retries so the user eventually sees a real "failed" state instead of
+        // an indefinitely pending upload. WorkManager itself uses runAttemptCount.
+        const val MAX_RUN_ATTEMPTS = 5
+
         const val KEY_FILE_PATH = "file_path"
         const val KEY_PARTICIPANT_ID = "participant_id"
         const val KEY_ACTIVITY_ID = "activity_id"
@@ -60,6 +64,18 @@ class VideoUploadWorker(
         const val KEY_OUTPUT_VIDEO_TIMESTAMP = "out_video_timestamp"
         const val KEY_OUTPUT_EVENT_TIMESTAMP = "out_event_timestamp"
         const val KEY_OUTPUT_ERROR = "out_error"
+
+        // Live progress (read via WorkInfo.progress)
+        const val KEY_PROGRESS_PERCENT = "progress_percent"
+        const val KEY_PROGRESS_STATUS = "progress_status"
+        const val STATUS_STARTING = "starting"
+        const val STATUS_UPLOADING = "uploading"
+        const val STATUS_FINALIZING = "finalizing"
+        const val STATUS_WAITING_NETWORK = "waiting_network"
+
+        // Notification setup
+        const val NOTIFICATION_CHANNEL_ID = "video_upload_status"
+        private const val NOTIFICATION_ID = 4001
     }
 
     private val gson = Gson()
@@ -74,26 +90,50 @@ class VideoUploadWorker(
         return try {
             if (!file.exists()) {
                 Log.e(TAG, "Video file does not exist: ${file.absolutePath}")
+               /* showFailureNotification()*/
                 return Result.failure(failureData(activityId, filePath, "Video file does not exist"))
             }
             if (participantId.isEmpty()) {
                 Log.e(TAG, "Missing participant id")
+                /*showFailureNotification()*/
                 return Result.failure(failureData(activityId, filePath, "Missing participant id"))
             }
+
+         //   updateStatus(STATUS_STARTING, 0, context.getString(R.string.video_upload_starting))
             ensureNetworkAvailable()
             val result = uploadVideo(file)
             Log.d(TAG, "Video upload complete response: ${result.completeResponse}")
+
+           /* cancelNotification()*/
             Result.success(buildSuccessOutput(file, activityId, result))
         } catch (e: IllegalStateException) {
             Log.e(TAG, "Video upload failed", e)
-            if (e.message == "No internet connection") {
+            if (e.message == "No internet connection" && runAttemptCount < MAX_RUN_ATTEMPTS - 1) {
+               /* updateStatus(
+                    STATUS_WAITING_NETWORK,
+                    -1,
+                    context.getString(R.string.video_upload_waiting_network)
+                )*/
                 Result.retry()
             } else {
+                /*showFailureNotification()*/
                 Result.failure(failureData(activityId, filePath, e.message))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Video upload failed", e)
-            Result.failure(failureData(activityId, filePath, e.message))
+            // Network/IO blip → retry with backoff up to MAX_RUN_ATTEMPTS,
+            // then surface a permanent failure to the UI/notification layer.
+            if (runAttemptCount < MAX_RUN_ATTEMPTS - 1) {
+               /* updateStatus(
+                    STATUS_WAITING_NETWORK,
+                    -1,
+                    context.getString(R.string.video_upload_slow)
+                )*/
+                Result.retry()
+            } else {
+               /* showFailureNotification()*/
+                Result.failure(failureData(activityId, filePath, e.message))
+            }
         }
     }
 
@@ -108,7 +148,13 @@ class VideoUploadWorker(
             KEY_OUTPUT_PARTICIPANT_ID to participantId,
             KEY_OUTPUT_ACTIVITY_ID to activityId,
             KEY_OUTPUT_FILE_PATH to filePath,
-            KEY_OUTPUT_ERROR to (message ?: "unknown_error")
+            KEY_OUTPUT_ERROR to (message ?: "unknown_error"),
+            // Echo input data back so a "Retry" tap on the banner/notification
+            // can re-enqueue with the original parameters.
+            KEY_RESOLUTION to inputData.getInt(KEY_RESOLUTION, 0),
+            KEY_FRAME_RATE to inputData.getInt(KEY_FRAME_RATE, 0),
+            KEY_MAX_BITRATE_MBPS to inputData.getInt(KEY_MAX_BITRATE_MBPS, 0),
+            KEY_ELAPSED_SECONDS to inputData.getInt(KEY_ELAPSED_SECONDS, 0)
         )
 
     private fun buildSuccessOutput(
@@ -144,7 +190,7 @@ class VideoUploadWorker(
         )
     }
 
-    private fun uploadVideo(file: File): UploadOutcome {
+    private suspend fun uploadVideo(file: File): UploadOutcome {
         val api = VideoDiaryAPI(AppConstants.VIDEO_DIARY_UPLOAD_URL)
         ensureNetworkAvailable()
         val metadata = buildVideoUploadMetadata(file)
@@ -165,13 +211,24 @@ class VideoUploadWorker(
             error("No upload parts returned")
         }
 
-        val completedParts = uploadParts.map { part ->
+        val totalParts = uploadParts.size
+        val completedParts = uploadParts.mapIndexed { index, part ->
             val partNumber = part.partNumber ?: error("Missing part number")
             val byteRange = part.byteRange ?: error("Missing byte range for part $partNumber")
             val start = byteRange.start ?: error("Missing byte range start for part $partNumber")
             val end = byteRange.end ?: error("Missing byte range end for part $partNumber")
             val url = part.presignedUrl ?: error("Missing presigned URL for part $partNumber")
             val method = part.method ?: "PUT"
+
+            // Pre-part progress: report the % about to be attempted so the UI moves
+            // even on slow networks where individual parts take a while.
+            val percentBefore = (index * 100) / totalParts
+           /* updateStatus(
+                STATUS_UPLOADING,
+                percentBefore,
+                context.getString(R.string.video_upload_uploading, percentBefore)
+            )*/
+
             val etag = uploadPartWithRefresh(
                 api = api,
                 file = file,
@@ -183,6 +240,15 @@ class VideoUploadWorker(
                 start = start,
                 end = end
             )
+
+            // Post-part progress
+            val percentAfter = ((index + 1) * 100) / totalParts
+           /* updateStatus(
+                STATUS_UPLOADING,
+                percentAfter,
+                context.getString(R.string.video_upload_uploading, percentAfter)
+            )*/
+
             VideoUploadCompletedPart(partNumber = partNumber, etag = etag)
         }
 
@@ -193,6 +259,11 @@ class VideoUploadWorker(
         Log.d(TAG, "Video upload complete request: ${gson.toJson(completeRequest)}")
 
         ensureNetworkAvailable()
+     /*   updateStatus(
+            STATUS_FINALIZING,
+            99,
+            context.getString(R.string.video_upload_finalizing)
+        )*/
         val completeResponse = api.videoUploadComplete(
             participantId = participantId,
             videoUploadCompleteRequest = completeRequest,
@@ -384,4 +455,100 @@ class VideoUploadWorker(
             throw IllegalStateException("No internet connection")
         }
     }
+
+    /**
+     * Pushes both:
+     *  - WorkInfo.progress (consumed by HomeActivity's in-app banner)
+     *  - An ongoing notification (visible even when the app is backgrounded)
+     *
+     *  @param percent  0..100, or -1 for indeterminate (e.g. waiting for network).
+     */
+   /* private suspend fun updateStatus(status: String, percent: Int, displayText: String) {
+        try {
+            setProgress(
+                workDataOf(
+                    KEY_PROGRESS_STATUS to status,
+                    KEY_PROGRESS_PERCENT to percent
+                )
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to publish progress", e)
+        }
+        *//*showOngoingNotification(displayText, percent)*//*
+    }*/
+
+    /*private fun showOngoingNotification(text: String, percent: Int) {
+        if (!notificationsAllowed()) return
+        ensureNotificationChannel()
+
+        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_noti_icon)
+            .setContentTitle(context.getString(R.string.video_upload_channel_name))
+            .setContentText(text)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .setSilent(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setContentIntent(homePendingIntent())
+
+        if (percent in 0..100) {
+            builder.setProgress(100, percent, false)
+        } else {
+            builder.setProgress(0, 0, true)
+        }
+
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
+    }
+
+    private fun showFailureNotification() {
+        if (!notificationsAllowed()) return
+        ensureNotificationChannel()
+
+        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_noti_icon)
+            .setContentTitle(context.getString(R.string.video_upload_channel_name))
+            .setContentText(context.getString(R.string.video_upload_failed))
+            .setAutoCancel(true)
+            .setOngoing(false)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(homePendingIntent())
+
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
+    }*/
+
+   /* private fun cancelNotification() {
+        NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
+    }*/
+
+   /* private fun ensureNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID) != null) return
+
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            context.getString(R.string.video_upload_channel_name),
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = context.getString(R.string.video_upload_channel_desc)
+            setShowBadge(false)
+            setSound(null, null)
+            enableVibration(false)
+        }
+        manager.createNotificationChannel(channel)
+    }*/
+
+   /* private fun homePendingIntent(): PendingIntent {
+        val intent = Intent(context, HomeActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        return PendingIntent.getActivity(context, 0, intent, flags)
+    }*/
+
+   /* private fun notificationsAllowed(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()*/
 }

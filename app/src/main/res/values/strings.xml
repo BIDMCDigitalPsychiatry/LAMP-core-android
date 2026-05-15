@@ -76,6 +76,35 @@
         All health data is accessed solely for use within authorized clinical research studies conducted by the Beth Israel Deaconess Medical Center Division of Digital Psychiatry and its collaborating healthcare institutions. No health data will be collected or transmitted without your explicit informed consent. You may revoke Health Connect permissions at any time through your device settings without affecting your participation in other aspects of the study.</string>
     <string name="agree" translatable="false">Agree</string>
     <string name="txt_start_recording">Start Recording</string>
+    <string name="txt_stop_recording">Stop Recording</string>
+    <string name="txt_record_again">Record Again</string>
     <string name="txt_submit">Upload And Submit</string>
     <string name="txt_video_recording">Video Recording</string>
+
+    <!-- Video diary permission dialogs -->
+    <string name="dialog_permissions_needed_title">Permissions Required</string>
+    <string name="dialog_permissions_needed_message">Camera and microphone access are required to record a video diary. Please grant both permissions to continue.</string>
+    <string name="dialog_go_to_settings">Go to settings</string>
+    <string name="dialog_permissions_blocked_title">Permissions denied</string>
+    <string name="dialog_permissions_blocked_message">Camera and microphone access has been permanently denied. Please enable access in Settings to record a video diary.</string>
+    <string name="dialog_open_settings">Open Settings</string>
+
+    <!-- Video diary leave-activity confirmation -->
+    <string name="dialog_leave_activity_title">Leave Activity?</string>
+    <string name="dialog_leave_recording_message">Video recording is in progress. If you leave now, your data will be lost.</string>
+    <string name="dialog_leave_stopped_message">If you leave now, your data will be lost.</string>
+    <string name="dialog_discard">Discard</string>
+
+    <!-- Video upload status (shown in-app banner and notification) -->
+    <string name="video_upload_channel_name">Video Upload</string>
+    <string name="video_upload_channel_desc">Status of video diary uploads</string>
+    <string name="video_upload_starting">Preparing video upload\u2026</string>
+    <string name="video_upload_uploading">Uploading video\u2026 %1$d%%</string>
+    <string name="video_upload_finalizing">Finalizing upload\u2026</string>
+    <string name="video_upload_waiting_network">Waiting for network\u2026</string>
+    <string name="video_upload_slow">Upload is slow, still trying\u2026</string>
+    <string name="video_upload_succeeded">Video upload complete</string>
+    <string name="video_upload_failed">Upload failed. Tap to retry.</string>
+    <string name="video_upload_retry">Retry</string>
+    <string name="video_upload_dismiss">Dismiss</string>
 </resources>

@@ -262,10 +262,10 @@ object Utils {
 
     suspend fun refreshToken(): Boolean {
         return try {
-            val authHeader = "Bearer ${AppState.session.refreshtoken}"
+            val authHeader = "Bearer ${AppState.session.refreshToken}"
 
             val body = mapOf(
-                "refreshToken" to AppState.session.refreshtoken
+                "refreshToken" to AppState.session.refreshToken
             )
 
             val response = RenewAccessTokenAPI(AppState.session.serverAddress)
@@ -274,8 +274,8 @@ object Utils {
             val resObj = Gson().fromJson(response.toString(), TokenResponseData::class.java)
             Log.e("refreshToken", "response: $response")
 
-            AppState.session.refreshtoken = resObj.data.refresh_token
-            AppState.session.accessToken = resObj.data.access_token
+            AppState.session.refreshToken = resObj.data.refresh_token?:""
+            AppState.session.accessToken = resObj.data.access_token?:""
 
             true
         } catch (ex: Exception) {

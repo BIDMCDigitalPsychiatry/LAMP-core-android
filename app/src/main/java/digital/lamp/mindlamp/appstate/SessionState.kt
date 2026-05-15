@@ -53,7 +53,7 @@ class SessionState {
         ""
     )
 
-    var refreshtoken by Pref(
+    var refreshToken by Pref(
         PREF_KEY_REFRESH_TOKEN,
         ""
     )
@@ -105,7 +105,7 @@ class SessionState {
     fun clearData() {
         isLoggedIn = false
         token = ""
-        refreshtoken = ""
+        refreshToken = ""
         accessToken = ""
         userId = ""
         serverAddress = ""

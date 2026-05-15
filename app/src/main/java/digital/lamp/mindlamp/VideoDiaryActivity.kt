@@ -1,11 +1,15 @@
 package digital.lamp.mindlamp
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +29,7 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -40,6 +45,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class VideoDiaryActivity : AppCompatActivity() {
 
@@ -62,10 +68,17 @@ class VideoDiaryActivity : AppCompatActivity() {
     private var resolution = 0
     private var frameRate = 0
     private var maxBitrateMbps = 0
+
+    private var activityName: String = "Video Recording"
+
     private val gson = Gson()
     private val uploadHttpClient = OkHttpClient()
 
     private var currentCamera = CameraSelector.DEFAULT_FRONT_CAMERA
+
+    // Set to true while we send the user to the system app-settings screen so
+    // that onResume() knows to re-check permissions when they come back.
+    private var awaitingSettingsReturn = false
 
     companion object {
         private const val TAG = "VideoDiaryActivity"
@@ -81,13 +94,15 @@ class VideoDiaryActivity : AppCompatActivity() {
         if (cameraGranted && audioGranted) {
             startCamera()
         } else {
-            Toast.makeText(this, "Camera and Audio permissions required", Toast.LENGTH_SHORT).show()
-            finish()
+            handlePermissionsDenied()
         }
     }
 
-    // Enum to track UI state clearly
-    enum class RecordingState { IDLE, RECORDING, STOPPED }
+    // Enum to track UI state clearly.
+    // STARTING is an intermediate state between the user tapping "Start Recording"
+    // and the camera firing VideoRecordEvent.Start — the click listener uses it to
+    // ignore double-taps that would otherwise spawn an orphan recording + timer.
+    enum class RecordingState { IDLE, STARTING, RECORDING, STOPPED }
 
     private var recordingState = RecordingState.IDLE
 
@@ -96,12 +111,26 @@ class VideoDiaryActivity : AppCompatActivity() {
         binding = ActivityVideoDiaryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Match the system status bar to the blue header so the top of the screen
+        // looks like a single continuous bar instead of two stacked colors.
+        applyStatusBarColor()
+
+        // Prevent the system from dimming/turning off the screen while the
+        // user is on the camera preview or actively recording. The flag is
+        // window-scoped and is automatically dropped when this activity is no
+        // longer in the foreground, so no manual cleanup is needed.
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         activityId = intent.getStringExtra("ACTIVITY_ID").orEmpty()
         participantId = intent.getStringExtra("PARTICIPANT_ID").orEmpty()
         maxDurationSec = intent.getIntExtra("MAX_DURATION", 60)
         resolution = intent.getIntExtra("RESOLUTION", 0)
         frameRate = intent.getIntExtra("FRAME_RATE", 0)
         maxBitrateMbps = intent.getIntExtra("MAX_BITRATE", 0)
+        activityName = intent.getStringExtra("ACTIVITY_NAME").orEmpty()
+
+        binding.tvHeader.text = activityName
+
         updateTimerText(0)
 
         binding.btnRecord.setOnClickListener {
@@ -109,6 +138,9 @@ class VideoDiaryActivity : AppCompatActivity() {
                 RecordingState.IDLE -> startRecording()
                 RecordingState.RECORDING -> stopRecording()
                 RecordingState.STOPPED -> recordAgain()
+                // Ignore taps during the brief STARTING window so we don't spawn
+                // a duplicate recording + an orphan CountDownTimer.
+                RecordingState.STARTING -> Unit
             }
         }
 
@@ -151,17 +183,111 @@ class VideoDiaryActivity : AppCompatActivity() {
         })
     }
 
+    /**
+     * Tint the system status bar to match the blue header (`@color/video_diary_header`)
+     * so the top of the screen looks like a single continuous bar.
+     * Safe to call repeatedly — only mutates window flags + statusBarColor.
+     */
+    private fun applyStatusBarColor() {
+        // Make sure the system draws the status-bar background, otherwise
+        // statusBarColor is ignored. Also clear any inherited translucent flag.
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.video_diary_header)
+    }
+
+    /**
+     * Decide what to do after the user denies CAMERA and/or RECORD_AUDIO.
+     *
+     * Android exposes "Don't ask again" / permanent denial only indirectly:
+     * after the system dialog has been shown at least once,
+     * `shouldShowRequestPermissionRationale` returns `false` for a permission
+     * that the user has permanently denied (and `true` if they merely tapped
+     * "Deny" once and we can prompt them again).
+     *
+     * - Permanent denial → re-prompting does nothing, so we send the user to
+     *   the system app-settings screen via [showOpenSettingsDialog].
+     * - First-time denial → show a short rationale and let them retry the
+     *   system dialog.
+     */
+    private fun handlePermissionsDenied() {
+        val cameraPermanentlyDenied = isPermissionPermanentlyDenied(Manifest.permission.CAMERA)
+        val audioPermanentlyDenied = isPermissionPermanentlyDenied(Manifest.permission.RECORD_AUDIO)
+
+        if (cameraPermanentlyDenied || audioPermanentlyDenied) {
+            showOpenSettingsDialog()
+        } else {
+            showPermissionRationaleDialog()
+        }
+    }
+
+    private fun isPermissionPermanentlyDenied(permission: String): Boolean {
+        val granted = ContextCompat.checkSelfPermission(this, permission) ==
+                PackageManager.PERMISSION_GRANTED
+        // Only meaningful AFTER the system dialog has been shown at least once.
+        // If granted, this method returns false (not permanently denied).
+        return !granted && !shouldShowRequestPermissionRationale(permission)
+    }
+
+    private fun showPermissionRationaleDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_permissions_needed_title)
+            .setMessage(R.string.dialog_permissions_needed_message)
+            .setPositiveButton(R.string.ok) { _, _ ->
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO
+                    )
+                )
+            }
+            .setNegativeButton(R.string.cancel) { _, _ -> finish() }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun showOpenSettingsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_permissions_blocked_title)
+            .setMessage(R.string.dialog_permissions_blocked_message)
+            .setPositiveButton(R.string.dialog_open_settings) { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton(R.string.cancel) { _, _ -> finish() }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun openAppSettings() {
+        awaitingSettingsReturn = true
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Unable to open app settings", e)
+            awaitingSettingsReturn = false
+            Toast.makeText(this, "Unable to open settings", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
+
     private fun handleCloseRequested() {
         when (recordingState) {
             RecordingState.IDLE -> finish()
 
+            // Treat the brief STARTING window the same way as RECORDING so the
+            // user always gets a confirmation prompt instead of dropping data.
+            RecordingState.STARTING,
             RecordingState.RECORDING -> {
                 AlertDialog.Builder(this)
-                    .setTitle("Leave activity?")
-                    .setMessage("Video recording is in progress. If you leave now, the recorded data might be lost.")
-                    .setPositiveButton("Discard") { _, _ ->
+                    .setTitle(R.string.dialog_leave_activity_title)
+                    .setMessage(R.string.dialog_leave_recording_message)
+                    .setPositiveButton(R.string.dialog_discard) { _, _ ->
                         try {
-                            countUpTimer?.cancel()
+                            cancelTimer()
                             activeRecording?.stop()
                             activeRecording = null
                         } catch (e: Exception) {
@@ -171,20 +297,20 @@ class VideoDiaryActivity : AppCompatActivity() {
                         savedVideoFile = null
                         finish()
                     }
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(R.string.cancel, null)
                     .show()
             }
 
             RecordingState.STOPPED -> {
                 AlertDialog.Builder(this)
-                    .setTitle("Leave activity?")
-                    .setMessage("If you leave now, the recorded data might be lost.")
-                    .setPositiveButton("Discard") { _, _ ->
+                    .setTitle(R.string.dialog_leave_activity_title)
+                    .setMessage(R.string.dialog_leave_stopped_message)
+                    .setPositiveButton(R.string.dialog_discard) { _, _ ->
                         savedVideoFile?.delete()
                         savedVideoFile = null
                         finish()
                     }
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(R.string.cancel, null)
                     .show()
             }
         }
@@ -221,14 +347,16 @@ class VideoDiaryActivity : AppCompatActivity() {
         binding.btnSubmit.visibility = View.GONE
 
         // Outlined red + dot → "Start Recording"
-        binding.btnRecord.text = "Start Recording"
+        binding.btnRecord.text = getString(R.string.txt_start_recording)
         binding.btnRecord.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
         binding.btnRecord.background =
             ContextCompat.getDrawable(this, R.drawable.bg_button_outlined_red)
         binding.imgRedRotIndicator.background =
             ContextCompat.getDrawable(this, R.drawable.ic_record_dot)
 
-        // Reset timer and progress
+        // Defensive: any leftover timer must die when we return to idle, so a
+        // late tick can't overwrite the freshly-cleared timer text.
+        cancelTimer()
         elapsedSeconds = 0
         updateTimerText(0)
         binding.progressBar.progress = 0
@@ -241,22 +369,46 @@ class VideoDiaryActivity : AppCompatActivity() {
         binding.btnSubmit.visibility = View.GONE
 
         // Solid red + square → "Stop Recording"
-        binding.btnRecord.text = "Stop Recording"
+        binding.btnRecord.text = getString(R.string.txt_stop_recording)
         binding.btnRecord.setTextColor(ContextCompat.getColor(this, android.R.color.white))
         binding.btnRecord.background =
             ContextCompat.getDrawable(this, R.drawable.bg_button_solid_red)
         binding.imgRedRotIndicator.background =
             ContextCompat.getDrawable(this, R.drawable.ic_stop_square)
+
+        // Start the count-up timer here (not in startRecording()) so it's tied to
+        // the actual VideoRecordEvent.Start callback. Guarantees: exactly one
+        // active timer, and only while the camera is truly recording.
+        cancelTimer()
+        elapsedSeconds = 0
+        updateTimerText(0)
+        binding.progressBar.progress = 0
+        countUpTimer = object : CountDownTimer(maxDurationSec * 1000L, 1000L) {
+            override fun onTick(millisUntilFinished: Long) {
+                elapsedSeconds++
+                updateTimerText(elapsedSeconds)
+                binding.progressBar.progress = (elapsedSeconds * 100) / maxDurationSec
+            }
+
+            override fun onFinish() {
+                stopRecording()
+            }
+        }.start()
     }
 
     private fun setStateStopped() {
         recordingState = RecordingState.STOPPED
 
+        // Defensive: even though stopRecording() cancels the timer, a late
+        // VideoRecordEvent.Finalize from a previous attempt could still bring us
+        // here — make sure no timer is left ticking by the time we show "Stopped".
+        cancelTimer()
+
         // Show Submit (outlined blue)
         binding.btnSubmit.visibility = View.VISIBLE
 
         // Outlined red + dot → "Record Again"
-        binding.btnRecord.text = "Record Again"
+        binding.btnRecord.text = getString(R.string.txt_record_again)
         binding.btnRecord.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark))
         binding.btnRecord.background =
             ContextCompat.getDrawable(this, R.drawable.bg_button_outlined_red)
@@ -266,7 +418,15 @@ class VideoDiaryActivity : AppCompatActivity() {
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     private fun startRecording() {
+        // Guard against double-taps + accidental re-entry. The state is flipped
+        // immediately so subsequent clicks fall through the click listener.
+        if (recordingState == RecordingState.STARTING ||
+            recordingState == RecordingState.RECORDING
+        ) {
+            return
+        }
         val videoCapture = videoCapture ?: return
+        recordingState = RecordingState.STARTING
 
         val fileName = "VD_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.mp4"
         val outputFile = File(getExternalFilesDir(null), fileName)
@@ -283,7 +443,6 @@ class VideoDiaryActivity : AppCompatActivity() {
                     is VideoRecordEvent.Finalize -> {
                         if (event.hasError()) {
                             Log.e(TAG, "Recording error: ${event.error}")
-                            Toast.makeText(this, "Recording failed", Toast.LENGTH_SHORT).show()
                             setStateIdle()
                         } else {
                             Log.d(TAG, "Saved: ${outputFile.absolutePath}")
@@ -292,25 +451,20 @@ class VideoDiaryActivity : AppCompatActivity() {
                     }
                 }
             }
-
-        elapsedSeconds = 0
-        countUpTimer = object : CountDownTimer(maxDurationSec * 1000L, 1000L) {
-            override fun onTick(millisUntilFinished: Long) {
-                elapsedSeconds++
-                updateTimerText(elapsedSeconds)
-                binding.progressBar.progress = (elapsedSeconds * 100) / maxDurationSec
-            }
-
-            override fun onFinish() {
-                stopRecording()
-            }
-        }.start()
     }
 
     private fun stopRecording() {
-        countUpTimer?.cancel()
+        // Cancel + clear the timer reference FIRST so an orphan timer can never
+        // outlive a stop. Recording finalize is async; we don't wait for it.
+        cancelTimer()
         activeRecording?.stop()
         activeRecording = null
+    }
+
+    /** Cancels the count-up timer and clears the reference (idempotent). */
+    private fun cancelTimer() {
+        countUpTimer?.cancel()
+        countUpTimer = null
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
@@ -391,6 +545,13 @@ class VideoDiaryActivity : AppCompatActivity() {
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
+            // Linear backoff so retry-on-network-loss waits a predictable time
+            // (30s, 60s, 90s, 120s …) instead of slow exponential growth.
+            .setBackoffCriteria(
+                BackoffPolicy.LINEAR,
+                30L,
+                TimeUnit.SECONDS
+            )
             .build()
 
         WorkManager.getInstance(applicationContext).enqueueUniqueWork(
@@ -400,8 +561,40 @@ class VideoDiaryActivity : AppCompatActivity() {
         )
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Only re-check when we *know* we sent the user to Settings — otherwise
+        // onResume() also fires right after onCreate()'s initial permission
+        // check and would double-prompt.
+        if (!awaitingSettingsReturn) return
+        awaitingSettingsReturn = false
+
+        val cameraGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        val audioGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+
+        when {
+            cameraGranted && audioGranted -> startCamera()
+            // Still permanently denied after the Settings round-trip — bail
+            // out gracefully so we don't loop the user back to the same dialog.
+            else -> {
+                Toast.makeText(
+                    this,
+                    "Camera and Audio permissions required",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        countUpTimer?.cancel()
+        cancelTimer()
     }
 }

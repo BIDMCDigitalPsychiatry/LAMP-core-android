@@ -67,8 +67,14 @@ import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.lifecycleScope
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -816,6 +822,9 @@ class HomeActivity : AppCompatActivity() {
         WorkManager.getInstance(applicationContext)
             .getWorkInfosByTagLiveData(VideoUploadWorker.TAG_VIDEO_UPLOAD)
             .observe(this) { infos ->
+                // Drive the in-app upload banner from the most recent active/failed job.
+                //updateUploadBanner(infos.orEmpty())
+
                 infos?.forEach { info ->
                     if (!info.state.isFinished) return@forEach
                     val key = info.id.toString()
@@ -871,6 +880,165 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
     }
+
+    /**
+     * Picks the most relevant WorkInfo and renders banner state.
+     * Priority: RUNNING > ENQUEUED/BLOCKED (waiting) > FAILED > everything else (hide).
+     * SUCCEEDED is intentionally not shown as a sticky banner — the WebView gets
+     * notified via postToWebView() instead.
+     */
+    private fun activeUploadStatusInfo(infos: List<WorkInfo>): WorkInfo? {
+        return infos.firstOrNull { it.state == WorkInfo.State.RUNNING }
+            ?: infos.firstOrNull {
+                it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.BLOCKED
+            }
+            ?: infos.firstOrNull { it.state == WorkInfo.State.FAILED }
+    }
+
+    /*private fun updateUploadBanner(infos: List<WorkInfo>) {
+        val info = activeUploadStatusInfo(infos)
+        if (info == null) {
+            binding.uploadBanner.visibility = View.GONE
+            return
+        }
+
+        when (info.state) {
+            WorkInfo.State.RUNNING -> {
+                val percent = info.progress.getInt(VideoUploadWorker.KEY_PROGRESS_PERCENT, -1)
+                val status = info.progress.getString(VideoUploadWorker.KEY_PROGRESS_STATUS)
+
+                val (text, indeterminate, progressValue) = when (status) {
+                    VideoUploadWorker.STATUS_FINALIZING -> Triple(
+                        getString(R.string.video_upload_finalizing), false, 99
+                    )
+                    VideoUploadWorker.STATUS_WAITING_NETWORK -> Triple(
+                        getString(R.string.video_upload_waiting_network), true, 0
+                    )
+                    VideoUploadWorker.STATUS_STARTING -> Triple(
+                        getString(R.string.video_upload_starting), true, 0
+                    )
+                    VideoUploadWorker.STATUS_UPLOADING -> Triple(
+                        getString(
+                            R.string.video_upload_uploading,
+                            percent.coerceIn(0, 100)
+                        ),
+                        false,
+                        percent.coerceIn(0, 100)
+                    )
+                    else -> Triple(
+                        getString(R.string.video_upload_starting), true, 0
+                    )
+                }
+
+                showUploadBanner(
+                    text = text,
+                    indeterminate = indeterminate,
+                    progress = progressValue,
+                    showRetry = false,
+                    showDismiss = false,
+                    workInfo = info
+                )
+            }
+            WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> {
+                showUploadBanner(
+                    text = getString(R.string.video_upload_waiting_network),
+                    indeterminate = true,
+                    progress = 0,
+                    showRetry = false,
+                    showDismiss = false,
+                    workInfo = info
+                )
+            }
+            WorkInfo.State.FAILED -> {
+                showUploadBanner(
+                    text = getString(R.string.video_upload_failed),
+                    indeterminate = false,
+                    progress = 0,
+                    showRetry = true,
+                    showDismiss = true,
+                    workInfo = info
+                )
+            }
+            else -> {
+                binding.uploadBanner.visibility = View.GONE
+            }
+        }
+    }*/
+
+/*    private fun showUploadBanner(
+        text: String,
+        indeterminate: Boolean,
+        progress: Int,
+        showRetry: Boolean,
+        showDismiss: Boolean,
+        workInfo: WorkInfo
+    ) {
+        binding.uploadBanner.visibility = View.VISIBLE
+        binding.tvUploadStatus.text = text
+
+        binding.progressUpload.isIndeterminate = indeterminate
+        if (!indeterminate) {
+            binding.progressUpload.progress = progress
+        }
+
+        binding.btnUploadAction.visibility = if (showRetry) View.VISIBLE else View.GONE
+        binding.btnUploadDismiss.visibility = if (showDismiss) View.VISIBLE else View.GONE
+
+        binding.btnUploadAction.setOnClickListener {
+            retryVideoUpload(workInfo)
+        }
+        binding.btnUploadDismiss.setOnClickListener {
+            binding.uploadBanner.visibility = View.GONE
+        }
+    }*/
+
+  /*  private fun retryVideoUpload(failedInfo: WorkInfo) {
+        val out = failedInfo.outputData
+        val filePath = out.getString(VideoUploadWorker.KEY_OUTPUT_FILE_PATH).orEmpty()
+        val activityId = out.getString(VideoUploadWorker.KEY_OUTPUT_ACTIVITY_ID).orEmpty()
+        val participantId = out.getString(VideoUploadWorker.KEY_OUTPUT_PARTICIPANT_ID).orEmpty()
+        if (filePath.isEmpty() || activityId.isEmpty() || participantId.isEmpty()) {
+            Log.w(TAG, "Cannot retry video upload: missing file path / ids")
+            binding.uploadBanner.visibility = View.GONE
+            return
+        }
+        if (!java.io.File(filePath).exists()) {
+            Log.w(TAG, "Cannot retry video upload: file no longer exists: $filePath")
+            binding.uploadBanner.visibility = View.GONE
+            return
+        }
+
+        // Forget the previous work so its terminal state stops driving the banner.
+        reportedVideoDiaryWorkIds += failedInfo.id.toString()
+
+        val request = OneTimeWorkRequestBuilder<VideoUploadWorker>()
+            .addTag(VideoUploadWorker.TAG_VIDEO_UPLOAD)
+            .setInputData(
+                workDataOf(
+                    VideoUploadWorker.KEY_FILE_PATH to filePath,
+                    VideoUploadWorker.KEY_PARTICIPANT_ID to participantId,
+                    VideoUploadWorker.KEY_ACTIVITY_ID to activityId,
+                    VideoUploadWorker.KEY_RESOLUTION to out.getInt(VideoUploadWorker.KEY_RESOLUTION, 0),
+                    VideoUploadWorker.KEY_FRAME_RATE to out.getInt(VideoUploadWorker.KEY_FRAME_RATE, 0),
+                    VideoUploadWorker.KEY_MAX_BITRATE_MBPS to out.getInt(VideoUploadWorker.KEY_MAX_BITRATE_MBPS, 0),
+                    VideoUploadWorker.KEY_ELAPSED_SECONDS to out.getInt(VideoUploadWorker.KEY_ELAPSED_SECONDS, 0)
+                )
+            )
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .setBackoffCriteria(BackoffPolicy.LINEAR, 30L, TimeUnit.SECONDS)
+            .build()
+
+        val uniqueName = "video_upload_${java.io.File(filePath).nameWithoutExtension}"
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            uniqueName,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+    }*/
 
     private fun postToWebView(payloadJson: String) {
         runOnUiThread {
@@ -1380,8 +1548,9 @@ class HomeActivity : AppCompatActivity() {
         DebugLogs.writeToFile("Renew token received")
 
         // Save tokens
-        AppState.session.accessToken = response.access_token
-        AppState.session.refreshtoken = response.refresh_token
+        response.access_token?.let { AppState.session.accessToken = it }
+        response.refresh_token?.let { AppState.session.refreshToken = it }
+
 
         // Optionally update shared preferences
     }
@@ -1398,16 +1567,17 @@ class HomeActivity : AppCompatActivity() {
 
     fun onStartVideoDiary(config: SessionConfig) {
         // Start your video recording intent/fragment here
-        Log.e(TAG, "Starting Video Diary | activityId: ${config.activityId} | resolution: ${config.settings.resolution}")
+        Log.e(TAG, "Starting Video Diary | activityId: ${config.activityId} | resolution: ${config.settings?.resolution}")
 
         val intent = Intent(this, VideoDiaryActivity::class.java).apply {
             putExtra("ACTIVITY_ID", config.activityId)
             putExtra("PARTICIPANT_ID", config.participantId)
-            putExtra("MAX_DURATION", config.settings.maxDurationInSec)
-            putExtra("RESOLUTION", config.settings.resolution)
-            putExtra("FRAME_RATE", config.settings.frameRate)
-            putExtra("MAX_BITRATE", config.settings.maxBitrateMbps)
-            putExtra("METADATA_CAPTURE", config.settings.metadataCapture)
+            putExtra("MAX_DURATION", config.settings?.maxDurationInSec)
+            putExtra("RESOLUTION", config.settings?.resolution)
+            putExtra("FRAME_RATE", config.settings?.frameRate)
+            putExtra("MAX_BITRATE", config.settings?.maxBitrateMbps)
+            putExtra("METADATA_CAPTURE", config.settings?.metadataCapture)
+            putExtra("ACTIVITY_NAME", config.activityName)
         }
         startActivity(intent)
     }
@@ -1484,7 +1654,7 @@ class HomeActivity : AppCompatActivity() {
 
         AppState.session.isLoggedIn = true
         AppState.session.token = oLoginResponse.authorizationToken
-        AppState.session.refreshtoken = oLoginResponse.refreshToken?:""
+        AppState.session.refreshToken = oLoginResponse.refreshToken?:""
         AppState.session.accessToken = oLoginResponse.accessToken?:""
         AppState.session.userId = oLoginResponse.identityObject.id
         if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
