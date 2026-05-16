@@ -562,7 +562,7 @@ class HomeActivity : AppCompatActivity() {
     private fun initializePrivacyPolicyWebview(){
         binding.webView.clearCache(true)
         binding.webView.clearHistory()
-        WebView.setWebContentsDebuggingEnabled(true)
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
         binding.webView.settings.domStorageEnabled = true
@@ -592,7 +592,7 @@ class HomeActivity : AppCompatActivity() {
     private fun initializeWebview() {
         binding.webView.clearCache(true)
         binding.webView.clearHistory()
-        WebView.setWebContentsDebuggingEnabled(true)
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.mediaPlaybackRequiresUserGesture = false
         binding.webView.settings.domStorageEnabled = true
@@ -613,7 +613,6 @@ class HomeActivity : AppCompatActivity() {
                         "http://"
                     )
             )
-            Log.e("url","$url")
             binding.webView.loadUrl(url)
 
         } else {
@@ -970,7 +969,6 @@ class HomeActivity : AppCompatActivity() {
         /** Show a toast from the web page  */
         @JavascriptInterface
         fun postMessage(jsonString: String) {
-            Log.e(TAG, " : $jsonString")
             try {
                 val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
                 if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
@@ -1072,8 +1070,6 @@ class HomeActivity : AppCompatActivity() {
         //Updating current user token
         retrieveCurrentToken()
 
-        //Setting User Attributes for Firebase
-        firebaseAnalytics.setUserProperty("user_token", oLoginResponse.authorizationToken)
         invokeSensorSpecData()
         initialCallForActivityStreak()
     }
@@ -1269,8 +1265,6 @@ class HomeActivity : AppCompatActivity() {
                         LampLog.printStackTrace(e)
                     }
                 }
-                //Setting User Attributes for Firebase
-                firebaseAnalytics.setUserProperty("user_fcm_token", token)
             }
 
         }
@@ -1361,8 +1355,6 @@ class HomeActivity : AppCompatActivity() {
                     AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
                         .removePrefix("http://")
                 )
-
-            DebugLogs.writeToFile("URL : $oSurveyUrl")
 
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.cancel(notificationId)
