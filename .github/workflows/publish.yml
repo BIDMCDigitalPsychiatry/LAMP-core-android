@@ -76,6 +76,7 @@ jobs:
           releaseFiles: app/build/outputs/bundle/prodRelease/app-prod-release.aab
           track: production
           status: completed
+          changesNotSentForReview: true
   push:
     if: github.event_name == 'push' && contains(toJson(github.event.commits), 'NO_CI') == false
     runs-on: ubuntu-latest
@@ -134,5 +135,5 @@ jobs:
           packageName: digital.lamp.mindlamp
           releaseFiles: app/build/outputs/bundle/qaRelease/app-qa-release.aab
           track: beta
-  
           status: completed
+          changesNotSentForReview: true
