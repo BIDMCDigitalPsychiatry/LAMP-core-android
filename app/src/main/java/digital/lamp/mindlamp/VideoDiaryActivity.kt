@@ -52,7 +52,7 @@ class VideoDiaryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityVideoDiaryBinding
 
     private var elapsedSeconds = 0
-    private var maxDurationSec = 60
+    private var maxDurationSec = 240
     private var countUpTimer: CountDownTimer? = null
 
     // CameraX
@@ -123,7 +123,7 @@ class VideoDiaryActivity : AppCompatActivity() {
 
         activityId = intent.getStringExtra("ACTIVITY_ID").orEmpty()
         participantId = intent.getStringExtra("PARTICIPANT_ID").orEmpty()
-        maxDurationSec = intent.getIntExtra("MAX_DURATION", 60)
+        maxDurationSec = intent.getIntExtra("MAX_DURATION", 240)
         resolution = intent.getIntExtra("RESOLUTION", 0)
         frameRate = intent.getIntExtra("FRAME_RATE", 0)
         maxBitrateMbps = intent.getIntExtra("MAX_BITRATE", 0)

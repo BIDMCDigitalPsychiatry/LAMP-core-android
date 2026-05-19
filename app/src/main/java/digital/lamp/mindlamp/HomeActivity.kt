@@ -67,14 +67,8 @@ import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.lifecycle.lifecycleScope
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
@@ -170,6 +164,7 @@ class HomeActivity : AppCompatActivity() {
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
     private var isRetryDialogShown = false
+    private var retryDialog: AlertDialog? = null
     private var isApiAlertDialogShown = false
     private var permissionCheckDone = false
     private lateinit var binding: ActivityHomeBinding
@@ -229,6 +224,13 @@ class HomeActivity : AppCompatActivity() {
                         reloadWebpageTimer?.cancel()
                     }
                     wepPageLoadingTimerIsRunning = false
+
+                    // Auto-dismiss the retry dialog if it is still on screen
+                    // (page finished loading while the user was looking at it).
+                    retryDialog?.takeIf { it.isShowing }?.dismiss()
+                    retryDialog = null
+                    isRetryDialogShown = false
+
                     if (url == BuildConfig.BASE_URL_WEB){
                         updateStreak(0,0)
                     }
@@ -1065,29 +1067,30 @@ class HomeActivity : AppCompatActivity() {
                         if (isPageLoadedComplete) {
                         } else {
                             if (binding.progressBar.visibility == View.VISIBLE) {
-                                if (!isFinishing && !isDestroyed) {
-                                    // Show the dialog
+                                if (!isFinishing && !isDestroyed && !isPageLoadedComplete) {
                                     val builder = AlertDialog.Builder(this@HomeActivity)
-                                    with(builder) {
-                                        setTitle(getString(R.string.app_name))
-                                        setMessage(errorMessage)
-                                        setCancelable(false)
-                                        setPositiveButton(getString(R.string.retry)) { dialog, _ ->
+                                        .setTitle(getString(R.string.app_name))
+                                        .setMessage(errorMessage)
+                                        .setCancelable(false)
+                                        .setPositiveButton(getString(R.string.retry)) { dialog, _ ->
                                             isRetryDialogShown = false
+                                            retryDialog = null
+                                            dialog.dismiss()
                                             if (!isPageLoadedComplete) {
                                                 binding.webView.loadUrl("javascript:window.location.reload(true)")
                                             }
                                         }
-                                        setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                                        .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                                             binding.progressBar.visibility = View.GONE
                                             dialog.cancel()
                                             isRetryDialogShown = false
+                                            retryDialog = null
                                             finish()
                                         }
-                                        if (!isRetryDialogShown && !isFinishing && !isDestroyed) {
-                                            show()
-                                            isRetryDialogShown = true
-                                        }
+
+                                    if (!isRetryDialogShown && !isFinishing && !isDestroyed) {
+                                        retryDialog = builder.create().also { it.show() }
+                                        isRetryDialogShown = true
                                     }
                                 }
                             }
@@ -2369,6 +2372,14 @@ class HomeActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         activityEventUpdated = false
+    }
+
+    override fun onDestroy() {
+        retryDialog?.takeIf { it.isShowing }?.dismiss()
+        retryDialog = null
+        reloadWebpageTimer?.cancel()
+        reloadWebpageTimer = null
+        super.onDestroy()
     }
 }
 
