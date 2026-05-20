@@ -297,7 +297,8 @@ object LampNotificationManager {
     fun showActivityNotification(
         context: Context,
         oActivitySchedule: ActivitySchedule,
-        localNotificationId: Int
+        localNotificationId: Int,
+        notificationMessage: String? = null
     ) {
         try {
             DebugLogs.writeToFile("localNotificationId $localNotificationId");
@@ -315,14 +316,17 @@ object LampNotificationManager {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
 
+            // Prefer the per-schedule notificationMessage from the activity list when present;
+            // fall back to the localized default that interpolates the activity name.
+            val contentText = notificationMessage?.takeIf { it.isNotBlank() }
+                ?: String.format(
+                    context.getString(R.string.local_notification_text),
+                    oActivitySchedule.name
+                )
+
             val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL)
                 .setContentTitle(oActivitySchedule.name)
-                .setContentText(
-                    String.format(
-                        context.getString(R.string.local_notification_text),
-                        oActivitySchedule.name
-                    )
-                )
+                .setContentText(contentText)
                 .setSmallIcon(R.drawable.ic_noti_icon)
                 .addAction(
                     R.drawable.ic_noti_icon,

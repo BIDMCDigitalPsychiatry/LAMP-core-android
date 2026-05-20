@@ -9,6 +9,6 @@ data class RefreshTokenResponse (
     val secret_key: String,
     val description: String,
     val _deleted: Boolean,
-    val access_token: String,
-    val refresh_token: String
+    val access_token: String?,
+    val refresh_token: String?
 )

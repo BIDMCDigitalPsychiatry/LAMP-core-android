@@ -180,7 +180,7 @@ dependencies {
 
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
-    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2025.12.01'
+    implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:2026.05.20'
 
     //implementation 'com.github.BIDMCDigitalPsychiatry:LAMP-kotlin:12OS-SNAPSHOT'
     implementation 'com.github.haroldadmin:WhatTheStack:0.3.0'

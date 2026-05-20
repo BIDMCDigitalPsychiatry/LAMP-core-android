@@ -167,7 +167,7 @@
             android:name=".repository.LampForegroundService"
             android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="health">
+            android:foregroundServiceType="health|dataSync">
 
         </service>
 

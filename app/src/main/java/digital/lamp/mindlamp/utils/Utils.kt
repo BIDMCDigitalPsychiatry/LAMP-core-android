@@ -274,8 +274,8 @@ object Utils {
             val resObj = Gson().fromJson(response.toString(), TokenResponseData::class.java)
             Log.e("refreshToken", "response: $response")
 
-            AppState.session.refreshtoken = resObj.data.refresh_token
-            AppState.session.accessToken = resObj.data.access_token
+            AppState.session.refreshtoken = resObj.data.refresh_token?:""
+            AppState.session.accessToken = resObj.data.access_token?:""
 
             true
         } catch (ex: Exception) {

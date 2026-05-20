@@ -1241,8 +1241,8 @@ class HomeActivity : AppCompatActivity() {
         DebugLogs.writeToFile("Renew token received")
 
         // Save tokens
-        AppState.session.accessToken = response.access_token
-        AppState.session.refreshtoken = response.refresh_token
+        AppState.session.accessToken = response.access_token?:""
+        AppState.session.refreshtoken = response.refresh_token?:""
 
         // Optionally update shared preferences
     }
