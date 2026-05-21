@@ -3,11 +3,14 @@ package digital.lamp.mindlamp
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.provider.Settings
 import android.util.Log
+import android.view.Surface
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -493,7 +496,11 @@ class VideoDiaryActivity : AppCompatActivity() {
             val recorder = Recorder.Builder()
                 .setQualitySelector(QualitySelector.from(Quality.HD))
                 .build()
-            videoCapture = VideoCapture.withOutput(recorder)
+            videoCapture = VideoCapture.withOutput(recorder).also {
+                // Make sure the recorded video matches the current device
+                // rotation. Preview rotation is handled by PreviewView itself.
+                it.targetRotation = getDisplayRotation()
+            }
 
             try {
                 cameraProvider.unbindAll()
@@ -596,5 +603,36 @@ class VideoDiaryActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cancelTimer()
+    }
+
+    /**
+     * Activity is declared with `configChanges` in the manifest so rotation does
+     * NOT recreate it (which would tear down the camera session and any active
+     * recording). Instead we just keep the video capture's target rotation in
+     * sync so a recording started in one orientation and finished in another
+     * still saves with the correct orientation metadata.
+     *
+     * The status bar tint can be reset by the framework on configuration
+     * changes, so we re-apply it here too.
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyStatusBarColor()
+        videoCapture?.targetRotation = getDisplayRotation()
+    }
+
+    /**
+     * `Activity.getDisplay()` is only available on API 30+. Fall back to the
+     * deprecated `WindowManager.defaultDisplay` for older devices we still
+     * support (minSdk 26).
+     */
+    private fun getDisplayRotation(): Int {
+        val rotation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display?.rotation
+        } else {
+            @Suppress("DEPRECATION")
+            windowManager.defaultDisplay?.rotation
+        }
+        return rotation ?: Surface.ROTATION_0
     }
 }
