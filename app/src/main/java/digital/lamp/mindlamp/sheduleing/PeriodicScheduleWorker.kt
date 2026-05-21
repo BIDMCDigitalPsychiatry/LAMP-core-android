@@ -33,11 +33,15 @@ class PeriodicScheduleWorker(
             activitySchedule.schedule?.forEach { durationIntervalLegacy ->
                 durationIntervalLegacy.notification_ids?.forEach {
                     if(Utils.getMyIntValue(it) == notificationId){
+                        val perScheduleMessage =
+                            (durationIntervalLegacy.notificationMessage as? String)
+                                ?.takeIf { msg -> msg.isNotBlank() }
                         // Show a notification for the activity
                         LampNotificationManager.showActivityNotification(
                             context,
                             activitySchedule,
-                            notificationId
+                            notificationId,
+                            perScheduleMessage
                         )
                     }
                 }

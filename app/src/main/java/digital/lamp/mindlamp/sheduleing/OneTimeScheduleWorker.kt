@@ -45,10 +45,14 @@ class OneTimeScheduleWorker(
             activitySchedule.schedule?.forEach { durationIntervalLegacy ->
                 durationIntervalLegacy.notification_ids?.forEach {
                     if (Utils.getMyIntValue(it) == notificationId) {
+                        val perScheduleMessage =
+                            (durationIntervalLegacy.notificationMessage as? String)
+                                ?.takeIf { msg -> msg.isNotBlank() }
                         LampNotificationManager.showActivityNotification(
                             context,
                             activitySchedule,
-                            notificationId
+                            notificationId,
+                            perScheduleMessage
                         )
                     }
                 }

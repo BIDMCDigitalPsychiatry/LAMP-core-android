@@ -171,7 +171,9 @@
             android:name=".repository.LampForegroundService"
             android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="health"></service>
+            android:foregroundServiceType="health|dataSync">
+
+        </service>
 
         <receiver
             android:name=".AlarmBroadCastReceiver"

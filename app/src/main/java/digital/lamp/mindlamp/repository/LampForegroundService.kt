@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.repository
 
+import android.Manifest
 import android.accounts.NetworkErrorException
 import android.annotation.SuppressLint
 import android.app.AlarmManager
@@ -8,9 +9,11 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.net.TrafficStats
 import android.os.*
+import androidx.core.content.ContextCompat
 import androidx.work.*
 import androidx.work.PeriodicWorkRequest.Companion.MIN_PERIODIC_INTERVAL_MILLIS
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -115,7 +118,20 @@ class LampForegroundService : Service(),
             )
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                startForeground(1010, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
+                // FGS type "health" needs ACTIVITY_RECOGNITION (or BODY_SENSORS /
+                // HIGH_SAMPLING_RATE_SENSORS) granted at runtime. Fall back to
+                // "dataSync" otherwise so we don't crash on cold-starts from boot
+                // receivers / alarms that fire before the user has granted it.
+                val hasHealthRuntimePerm = ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.ACTIVITY_RECOGNITION
+                ) == PackageManager.PERMISSION_GRANTED
+
+                val fgsType = if (hasHealthRuntimePerm) {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
+                } else {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                }
+                startForeground(1010, notification, fgsType)
             } else {
                 startForeground(1010, notification)
             }
@@ -975,6 +991,12 @@ class LampForegroundService : Service(),
                     LampLog.e(TAG, " Response Activity Data-  ${activityResponse.data.size}")
                     activityResponse.data.forEach {
                         it.schedule.let { oScheduleDataList ->
+                            if (oScheduleDataList.isNullOrEmpty()) {
+                                DebugLogs.writeToFile(
+                                    TAG + " schedule null/empty for activity " +
+                                        "id=${it.id} name=${it.name} - skipping scheduling"
+                                )
+                            }
                             //Update Schedule details to the Activity DB
                             oScheduleDataList?.size?.let { it1 ->
                                 if (it1 > 0) {
@@ -1242,6 +1264,20 @@ class LampForegroundService : Service(),
                                                     }
                                                 }
                                             }
+                                            else -> {
+                                                DebugLogs.writeToFile(
+                                                    TAG + " unmatched repeat_interval='" +
+                                                        "${durationIntervalLegacy.repeat_interval}' " +
+                                                        "(no scheduling)"
+                                                )
+                                            }
+                                        }
+                                        if (durationIntervalLegacy.notification_ids.isNullOrEmpty()) {
+                                            DebugLogs.writeToFile(
+                                                TAG + " notification_ids empty for " +
+                                                    "repeat_interval='${durationIntervalLegacy.repeat_interval}' " +
+                                                    "- alarm will NOT be scheduled"
+                                            )
                                         }
                                     }
                                 }
@@ -1360,6 +1396,11 @@ class LampForegroundService : Service(),
                             startActivity(mainIntent)
                     }
                 } catch (e: Exception) {
+                    DebugLogs.writeToFile(
+                        TAG + " invokeActivitySchedules exception: " +
+                            "${e.javaClass.simpleName} - ${e.message}"
+                    )
+                    LampLog.printStackTrace(e)
                     GlobalScope.launch(Dispatchers.Main) {
 
                         val mainIntent =
@@ -1408,10 +1449,14 @@ class LampForegroundService : Service(),
                                 TAG,
                                 "Activity Name :: - ${activitySchedule.name} ---- $localNotificationId"
                             )
+                            val perScheduleMessage =
+                                (durationIntervalLegacy.notificationMessage as? String)
+                                    ?.takeIf { msg -> msg.isNotBlank() }
                             LampNotificationManager.showActivityNotification(
                                 this@LampForegroundService,
                                 activitySchedule,
-                                localNotificationId
+                                localNotificationId,
+                                perScheduleMessage
                             )
                         }
                     }
