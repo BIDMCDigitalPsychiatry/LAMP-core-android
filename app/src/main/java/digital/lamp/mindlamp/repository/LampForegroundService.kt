@@ -4,6 +4,7 @@ import android.Manifest
 import android.accounts.NetworkErrorException
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.Service
@@ -78,6 +79,7 @@ class LampForegroundService : Service(),
         private val TAG = LampForegroundService::class.java.simpleName
         private const val TIME_INTERVAL: Long = 3000
         private const val MILLISEC_FUTURE: Long = 60000
+        private const val NOTIFICATION_ID = 1010
     }
 
     private var isAlarm: Boolean = false
@@ -111,33 +113,14 @@ class LampForegroundService : Service(),
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        try {
-            val notification = LampNotificationManager.showNotification(
-                this,
-                getString(digital.lamp.mindlamp.R.string.active_data_collection)
-            )
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                // FGS type "health" needs ACTIVITY_RECOGNITION (or BODY_SENSORS /
-                // HIGH_SAMPLING_RATE_SENSORS) granted at runtime. Fall back to
-                // "dataSync" otherwise so we don't crash on cold-starts from boot
-                // receivers / alarms that fire before the user has granted it.
-                val hasHealthRuntimePerm = ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.ACTIVITY_RECOGNITION
-                ) == PackageManager.PERMISSION_GRANTED
+        val notification = LampNotificationManager.showNotification(
+            this,
+            getString(digital.lamp.mindlamp.R.string.active_data_collection)
+        )
 
-                val fgsType = if (hasHealthRuntimePerm) {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
-                } else {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                }
-                startForeground(1010, notification, fgsType)
-            } else {
-                startForeground(1010, notification)
-            }
-        } catch (e: Exception) {
-            DebugLogs.writeToFile("Foreground start exception: ${e.message}")
-            stopSelf() // fail gracefully
+        if (!promoteToForegroundCompat(notification)) {
+            stopSelf() // fail gracefully if even the dataSync fallback fails
             return START_NOT_STICKY
         }
         isAlarm = intent?.extras?.getBoolean("set_alarm") ?: false
@@ -170,6 +153,74 @@ class LampForegroundService : Service(),
 
         return START_STICKY
 
+    }
+
+    /**
+     * Promote this service to the foreground, picking the most specific
+     * `foregroundServiceType` we're actually allowed to use right now.
+     *
+     * Why this can't be a single `startForeground(... HEALTH)` call:
+     * on Android 14+ (UPSIDE_DOWN_CAKE) the OS rejects `FOREGROUND_SERVICE_TYPE_HEALTH`
+     * unless at least one of `ACTIVITY_RECOGNITION` / `BODY_SENSORS` /
+     * `HIGH_SAMPLING_RATE_SENSORS` is runtime-granted *at the moment of the
+     * call*. We've seen the runtime grant state disagree with
+     * `checkSelfPermission()` in the wild (auto-revoke / hibernation can
+     * silently demote a previously-granted permission), so even after a
+     * positive `checkSelfPermission` the `HEALTH` start can still throw with:
+     *
+     *   "Starting FGS with type health … requires permissions: …
+     *    [ACTIVITY_RECOGNITION, BODY_SENSORS, HIGH_SAMPLING_RATE_SENSORS]"
+     *
+     * When that happens we fall back to `FOREGROUND_SERVICE_TYPE_DATA_SYNC`
+     * — which the manifest also declares — so the service still comes up and
+     * keeps collecting / syncing data instead of dying via `stopSelf()`.
+     *
+     * @return true if the service is now in the foreground, false if every
+     *         attempt failed (caller should `stopSelf()`).
+     */
+    private fun promoteToForegroundCompat(notification: Notification): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return try {
+                startForeground(NOTIFICATION_ID, notification)
+                true
+            } catch (e: Exception) {
+                DebugLogs.writeToFile("Foreground start exception: ${e.message}")
+                false
+            }
+        }
+
+        val hasHealthRuntimePerm = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.ACTIVITY_RECOGNITION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasHealthRuntimePerm) {
+            try {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
+                )
+                return true
+            } catch (e: Exception) {
+                // OS-side validator disagreed with checkSelfPermission. Log,
+                // then fall through and retry as dataSync below.
+                DebugLogs.writeToFile(
+                    "Foreground start exception (health, falling back to dataSync): ${e.message}"
+                )
+            }
+        }
+
+        return try {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+            true
+        } catch (e: Exception) {
+            DebugLogs.writeToFile("Foreground start exception (dataSync): ${e.message}")
+            false
+        }
     }
 
     /**
@@ -991,12 +1042,6 @@ class LampForegroundService : Service(),
                     LampLog.e(TAG, " Response Activity Data-  ${activityResponse.data.size}")
                     activityResponse.data.forEach {
                         it.schedule.let { oScheduleDataList ->
-                            if (oScheduleDataList.isNullOrEmpty()) {
-                                DebugLogs.writeToFile(
-                                    TAG + " schedule null/empty for activity " +
-                                        "id=${it.id} name=${it.name} - skipping scheduling"
-                                )
-                            }
                             //Update Schedule details to the Activity DB
                             oScheduleDataList?.size?.let { it1 ->
                                 if (it1 > 0) {
