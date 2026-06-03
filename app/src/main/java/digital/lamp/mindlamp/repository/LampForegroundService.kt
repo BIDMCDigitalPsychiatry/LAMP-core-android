@@ -993,7 +993,7 @@ class LampForegroundService : Service(),
                         it.schedule.let { oScheduleDataList ->
                             if (oScheduleDataList.isNullOrEmpty()) {
                                 DebugLogs.writeToFile(
-                                    TAG + " schedule  activity " +
+                                    TAG + " schedule null/empty for activity " +
                                         "id=${it.id} name=${it.name} - skipping scheduling"
                                 )
                             }
