@@ -1241,9 +1241,6 @@ class HomeActivity : AppCompatActivity() {
                     "lamp.analytics",
                     System.currentTimeMillis().toDouble()
                 )
-
-                Log.e("TAG", "sendTokenRequest : ${sendTokenRequest.data}")
-
                 val basic = "Basic ${
                     Utils.toBase64(
                         AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
