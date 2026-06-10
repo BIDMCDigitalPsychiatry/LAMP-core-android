@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +16,6 @@ import digital.lamp.mindlamp.repository.LampForegroundService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlin.system.exitProcess
 
 /**
  * This class is responsible for error handling
@@ -51,12 +49,13 @@ class ExceptionActivity : AppCompatActivity() {
                     NotificationManagerCompat.from(this@ExceptionActivity).cancelAll();
                 }
             }
-            val packageManager: PackageManager = packageManager
+            /*val packageManager: PackageManager = packageManager
             val intent = packageManager.getLaunchIntentForPackage(packageName)
             val componentName = intent!!.component
             val mainIntent = Intent.makeRestartActivityTask(componentName)
             startActivity(mainIntent)
-            exitProcess(0)
+            exitProcess(0)*/
+            finish()
         }
         if (intent.hasExtra("message")) {
             binding.tvMessage.text = intent.getStringExtra("message")

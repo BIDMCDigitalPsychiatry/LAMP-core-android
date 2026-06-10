@@ -1699,7 +1699,7 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-        if (!isFinishing ) {
+       /* if (!isFinishing ) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 isApiAlertDialogShown = false
                 dialog.cancel()
@@ -1720,7 +1720,7 @@ class HomeActivity : AppCompatActivity() {
                     isApiAlertDialogShown = true
                 }
             }
-        }
+        }*/
     }
 
     /**
