@@ -1242,6 +1242,8 @@ class HomeActivity : AppCompatActivity() {
                     System.currentTimeMillis().toDouble()
                 )
 
+                Log.e("TAG", "sendTokenRequest : ${sendTokenRequest.data}")
+
                 val basic = "Basic ${
                     Utils.toBase64(
                         AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
@@ -1700,23 +1702,8 @@ class HomeActivity : AppCompatActivity() {
         if (!isFinishing ) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 isApiAlertDialogShown = false
-                if (errorCode == 404) {
-                    GlobalScope.launch(Dispatchers.IO) {
-                        AppState.session.clearData()
-                        val oSensorDao = AppDatabase.getInstance(this@HomeActivity).sensorDao()
-                        val oActivityDao = AppDatabase.getInstance(this@HomeActivity).activityDao()
-                        val oAnalyticsDao =
-                            AppDatabase.getInstance(this@HomeActivity).analyticsDao()
-                        oSensorDao.deleteSensorList()
-                        oActivityDao.deleteActivityList()
-                        oAnalyticsDao.dropAnalyticsList()
-                        NotificationManagerCompat.from(this@HomeActivity).cancelAll();
-                    }
-                }
                 dialog.cancel()
-
             }
-
             val builder = AlertDialog.Builder(this)
 
             with(builder)
