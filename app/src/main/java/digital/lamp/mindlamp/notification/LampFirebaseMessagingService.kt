@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.NotificationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.SensorSpecs
@@ -42,7 +43,9 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        DebugLogs.writeToFile(remoteMessage.data.toString())
+        // Push payloads can contain participant identifiers / deep-link URLs. Only persist
+        // them to disk in debug builds to avoid leaking that data into LampLog.txt in release.
+        if (BuildConfig.DEBUG) DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
         var actionList: List<ActionData> = listOf()
         if (remoteMessage.data["actions"] != null)
@@ -91,7 +94,8 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
      */
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.e(TAG, "Refreshed token: $token")
+        // Do not log the FCM token value (device-targeting credential); log the event only.
+        Log.e(TAG, "FCM token refreshed")
     }
 
     companion object {
