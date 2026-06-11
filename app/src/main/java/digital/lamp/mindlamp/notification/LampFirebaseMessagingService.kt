@@ -9,12 +9,21 @@ import com.google.gson.reflect.TypeToken
 import digital.lamp.lamp_kotlin.lamp_core.apis.SensorEventAPI
 import digital.lamp.lamp_kotlin.lamp_core.models.NotificationData
 import digital.lamp.lamp_kotlin.lamp_core.models.SensorEvent
+import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.entity.SensorSpecs
-import digital.lamp.mindlamp.model.*
+import digital.lamp.mindlamp.model.ActionData
+import digital.lamp.mindlamp.model.DiagnosticData
+import digital.lamp.mindlamp.model.DiagnosticDataContent
+import digital.lamp.mindlamp.model.DiagnosticStorage
+import digital.lamp.mindlamp.model.PendingData
 import digital.lamp.mindlamp.repository.LampForegroundService
-import digital.lamp.mindlamp.utils.*
+import digital.lamp.mindlamp.utils.DebugLogs
+import digital.lamp.mindlamp.utils.LampLog
+import digital.lamp.mindlamp.utils.NetworkUtils
+import digital.lamp.mindlamp.utils.Sensors
+import digital.lamp.mindlamp.utils.Utils
 import digital.lamp.mindlamp.utils.Utils.isServiceRunning
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -34,7 +43,9 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        DebugLogs.writeToFile(remoteMessage.data.toString())
+        // Push payloads can contain participant identifiers / deep-link URLs. Only persist
+        // them to disk in debug builds to avoid leaking that data into LampLog.txt in release.
+        if (BuildConfig.DEBUG) DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
         var actionList: List<ActionData> = listOf()
         if (remoteMessage.data["actions"] != null)
@@ -44,11 +55,11 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
             ) as List<ActionData>
 
         //Notification with page and action Button
-        if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty() && actionList.isNotEmpty()) {
+        if (remoteMessage.data["page"] != null && remoteMessage.data["page"]?.isNotEmpty() == true && actionList.isNotEmpty()) {
             LampNotificationManager.notificationWithActionButton(this, remoteMessage, actionList)
         }
         //Notification with page and no action Button
-        else if (remoteMessage.data["page"] != null && remoteMessage.data["page"]!!.isNotEmpty()) {
+        else if (remoteMessage.data["page"] != null && remoteMessage.data["page"]?.isNotEmpty() == true) {
             LampNotificationManager.notificationWithoutAction(this, remoteMessage)
         } else if (remoteMessage.data["command"] != null) {
             invokeDiagnosticData()
@@ -83,7 +94,8 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
      */
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.e(TAG, "Refreshed token: $token")
+        // Do not log the FCM token value (device-targeting credential); log the event only.
+        Log.e(TAG, "FCM token refreshed")
     }
 
     companion object {
@@ -141,7 +153,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                 sensorsList.toCollection(ArrayList())
                 configuredSensors = sensorsList.map { it.sensor_name }
             } else {
-                configuredSensors = sensorSpecList.map { it.spec!! }
+                configuredSensors = sensorSpecList.mapNotNull { it.spec }
             }
 
             val diagnosticDataContent = DiagnosticDataContent(
