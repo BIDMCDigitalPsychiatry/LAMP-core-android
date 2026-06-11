@@ -81,7 +81,7 @@ object LampNotificationManager {
                 it, actionIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
-
+        val expiryTime = remoteMessage.data["expiry"]?.toLong()
         val notification =
             NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                 .setContentTitle(remoteMessage.data["title"])
@@ -99,7 +99,6 @@ object LampNotificationManager {
                     )
                 )
                 .setAutoCancel(true)
-                .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
                 .addAction(
                     R.drawable.ic_noti_icon,
                     /* actionList[0].name,*/context.getString(R.string.notification_action),
@@ -107,6 +106,9 @@ object LampNotificationManager {
                 )
                 .setContentIntent(actionPendingIntent)
                 .setOngoing(true)
+        expiryTime?.let {
+            notification.setTimeoutAfter(it)
+        }
 
         val manager =
             context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -145,7 +147,7 @@ object LampNotificationManager {
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
-
+        val expiryTime = remoteMessage.data["expiry"]?.toLong()
         val notification =
             NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
                 .setContentTitle(remoteMessage.data["title"])
@@ -163,8 +165,11 @@ object LampNotificationManager {
                     )
                 )
                 .setAutoCancel(true)
-                .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
                 .setContentIntent(pendingIntent)
+
+        expiryTime?.let {
+            notification.setTimeoutAfter(it)
+        }
 
         val manager =
             context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -196,14 +201,21 @@ object LampNotificationManager {
             context,
             0, homeIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+        val data = remoteMessage.data
+        val title = data["title"]?.takeIf { it.isNotBlank() }
+            ?: remoteMessage.notification?.title?.takeIf { it.isNotBlank() }
+            ?: context.getString(R.string.app_name)
+        val body = data["body"]?.takeIf { it.isNotBlank() }
+            ?: remoteMessage.notification?.body?.takeIf { it.isNotBlank() }
 
+        val expiryTime = data["expiry"]?.toLong()
         val notification =
             NotificationCompat.Builder(context.applicationContext, NOTIFICATION_CHANNEL)
-                .setContentTitle(remoteMessage.data["title"])
+                .setContentTitle(title)
                 .setContentText(
-                    String.format(
+                    body ?: String.format(
                         context.getString(R.string.local_notification_text),
-                        remoteMessage.data["title"]
+                        title
                     )
                 )
                 .setSmallIcon(R.drawable.ic_noti_icon)
@@ -214,8 +226,10 @@ object LampNotificationManager {
                     )
                 )
                 .setAutoCancel(true)
-                .setTimeoutAfter(remoteMessage.data["expiry"]!!.toLong())
                 .setContentIntent(homePendingIntent)
+        expiryTime?.let {
+            notification.setTimeoutAfter(it)
+        }
 
         val manager =
             context.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
