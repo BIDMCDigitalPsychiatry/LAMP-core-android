@@ -19,7 +19,7 @@ import java.io.File
 import java.io.UnsupportedEncodingException
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.TimeZone
 
 /**
  * This class responsible for common util methods.
@@ -224,5 +224,33 @@ object Utils {
             }
             else -> return ""
         }
+    }
+    /**
+     * Extracts the API hostname from the login [serverAddress] (scheme, path, and port removed).
+     *
+     * Why: Login returns a full base URL (e.g. https://xxx.xxx.app/ or https://xxx.xxx.digital/).
+     * Server-type checks must use the host only. Centralizing parsing here avoids duplicating
+     * removePrefix/substring logic and keeps host detection consistent across the app.
+     */
+    fun apiHostFromServerAddress(serverAddress: String): String? {
+        return serverAddress.trim()
+            .removePrefix("https://")
+            .removePrefix("http://")
+            .substringBefore('/')
+            .substringBefore(':')
+            .lowercase()
+            .takeIf { it.isNotEmpty() }
+    }
+    /**
+     * Returns true when [serverAddress] points at a standard LAMP cloud API (*.lamp.digital).
+     *
+     * Why: Custom deployments (e.g. Army Level Up) often lack full LAMP sensor APIs (sensorAll,
+     * sensor_event) and return 404. Standard LAMP hosts should keep strict behavior on API failure
+     * (show error, do not start service). Custom hosts should still start the foreground service
+     * with an empty sensor list. This method drives that split without hardcoding each custom URL.
+     */
+    fun isStandardLampApi(serverAddress: String): Boolean {
+        val host = apiHostFromServerAddress(serverAddress) ?: return false
+        return host.endsWith(".lamp.digital") || host == "lamp.digital"
     }
 }

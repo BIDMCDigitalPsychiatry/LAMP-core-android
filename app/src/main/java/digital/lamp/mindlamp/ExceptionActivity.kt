@@ -7,15 +7,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationManagerCompat
-import digital.lamp.mindlamp.appstate.AppState
-import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.databinding.ActivityExceptionBinding
 import digital.lamp.mindlamp.repository.LampForegroundService
-
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 /**
  * This class is responsible for error handling
@@ -35,26 +28,6 @@ class ExceptionActivity : AppCompatActivity() {
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         binding.buttonOk.setOnClickListener {
-            if (errorCode == 404) {
-                AppState.session.clearData()
-                stopLampService()
-                GlobalScope.launch(Dispatchers.IO) {
-                    val oSensorDao = AppDatabase.getInstance(this@ExceptionActivity).sensorDao()
-                    val oActivityDao = AppDatabase.getInstance(this@ExceptionActivity).activityDao()
-                    val oAnalyticsDao =
-                        AppDatabase.getInstance(this@ExceptionActivity).analyticsDao()
-                    oSensorDao.deleteSensorList()
-                    oActivityDao.deleteActivityList()
-                    oAnalyticsDao.dropAnalyticsList()
-                    NotificationManagerCompat.from(this@ExceptionActivity).cancelAll();
-                }
-            }
-            /*val packageManager: PackageManager = packageManager
-            val intent = packageManager.getLaunchIntentForPackage(packageName)
-            val componentName = intent!!.component
-            val mainIntent = Intent.makeRestartActivityTask(componentName)
-            startActivity(mainIntent)
-            exitProcess(0)*/
             finish()
         }
         if (intent.hasExtra("message")) {

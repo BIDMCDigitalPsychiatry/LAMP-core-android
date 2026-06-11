@@ -174,16 +174,13 @@ class LampForegroundService : Service(),
 
         GlobalScope.launch(Dispatchers.IO) {
             val list: List<Analytics>
-            LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
             if (AppState.session.lastAnalyticsTimestamp == 1L) {
                 val analytics =
                     oAnalyticsDao.getFirstAnalyticsRecord(AppState.session.lastAnalyticsTimestamp)
                 AppState.session.lastAnalyticsTimestamp = analytics?.datetimeMillisecond ?: 1L
             }
-            LampLog.e("Sensor : START TIME ${AppState.session.lastAnalyticsTimestamp}")
             val endTime =
                 AppState.session.lastAnalyticsTimestamp + AppConstants.SYNC_TIME_STAMP_INTERVAL
-            LampLog.e("Sensor : END TIME $endTime")
             list = oAnalyticsDao.getAnalyticsList(AppState.session.lastAnalyticsTimestamp, endTime)
 
             list.forEach {
@@ -206,7 +203,6 @@ class LampForegroundService : Service(),
                         googleHealthConnectSensorEventDataList.add(
                             googleHealthConnectData
                         )
-                        LampLog.e("Google Fit sync: ${gsonWithNull.toJson(googleHealthConnectData)}")
                     } else {
                         sensorEventDataList.add(
                             sensorEvent
@@ -221,7 +217,6 @@ class LampForegroundService : Service(),
                     AppState.session.lastSyncWorkerTimestamp = it[0].datetimeMillisecond!!
                 }
             }
-            LampLog.e("DB : ${list.size} and Sensor : ${sensorEventDataList.size}")
             if (sensorEventDataList.isNotEmpty())
                 invokeAddSensorData(sensorEventDataList, false)
             else {
@@ -320,7 +315,6 @@ class LampForegroundService : Service(),
         oScope.launch(Dispatchers.IO) {
             sensorSpecList = oSensorDao.getSensorsList() as ArrayList<SensorSpecs>
         }
-        LampLog.e(TAG, sensorSpecList.size.toString())
         var count = 0
         val timer = object : CountDownTimer(MILLISEC_FUTURE, TIME_INTERVAL) {
             override fun onTick(millisUntilFinished: Long) {
@@ -612,7 +606,6 @@ class LampForegroundService : Service(),
                             if (initialCall)
                                 collectSensorData()
                         }
-                        LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
 
                     } catch (e: SSLHandshakeException) {
                         GlobalScope.launch(Dispatchers.Main) {
@@ -628,17 +621,22 @@ class LampForegroundService : Service(),
                         }
                     } catch (e: ClientException) {
                         GlobalScope.launch(Dispatchers.Main) {
-                            DebugLogs.writeToFile("invokeSensorSpecData client exception")
-                            val mainIntent =
-                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                            mainIntent.putExtra(
-                                "message",
-                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                            )
-                            mainIntent.putExtra("code", e.statusCode)
-                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            if (App.app.isApplicationInForeground())
-                                startActivity(mainIntent)
+                            if (Utils.isStandardLampApi(AppState.session.serverAddress)) {
+                                DebugLogs.writeToFile("invokeSensorSpecData client exception")
+                                val mainIntent =
+                                    Intent(
+                                        this@LampForegroundService,
+                                        ExceptionActivity::class.java
+                                    )
+                                mainIntent.putExtra(
+                                    "message",
+                                    getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                                )
+                                mainIntent.putExtra("code", e.statusCode)
+                                mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                if (App.app.isApplicationInForeground())
+                                    startActivity(mainIntent)
+                            }
                         }
                     } catch (e: ServerException) {
                         GlobalScope.launch(Dispatchers.Main) {
@@ -776,28 +774,27 @@ class LampForegroundService : Service(),
                         basic, isGogolefitData
                     )
 
-                    LampLog.e(TAG, " Lamp Core Response -  $state")
                     if (state.isNotEmpty()) {
                         //Code for drop DB
                         GlobalScope.launch(Dispatchers.IO) {
                             oAnalyticsDao.deleteAnalyticsList(AppState.session.lastAnalyticsTimestamp)
-                            LampLog.e("Sensor : invokeAddSensorData")
                             syncAnalyticsData()
                         }
                     }
                 } catch (e: ClientException) {
                     GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.putExtra("code", e.statusCode)
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
+                        if (Utils.isStandardLampApi(AppState.session.serverAddress)) {
+                            val mainIntent =
+                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                            )
+                            mainIntent.putExtra("code", e.statusCode)
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if (App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
+                        }
                     }
                 } catch (e: ServerException) {
                     GlobalScope.launch(Dispatchers.Main) {
@@ -950,7 +947,6 @@ class LampForegroundService : Service(),
                     )
 
                     val oActivityList = arrayListOf<ActivitySchedule>()
-                    LampLog.e(TAG, " Response Activity Data-  ${activityResponse.data.size}")
                     activityResponse.data.forEach {
                         it.schedule.let { oScheduleDataList ->
                             //Update Schedule details to the Activity DB
@@ -979,14 +975,6 @@ class LampForegroundService : Service(),
                                                                 index
                                                             ).toString()
                                                         )
-                                                        LampLog.e(
-                                                            TAG,
-                                                            "Custom Alarm Manager : $index :  ${
-                                                                durationIntervalLegacy.custom_time?.get(
-                                                                    index
-                                                                )
-                                                            } :: $nId"
-                                                        )
                                                     }
                                                 }
                                             }
@@ -1001,10 +989,6 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "HOURLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
                                                 }
                                             }
                                         }
@@ -1017,10 +1001,6 @@ class LampForegroundService : Service(),
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
-                                                    )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "EVERY_3H :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                     )
                                                 }
                                             }
@@ -1035,10 +1015,6 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "EVERY_6H :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
                                                 }
                                             }
                                         }
@@ -1051,10 +1027,6 @@ class LampForegroundService : Service(),
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
-                                                    )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "EVERY_12H :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                     )
                                                 }
                                             }
@@ -1070,10 +1042,7 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "Daily :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
+
                                                 }
                                             }
 
@@ -1094,10 +1063,6 @@ class LampForegroundService : Service(),
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
-                                                    )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                     )
                                                 }
                                             }
@@ -1120,10 +1085,6 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "BIWEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
                                                 }
                                             }
 
@@ -1137,10 +1098,6 @@ class LampForegroundService : Service(),
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
-                                                    )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "WEEKLY :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                     )
                                                 }
                                             }
@@ -1157,10 +1114,6 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "FORTNIGHTLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
                                                 }
                                             }
 
@@ -1176,10 +1129,6 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "BIMONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
                                                 }
                                             }
 
@@ -1193,10 +1142,6 @@ class LampForegroundService : Service(),
                                                         nId,
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
-                                                    )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "MONTHLY :- ${durationIntervalLegacy.notification_ids?.size}}"
                                                     )
                                                 }
                                             }
@@ -1212,10 +1157,6 @@ class LampForegroundService : Service(),
                                                         durationIntervalLegacy.time.toString(),
                                                         durationIntervalLegacy.start_date.toString()
                                                     )
-                                                    LampLog.e(
-                                                        TAG,
-                                                        "NONE :- ${durationIntervalLegacy.notification_ids?.size}}"
-                                                    )
                                                 }
                                             }
                                         }
@@ -1226,23 +1167,20 @@ class LampForegroundService : Service(),
                     }
                     oActivityDao.deleteActivityList()
                     oActivityDao.insertAllActivity(oActivityList)
-                    LampLog.e(
-                        TAG,
-                        "Activity DB Size : ${oActivityDao.getActivityList().size.toString()}"
-                    )
                 } catch (e: ClientException) {
                     GlobalScope.launch(Dispatchers.Main) {
-
-                        val mainIntent =
-                            Intent(this@LampForegroundService, ExceptionActivity::class.java)
-                        mainIntent.putExtra(
-                            "message",
-                            getString(digital.lamp.mindlamp.R.string.something_went_wrong)
-                        )
-                        mainIntent.putExtra("code", e.statusCode)
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        if (App.app.isApplicationInForeground())
-                            startActivity(mainIntent)
+                        if (Utils.isStandardLampApi(AppState.session.serverAddress)) {
+                            val mainIntent =
+                                Intent(this@LampForegroundService, ExceptionActivity::class.java)
+                            mainIntent.putExtra(
+                                "message",
+                                getString(digital.lamp.mindlamp.R.string.something_went_wrong)
+                            )
+                            mainIntent.putExtra("code", e.statusCode)
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if (App.app.isApplicationInForeground())
+                                startActivity(mainIntent)
+                        }
                     }
                 } catch (e: ServerException) {
                     GlobalScope.launch(Dispatchers.Main) {
@@ -1372,18 +1310,11 @@ class LampForegroundService : Service(),
      */
     fun invokeLocalNotification(localNotificationId: Int) {
         oScope.launch {
-            LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification 1")
             val activityList = oActivityDao.getActivityList()
             activityList.forEach { activitySchedule ->
                 activitySchedule.schedule?.forEach { durationIntervalLegacy ->
-                    LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification 2")
                     durationIntervalLegacy.notification_ids?.forEach {
                         if (Utils.getMyIntValue(it) == localNotificationId) {
-                            LampLog.e("BROADCASTRECEIVER", "invokeLocalNotification 3")
-                            LampLog.e(
-                                TAG,
-                                "Activity Name :: - ${activitySchedule.name} ---- $localNotificationId"
-                            )
                             LampNotificationManager.showActivityNotification(
                                 this@LampForegroundService,
                                 activitySchedule,
@@ -1517,8 +1448,6 @@ class LampForegroundService : Service(),
 
     override fun getGoogleHealthConnect(sensorEventData: ArrayList<SensorEvent>) {
         val gson = GsonBuilder().serializeNulls().create()
-        LampLog.e("Google Health connect 1: ${gson.toJson(sensorEventData)}")
-
         val oAnalyticsList: ArrayList<Analytics> = arrayListOf()
         GlobalScope.async {
             sensorEventData.forEach {
@@ -1528,8 +1457,6 @@ class LampForegroundService : Service(),
             }
             //Insert it into Analytics DB
             oAnalyticsDao.insertAllAnalytics(oAnalyticsList)
-            LampLog.e("Google Health Connect : ${gson.toJson(sensorEventData)}")
-            DebugLogs.writeToFile("Google Health Connect : ${gson.toJson(sensorEventData)}")
         }
     }
 
