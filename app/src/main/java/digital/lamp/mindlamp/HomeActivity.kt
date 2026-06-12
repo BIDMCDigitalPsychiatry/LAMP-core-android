@@ -198,10 +198,8 @@ class HomeActivity : AppCompatActivity() {
     private val myWebViewClient: WebViewClient by lazy {
         object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
-                Log.e(TAG, "webview progress${view.progress}")
                 if (view.progress == 100) {
                     isPageLoadedComplete = true
-                    Log.e(TAG, " : $url")
                     binding.progressBar.visibility = View.GONE
                     if (wepPageLoadingTimerIsRunning) {
                         reloadWebpageTimer?.cancel()
@@ -1037,7 +1035,6 @@ class HomeActivity : AppCompatActivity() {
                     //Code for drop DB
                     updateStreak(0,0)
                     AppState.session.clearData()
-                    LampLog.e(TAG, " Logout Response -  $state")
                 }
             } catch (e: Exception) {
                 LampLog.printStackTrace(e)
@@ -1228,9 +1225,6 @@ class HomeActivity : AppCompatActivity() {
 
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
             if (token != null) {
-                Log.e(TAG, "FCM Token : $token")
-                DebugLogs.writeToFile("Token : $token")
-
                 val tokenData = TokenData()
                 tokenData.type = "login"
                 tokenData.device_token = token.toString()
@@ -1258,7 +1252,6 @@ class HomeActivity : AppCompatActivity() {
                                 sendTokenRequest,
                                 basic
                             )
-                        LampLog.e(TAG, " Token Send Response -  $state")
                     } catch (e: Exception) {
                         DebugLogs.writeToFile("Exception SensorEventAPI HomeActivity retrieveCurrentToken:${e.printStackTrace()}\n ${e.message}")
                         LampLog.printStackTrace(e)
@@ -1386,7 +1379,25 @@ class HomeActivity : AppCompatActivity() {
     }
 
     /**
-     * fetch sensors from server
+     * Starts the foreground service when no sensor list is available from the server.
+     *
+     * Why: On custom servers, sensorAll may fail even though login succeeded. Reusing
+     * checkHealthConnectSensorsAdded() with an empty list follows the same path as "zero sensors"
+     * on success and calls startLampService() without skipping the existing permission flow
+     * on standard LAMP or starting the service unconditionally for every logged-in user.
+     */
+    private fun startLampServiceWithoutSensors() {
+        mSensorSpecsList = arrayListOf()
+        checkHealthConnectSensorsAdded()
+    }
+
+    /**
+     * Fetches participant sensor specs and starts the permission → foreground service flow.
+     *
+     * Why: Service start is tied to this call after login. On custom servers (see
+     * Utils.isStandardLampApi), sensor API failures are handled in catch blocks by calling
+     * startLampServiceWithoutSensors() so Army/custom users still get data collection /
+     * activity scheduling without a working sensorAll endpoint.
      */
     private fun invokeSensorSpecData() {
 
@@ -1453,19 +1464,22 @@ class HomeActivity : AppCompatActivity() {
                                 checkHealthConnectSensorsAdded()
                             }
                         }
-                        LampLog.e(TAG, " Sensor Spec Size -  ${oSensorDao.getSensorsList().size}")
                     } catch (e: SSLHandshakeException) {
                         GlobalScope.launch(Dispatchers.Main) {
 
                             showApiErrorAlert(getString(R.string.server_unreachable))
                         }
                     } catch (e: ClientException) {
+                        // Custom server: sensor API optional — start service with empty sensors.
+                        // Standard LAMP: keep error dialog; do not start service on spec fetch failure.
                         LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
-                            showApiErrorAlert(getString(R.string.something_went_wrong), e.statusCode)
+                            if (Utils.isStandardLampApi(AppState.session.serverAddress)) {
+                                showApiErrorAlert(getString(R.string.something_went_wrong), e.statusCode)
+                            } else {
+                                startLampServiceWithoutSensors()
+                            }
                         }
-
-
                     } catch (e: ServerException) {
                         LampLog.printStackTrace(e)
                         GlobalScope.launch(Dispatchers.Main) {
@@ -1520,6 +1534,7 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
         }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -1696,7 +1711,7 @@ class HomeActivity : AppCompatActivity() {
      * Displays error messages
      */
     private fun showApiErrorAlert(message: String, errorCode: Int = 0) {
-       /* if (!isFinishing ) {
+        if (!isFinishing ) {
             val positiveButtonClick = { dialog: DialogInterface, _: Int ->
                 isApiAlertDialogShown = false
                 dialog.cancel()
@@ -1717,7 +1732,7 @@ class HomeActivity : AppCompatActivity() {
                     isApiAlertDialogShown = true
                 }
             }
-        }*/
+        }
     }
 
     /**
