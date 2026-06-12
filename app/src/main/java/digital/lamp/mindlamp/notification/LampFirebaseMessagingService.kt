@@ -47,13 +47,19 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
         // them to disk in debug builds to avoid leaking that data into LampLog.txt in release.
         if (BuildConfig.DEBUG) DebugLogs.writeToFile(remoteMessage.data.toString())
         val gson = Gson()
-        var actionList: List<ActionData> = listOf()
-        if (remoteMessage.data["actions"] != null)
-            actionList = gson.fromJson(
-                remoteMessage.data["actions"],
-                object : TypeToken<List<ActionData?>?>() {}.type
-            ) as List<ActionData>
-
+        val actionList: List<ActionData> = remoteMessage.data["actions"]
+            ?.takeIf { it.isNotBlank() }
+            ?.let { raw ->
+                try {
+                    gson.fromJson<List<ActionData>>(
+                        raw,
+                        object : TypeToken<List<ActionData>>() {}.type
+                    ) ?: emptyList()
+                } catch (e: Exception) {
+                    LampLog.e(TAG, "Failed to parse FCM actions payload", e)
+                    emptyList()
+                }
+            } ?: emptyList()
         //Notification with page and action Button
         if (remoteMessage.data["page"] != null && remoteMessage.data["page"]?.isNotEmpty() == true && actionList.isNotEmpty()) {
             LampNotificationManager.notificationWithActionButton(this, remoteMessage, actionList)
