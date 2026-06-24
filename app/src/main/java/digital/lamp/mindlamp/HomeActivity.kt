@@ -82,6 +82,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.auth.SessionExpiredNotifier
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
 import digital.lamp.mindlamp.database.dao.AnalyticsDao
@@ -285,6 +286,17 @@ class HomeActivity : AppCompatActivity() {
         val filter = IntentFilter()
         filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
         registerReceiver(PowerSaveModeReceiver(), filter)
+
+        // When the session can no longer be renewed (TokenAuthenticator gave up
+        // and cleared the session), stop collection and return to login.
+        SessionExpiredNotifier.expired.observe(this) { expired ->
+            if (expired == true) {
+                SessionExpiredNotifier.reset()
+                Lamp.stopLAMP(this)
+                stopLampService()
+                binding.webView.loadUrl(BuildConfig.BASE_URL_WEB)
+            }
+        }
 
         if (AppState.session.showDisclosureAlert) {
             binding.progressBar.visibility = View.GONE
