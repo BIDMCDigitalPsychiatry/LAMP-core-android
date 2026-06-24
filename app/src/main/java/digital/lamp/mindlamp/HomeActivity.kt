@@ -971,7 +971,8 @@ class HomeActivity : AppCompatActivity() {
         fun postMessage(jsonString: String) {
             try {
                 val loginResponse = Gson().fromJson(jsonString, LoginResponse::class.java)
-                if (loginResponse != null && loginResponse.authorizationToken != null && !loginResponse.deleteCache) {
+                if (loginResponse != null && !loginResponse.deleteCache &&
+                    (loginResponse.authorizationToken != null || loginResponse.accessToken != null)) {
                     homeActivity.onAuthenticationStateChanged(
                         AuthenticationState.StoredCredentials(
                             loginResponse
@@ -1058,7 +1059,20 @@ class HomeActivity : AppCompatActivity() {
     private fun showSignedIn(oLoginResponse: LoginResponse) {
 
         AppState.session.isLoggedIn = true
-        AppState.session.token = oLoginResponse.authorizationToken
+        val bearerAccess = oLoginResponse.accessToken
+        if (bearerAccess != null) {
+            // Session/Bearer server
+            AppState.session.authScheme = "bearer"
+            AppState.session.accessToken = bearerAccess
+            AppState.session.refreshToken = oLoginResponse.refreshToken ?: ""
+            AppState.session.token = ""
+        } else {
+            // Legacy Basic (or external-JWT passthrough) server
+            AppState.session.authScheme = "basic"
+            AppState.session.token = oLoginResponse.authorizationToken ?: ""
+            AppState.session.accessToken = ""
+            AppState.session.refreshToken = ""
+        }
         AppState.session.userId = oLoginResponse.identityObject.id
         if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
                 "http://"

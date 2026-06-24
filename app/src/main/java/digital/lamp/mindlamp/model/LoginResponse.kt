@@ -12,9 +12,14 @@ package digital.lamp.mindlamp.model
  * @param deleteCache Flag indicating whether to delete the cache (default is false).
  */
 data class LoginResponse(
-    val authorizationToken: String,
+    val authorizationToken: String? = null,
     val identityObject: IdentityObject,
     val serverAddress: String,
+    // Session/Bearer fields (new server). Absent on legacy/basic and
+    // external-JWT logins, which send authorizationToken instead.
+    val accessToken: String? = null,
+    val refreshToken: String? = null,
+    val authScheme: String? = null,
     val deleteCache: Boolean = false
 )
 /**

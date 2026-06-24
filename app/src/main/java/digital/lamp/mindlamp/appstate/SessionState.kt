@@ -10,6 +10,9 @@ class SessionState {
         const val PREF_KEY_TOKEN = "token"
         const val PREF_KEY_USER_ID = "user_id"
         const val PREF_KEY_SERVER_ADDRESS = "serverAddress"
+        const val PREF_KEY_AUTH_SCHEME = "auth_scheme"
+        const val PREF_KEY_ACCESS_TOKEN = "access_token"
+        const val PREF_KEY_REFRESH_TOKEN = "refresh_token"
         const val PREF_KEY_CRASH_VALUE = "crash_value"
         const val PREF_ANALYTICS_TIME_STAMP = "lastAnalyticsTimestamp"
         const val PREF_WORKER_TIME_STAMP = "lastSyncWorkerTimestamp"
@@ -56,6 +59,11 @@ class SessionState {
         PREF_KEY_SERVER_ADDRESS,
         "https://api.lamp.digital/"
     )
+    // Session/Bearer auth. authScheme is "bearer" for the new session server;
+    // "basic" (or empty) for legacy/basic and external-JWT servers.
+    var authScheme by Pref(PREF_KEY_AUTH_SCHEME, "")
+    var accessToken by Pref(PREF_KEY_ACCESS_TOKEN, "")
+    var refreshToken by Pref(PREF_KEY_REFRESH_TOKEN, "")
     var crashValue by Pref(
         PREF_KEY_CRASH_VALUE,
         ""
@@ -90,6 +98,9 @@ class SessionState {
     fun clearData() {
         isLoggedIn = false
         token = ""
+        authScheme = ""
+        accessToken = ""
+        refreshToken = ""
         userId = ""
         serverAddress = ""
         crashValue = ""
