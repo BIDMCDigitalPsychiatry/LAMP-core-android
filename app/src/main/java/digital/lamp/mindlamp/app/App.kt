@@ -7,8 +7,10 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import digital.lamp.lamp_kotlin.lamp_core.infrastructure.ApiClient
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.appstate.Pref
+import digital.lamp.mindlamp.auth.TokenAuthenticator
 import digital.lamp.mindlamp.utils.AppLifeCycleListener
 import digital.lamp.mindlamp.utils.DebugLogs
 import java.io.PrintWriter
@@ -47,6 +49,9 @@ class App: Application(), Configuration.Provider {
             directBootContext,
             AppKeys.APP_PREF_NAME
         )
+        // Register the Bearer-token refresh handler before any LAMP API client
+        // is built (the OkHttp client is lazily created from ApiClient.builder).
+        ApiClient.builder.authenticator(TokenAuthenticator())
         // Setup handler for uncaught exceptions.
        /* Thread.setDefaultUncaughtExceptionHandler { thread, e ->
             handleUncaughtException(
