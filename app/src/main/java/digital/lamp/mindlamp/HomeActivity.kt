@@ -1242,8 +1242,6 @@ class HomeActivity : AppCompatActivity() {
 
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
             if (token != null) {
-                Log.e(TAG, "FCM Token : $token")
-                DebugLogs.writeToFile("Token : $token")
 
                 val tokenData = TokenData()
                 tokenData.type = "login"
