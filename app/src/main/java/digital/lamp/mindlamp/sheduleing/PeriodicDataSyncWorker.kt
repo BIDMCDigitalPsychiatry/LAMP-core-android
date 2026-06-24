@@ -156,13 +156,7 @@ class PeriodicDataSyncWorker(
         if (NetworkUtils.isNetworkAvailable(context) && NetworkUtils.getBatteryPercentage(context) > 15) {
             trackSingleEvent("API_Send ${sensorEventDataList.size}")
 
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            val basic = Utils.authHeader()
 
             TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
             try {

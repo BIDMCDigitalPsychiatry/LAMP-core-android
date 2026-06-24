@@ -95,13 +95,7 @@ class LocationData constructor(
         if (NetworkUtils.isNetworkAvailable(context) && NetworkUtils.getBatteryPercentage(context) > 15) {
 
             val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            val basic = Utils.authHeader()
 
             GlobalScope.launch(Dispatchers.IO) {
                 try {

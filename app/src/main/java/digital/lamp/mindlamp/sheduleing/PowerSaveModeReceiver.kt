@@ -44,13 +44,7 @@ class PowerSaveModeReceiver : BroadcastReceiver() {
             if (AppState.session.isLoggedIn) {
                 if (NetworkUtils.isNetworkAvailable(context)) {
 
-                    val basic = "Basic ${
-                        Utils.toBase64(
-                            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                                "https://"
-                            ).removePrefix("http://")
-                        )
-                    }"
+                    val basic = Utils.authHeader()
 
                     try {
                         val state =

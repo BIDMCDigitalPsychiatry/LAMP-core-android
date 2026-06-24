@@ -109,13 +109,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun invokeNotificationData(notificationEventRequest: SensorEvent) {
-        val basic = "Basic ${
-            Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                    "https://"
-                ).removePrefix("http://")
-            )
-        }"
+        val basic = Utils.authHeader()
         Thread {
             TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
             try {
@@ -182,13 +176,7 @@ class LampFirebaseMessagingService : FirebaseMessagingService() {
                     "lamp.analytics", System.currentTimeMillis().toDouble()
                 )
 
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            val basic = Utils.authHeader()
             try {
                 val state = SensorEventAPI(AppState.session.serverAddress).sensorEventCreate(
                     AppState.session.userId,

@@ -326,13 +326,7 @@ class HomeActivity : AppCompatActivity() {
     }
     private fun initialCallForActivityStreak(){
         try {
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            val basic = Utils.authHeader()
             CoroutineScope(Dispatchers.IO).launch {
                 val state =
                     ActivityEventAPI(AppState.session.serverAddress).activityEventAllByParticipant(
@@ -1016,13 +1010,7 @@ class HomeActivity : AppCompatActivity() {
             System.currentTimeMillis().toDouble()
         )
 
-        val basic = "Basic ${
-            Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                    "https://"
-                ).removePrefix("http://")
-            )
-        }"
+        val basic = Utils.authHeader()
 
         Lamp.stopLAMP(this)
         stopLampService()
@@ -1255,13 +1243,7 @@ class HomeActivity : AppCompatActivity() {
                     "lamp.analytics",
                     System.currentTimeMillis().toDouble()
                 )
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
+                val basic = Utils.authHeader()
 
                 GlobalScope.launch {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
@@ -1407,13 +1389,7 @@ class HomeActivity : AppCompatActivity() {
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this) > 15) {
                 val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
+                val basic = Utils.authHeader()
 
                 GlobalScope.launch(Dispatchers.IO) {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())

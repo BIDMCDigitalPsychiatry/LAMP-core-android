@@ -15,6 +15,7 @@ import android.util.Base64
 import androidx.core.app.ActivityCompat
 import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.R
+import digital.lamp.mindlamp.appstate.AppState
 import java.io.File
 import java.io.UnsupportedEncodingException
 import java.text.ParseException
@@ -38,6 +39,22 @@ object Utils {
             e.printStackTrace()
         }
         return null
+    }
+
+    /**
+     * Authorization header for native API calls. Bearer for the new session
+     * server; otherwise the legacy LAMP Basic scheme (which also covers
+     * external-JWT passthrough users, who never have a bearer access token).
+     */
+    fun authHeader(): String {
+        return if (AppState.session.authScheme == "bearer") {
+            "Bearer ${AppState.session.accessToken}"
+        } else {
+            "Basic ${toBase64(
+                AppState.session.token + ":" + AppState.session.serverAddress
+                    .removePrefix("https://").removePrefix("http://")
+            )}"
+        }
     }
 
     /**

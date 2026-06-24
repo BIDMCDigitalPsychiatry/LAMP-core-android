@@ -571,13 +571,7 @@ class LampForegroundService : Service(),
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
                 val sensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
+                val basic = Utils.authHeader()
 
                 GlobalScope.launch(Dispatchers.IO) {
                     TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
@@ -760,13 +754,7 @@ class LampForegroundService : Service(),
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (NetworkUtils.getBatteryPercentage(this@LampForegroundService) > 15) {
                 trackSingleEvent("API_Send_${sensorEventDataList.size}")
-                val basic = "Basic ${
-                    Utils.toBase64(
-                        AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                            "https://"
-                        ).removePrefix("http://")
-                    )
-                }"
+                val basic = Utils.authHeader()
 
                 TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
                 try {
@@ -928,13 +916,7 @@ class LampForegroundService : Service(),
     private fun invokeActivitySchedules() {
         if (NetworkUtils.isNetworkAvailable(this)) {
             DebugLogs.writeToFile("Invoke Activity Schedules")
-            val basic = "Basic ${
-                Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix(
-                        "https://"
-                    ).removePrefix("http://")
-                )
-            }"
+            val basic = Utils.authHeader()
 
             oScope.launch {
                 TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt()) // <---
