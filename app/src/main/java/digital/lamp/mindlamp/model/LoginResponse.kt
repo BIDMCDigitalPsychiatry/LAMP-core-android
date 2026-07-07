@@ -11,10 +11,14 @@ package digital.lamp.mindlamp.model
  * @param serverAddress The server address or endpoint for the logged-in user.
  * @param deleteCache Flag indicating whether to delete the cache (default is false).
  */
+// Every field has a default so Kotlin generates a no-args constructor and Gson
+// constructs this normally (honoring defaults) instead of via Unsafe.
+// identityObject/serverAddress are nullable because a malformed postMessage can
+// omit them regardless of declaration — consumers must validate.
 data class LoginResponse(
     val authorizationToken: String? = null,
-    val identityObject: IdentityObject,
-    val serverAddress: String,
+    val identityObject: IdentityObject? = null,
+    val serverAddress: String? = null,
     // Session/Bearer fields (new server). Absent on legacy/basic and
     // external-JWT logins, which send authorizationToken instead.
     val accessToken: String? = null,

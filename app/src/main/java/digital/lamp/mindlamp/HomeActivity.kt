@@ -1058,6 +1058,16 @@ class HomeActivity : AppCompatActivity() {
      */
     private fun showSignedIn(oLoginResponse: LoginResponse) {
 
+        // Validate BEFORE mutating any session state: Gson can leave these null
+        // for a malformed login message, and a half-written session (isLoggedIn
+        // with no userId/server) is worse than ignoring the message.
+        val identity = oLoginResponse.identityObject
+        val loginServerAddress = oLoginResponse.serverAddress
+        if (identity == null || loginServerAddress.isNullOrEmpty()) {
+            LampLog.e(TAG, "Login message missing identityObject/serverAddress; ignoring")
+            return
+        }
+
         AppState.session.isLoggedIn = true
         val bearerAccess = oLoginResponse.accessToken
         if (bearerAccess != null) {
@@ -1073,13 +1083,13 @@ class HomeActivity : AppCompatActivity() {
             AppState.session.accessToken = ""
             AppState.session.refreshToken = ""
         }
-        AppState.session.userId = oLoginResponse.identityObject.id
-        if (!oLoginResponse.serverAddress.contains("https://") && !oLoginResponse.serverAddress.contains(
+        AppState.session.userId = identity.id
+        if (!loginServerAddress.contains("https://") && !loginServerAddress.contains(
                 "http://"
             )
         ) {
-            AppState.session.serverAddress = "https://" + oLoginResponse.serverAddress
-        } else AppState.session.serverAddress = oLoginResponse.serverAddress
+            AppState.session.serverAddress = "https://$loginServerAddress"
+        } else AppState.session.serverAddress = loginServerAddress
 
         //Updating current user token
         retrieveCurrentToken()

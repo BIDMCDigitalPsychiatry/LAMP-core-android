@@ -62,8 +62,10 @@ class SessionState {
     // Session/Bearer auth. authScheme is "bearer" for the new session server;
     // "basic" (or empty) for legacy/basic and external-JWT servers.
     var authScheme by Pref(PREF_KEY_AUTH_SCHEME, "")
-    var accessToken by Pref(PREF_KEY_ACCESS_TOKEN, "")
-    var refreshToken by Pref(PREF_KEY_REFRESH_TOKEN, "")
+    // sync=true: the refresh token is single-use and rotates on every refresh;
+    // an un-flushed rotation (process killed after apply()) strands the session.
+    var accessToken by Pref(PREF_KEY_ACCESS_TOKEN, "", sync = true)
+    var refreshToken by Pref(PREF_KEY_REFRESH_TOKEN, "", sync = true)
     var crashValue by Pref(
         PREF_KEY_CRASH_VALUE,
         ""

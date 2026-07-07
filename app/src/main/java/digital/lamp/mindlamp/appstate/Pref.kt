@@ -9,7 +9,14 @@ import kotlin.reflect.KProperty
  * Created by Zco Developer on 11/30/2018.
  * Copyright ChallengeMe
  */
-open class Pref<T>(private val key: String, private val default: T) : ReadWriteProperty<Any?, T> {
+open class Pref<T>(
+    private val key: String,
+    private val default: T,
+    // commit() synchronously instead of apply(): use for values that MUST hit
+    // disk before the process can die (e.g. the single-use rotating refresh
+    // token — losing the rotated value strands the session).
+    private val sync: Boolean = false
+) : ReadWriteProperty<Any?, T> {
     @Suppress("UNCHECKED_CAST")
     override fun getValue(thisRef: Any?, property: KProperty<*>): T {
         // Retrieve the value from SharedPreferences based on the specified key and default value.
@@ -35,7 +42,7 @@ open class Pref<T>(private val key: String, private val default: T) : ReadWriteP
             else -> throw IllegalArgumentException("${property.name} variable type is not supported yet!!")
         }
 
-        editor.apply()
+        if (sync) editor.commit() else editor.apply()
     }
 
     companion object {
