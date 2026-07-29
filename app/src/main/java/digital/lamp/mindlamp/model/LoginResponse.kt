@@ -34,5 +34,8 @@ data class LoginResponse(
  */
 data class IdentityObject(
     val id: String,
-    val language: String
+    // Not present in current server payloads ({id, isMessagingEnabled}); Gson
+    // leaves absent fields null regardless of declaration, so be honest about
+    // the type. Nothing reads it today.
+    val language: String? = null
 )
