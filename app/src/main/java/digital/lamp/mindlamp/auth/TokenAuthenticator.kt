@@ -108,8 +108,12 @@ class TokenAuthenticator : Authenticator {
                         val access = json.optString("accessToken", "")
                         val refresh = json.optString("refreshToken", "")
                         if (access.isEmpty() || refresh.isEmpty()) return RefreshResult.Transient
+                        // Persist the ROTATED refresh token first: a crash
+                        // between the two commits then leaves a stale access
+                        // token (recoverable via the next 401->refresh) rather
+                        // than a consumed refresh token (stranded session).
+                        AppState.session.refreshToken = refresh
                         AppState.session.accessToken = access
-                        AppState.session.refreshToken = refresh  // persist rotation
                         RefreshResult.Success(access)
                     }
                 }

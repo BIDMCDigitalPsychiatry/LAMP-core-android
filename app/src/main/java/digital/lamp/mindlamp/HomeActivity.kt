@@ -984,7 +984,7 @@ class HomeActivity : AppCompatActivity() {
                             loginResponse
                         )
                     )
-                } else if (loginResponse.deleteCache) {
+                } else if (loginResponse?.deleteCache == true) {
                     homeActivity.onAuthenticationStateChanged(AuthenticationState.SignedOut)
                 }
             } catch (ex: Exception) {
