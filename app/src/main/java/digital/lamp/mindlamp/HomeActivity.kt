@@ -755,18 +755,21 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
             REQUEST_LOCATION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty()) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        AppState.session.isLocationPermissionAllowed = true
-                        val specList = mSensorSpecsList.map { it.spec }
-                        if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
-                            checkLocationAndBluetoothPermission()
-                        }
-                        checkHealthConnectSensorsAdded()
-                    } else {
-                        checkHealthConnectSensorsAdded()
+                // Empty grantResults => the dialog was cancelled/interrupted. Treat as
+                // "not granted" but keep the chain alive so already-granted sensors and
+                // the service still start. Guard [0] behind isNotEmpty.
+                val locationGranted = grantResults.isNotEmpty() &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED
+                if (locationGranted) {
+                    AppState.session.isLocationPermissionAllowed = true
+                    val specList = mSensorSpecsList.map { it.spec }
+                    if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                        checkLocationAndBluetoothPermission()
                     }
                 }
+                // Always advance to the next step in the chain (it re-checks real
+                // permissions via checkSelfPermission and culminates in startLampService()).
+                checkHealthConnectSensorsAdded()
             }
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
                 checkBackgroundLocationPermissionAPI30()
@@ -789,21 +792,22 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
             AppConstants.REQUEST_ID_TELEPHONY_PERMISSIONS -> {
-                if (grantResults.isNotEmpty()) {
-                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        AppState.session.isTelephonyPermissionAllowed = true
-                    }
-                    val specList = mSensorSpecsList.map { it.spec }
-                    if (specList.contains(Sensors.GPS.sensor_name)) {
-                        checkLocation()
-
-                    } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
-                        checkLocationAndBluetoothPermission()
-                    } else {
-                        checkHealthConnectSensorsAdded()
-                    }
+                // Set the flag from the actual result on BOTH outcomes so it can never go
+                // sticky-true after a revocation. Empty grantResults (cancelled dialog)
+                // resolves to false via the isNotEmpty guard, which also guards [0].
+                AppState.session.isTelephonyPermissionAllowed =
+                    grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED
+                // Always advance to the next step in the chain regardless of grant/cancel,
+                // so a cancelled prompt doesn't dead-end before startLampService().
+                val specList = mSensorSpecsList.map { it.spec }
+                if (specList.contains(Sensors.GPS.sensor_name)) {
+                    checkLocation()
+                } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {
+                    checkLocationAndBluetoothPermission()
+                } else {
+                    checkHealthConnectSensorsAdded()
                 }
-
             }
 
             AppConstants.REQUEST_ID_WIFI_PERMISSIONS -> {
@@ -1443,8 +1447,13 @@ class HomeActivity : AppCompatActivity() {
                         val specList = mSensorSpecsList.map { it.spec }
                         GlobalScope.launch(Dispatchers.Main) {
                             if (specList.contains(Sensors.TELEPHONY.sensor_name)) {
-                                if (checkTelephonyPermission(this@HomeActivity)) {
-                                    AppState.session.isTelephonyPermissionAllowed = true
+                                // Record the flag from the live OS check on both outcomes
+                                // (not just the granted branch) so it self-heals and never
+                                // stays sticky-true after a revocation.
+                                val telephonyGranted =
+                                    checkTelephonyPermission(this@HomeActivity)
+                                AppState.session.isTelephonyPermissionAllowed = telephonyGranted
+                                if (telephonyGranted) {
                                     if (specList.contains(Sensors.GPS.sensor_name)) {
                                         checkLocation()
                                     } else if (specList.contains(Sensors.NEARBY_DEVICES.sensor_name)) {

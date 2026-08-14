@@ -22,7 +22,7 @@ class SessionState {
         const val PREF_LAST_STEP_DATA_TIME_STAMP = "last_step_data_timestamp"
         const val PREF_GOOGLE_FIT_CONNECTED = "google_fit_connected"
         const val PREF_LOCATION_PERMISSION_ALLOWED = "location_permission_allowed"
-        const val PREF_TELEPHONY_PERMISSION_ALLOWED = "location_permission_allowed"
+        const val PREF_TELEPHONY_PERMISSION_ALLOWED = "telephony_permission_allowed"
         const val PREF_GOOGLE_FIT_DATA_TIME_STAMP = "last_google_fit_data_timestamp"
 
         const val PREF_LAST_SENSOR_DATA_TIMESTAMP = "lastSensorDataTimestamp"
