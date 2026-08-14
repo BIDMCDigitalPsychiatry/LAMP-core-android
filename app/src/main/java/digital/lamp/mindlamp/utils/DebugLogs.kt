@@ -1,5 +1,6 @@
 package digital.lamp.mindlamp.utils
 
+import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.app.App
 import java.io.File
 import java.io.FileWriter
@@ -22,6 +23,10 @@ object DebugLogs {
      * @param txt
      */
     fun writeToFile(txt: String?) {
+        // Gated on DO_LOG (false for beta/prod), mirroring LampLog. This keeps all
+        // DebugLogs writes — including clinical Health Connect payloads — out of the
+        // plaintext LampLog.txt on external storage in release builds.
+        if (!BuildConfig.DO_LOG) return
         try {
             val sd = App.app.getExternalFilesDir(null)!!
             var logfile = File(sd, "LampLog.txt")
