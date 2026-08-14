@@ -166,7 +166,7 @@
         <service
             android:name=".repository.LampForegroundService"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:foregroundServiceType="health">
 
         </service>
@@ -175,7 +175,7 @@
             android:name=".AlarmBroadCastReceiver"
             android:directBootAware="true"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -185,7 +185,7 @@
             android:name=".sheduleing.ActivityRepeatReceiver"
             android:directBootAware="true"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -196,7 +196,7 @@
             android:exported="false"></receiver>
         <receiver
             android:name=".sheduleing.PowerSaveModeReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED" />
             </intent-filter>

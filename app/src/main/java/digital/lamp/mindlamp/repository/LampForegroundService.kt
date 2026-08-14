@@ -558,7 +558,9 @@ class LampForegroundService : Service(),
      * The system calls this method when another component wants to bind with the service.
      */
     override fun onBind(p0: Intent?): IBinder? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // Started foreground service; it is not designed to be bound. Return null
+        // instead of throwing so an (external or accidental) bind cannot crash it.
+        return null
     }
 
 
