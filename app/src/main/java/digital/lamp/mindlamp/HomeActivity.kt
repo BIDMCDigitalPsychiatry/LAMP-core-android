@@ -1074,7 +1074,14 @@ class HomeActivity : AppCompatActivity() {
 
         AppState.session.isLoggedIn = true
         val bearerAccess = oLoginResponse.accessToken
-        if (bearerAccess != null) {
+        val basicAuth = oLoginResponse.authorizationToken
+        // Use the session/Bearer flow ONLY for a pure session login: an access
+        // token AND no Basic credential. A payload that also carries an
+        // authorizationToken (username:password) stays on Basic, so a login that
+        // includes Basic credentials is never silently switched onto a bearer/
+        // refresh flow the server may not support (which would force a logout on
+        // the first 401). No change to pure Basic or pure session logins.
+        if (bearerAccess != null && basicAuth.isNullOrBlank()) {
             // Session/Bearer server
             AppState.session.authScheme = "bearer"
             AppState.session.accessToken = bearerAccess
@@ -1083,7 +1090,7 @@ class HomeActivity : AppCompatActivity() {
         } else {
             // Legacy Basic (or external-JWT passthrough) server
             AppState.session.authScheme = "basic"
-            AppState.session.token = oLoginResponse.authorizationToken ?: ""
+            AppState.session.token = basicAuth ?: ""
             AppState.session.accessToken = ""
             AppState.session.refreshToken = ""
         }
