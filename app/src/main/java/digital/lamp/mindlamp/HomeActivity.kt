@@ -30,6 +30,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
@@ -612,7 +613,14 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
 
         var url = ""
-        if (AppState.session.isLoggedIn) {
+        if (AppState.session.isLoggedIn && AppState.session.authScheme == "bearer") {
+            // Session/Bearer logins have no stored password to build ?a= from.
+            // Load the dashboard directly; it restores its own session from the
+            // web view's saved login cookie (same as iOS).
+            url = BuildConfig.BASE_URL_WEB
+            binding.webView.loadUrl(url)
+
+        } else if (AppState.session.isLoggedIn) {
             url = BuildConfig.MAIN_PAGE_URL + Utils.toBase64(
                 AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
                     .removePrefix(
@@ -1087,6 +1095,10 @@ class HomeActivity : AppCompatActivity() {
             AppState.session.accessToken = bearerAccess
             AppState.session.refreshToken = oLoginResponse.refreshToken ?: ""
             AppState.session.token = ""
+            // The dashboard's login cookie is what restores the web view on the
+            // next launch. Save it to disk now rather than waiting for the web
+            // view's periodic save, in case the app is closed right after login.
+            CookieManager.getInstance().flush()
         } else {
             // Legacy Basic (or external-JWT passthrough) server
             AppState.session.authScheme = "basic"
