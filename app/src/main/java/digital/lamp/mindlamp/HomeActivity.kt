@@ -1745,7 +1745,7 @@ class HomeActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-
+        lifecycleScope.launch { MobileSession.upgradeToBearerIfNeeded() }
     }
 
     override fun onStop() {
