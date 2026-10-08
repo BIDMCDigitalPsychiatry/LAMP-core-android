@@ -83,6 +83,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.SensorSpec
 import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.appstate.AppState
+import digital.lamp.mindlamp.auth.MobileSession
 import digital.lamp.mindlamp.auth.SessionExpiredNotifier
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -612,27 +613,14 @@ class HomeActivity : AppCompatActivity() {
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGOUT)
         binding.webView.addJavascriptInterface(WebAppInterface(this), JAVASCRIPT_OBJ_LOGIN)
 
-        var url = ""
-        if (AppState.session.isLoggedIn && AppState.session.authScheme == "bearer") {
-            // Session/Bearer logins have no stored password to build ?a= from.
-            // Load the dashboard directly; it restores its own session from the
-            // web view's saved login cookie (same as iOS).
-            url = BuildConfig.BASE_URL_WEB
-            binding.webView.loadUrl(url)
-
-        } else if (AppState.session.isLoggedIn) {
-            url = BuildConfig.MAIN_PAGE_URL + Utils.toBase64(
-                AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
-                    .removePrefix(
-                        "http://"
-                    )
-            )
-            binding.webView.loadUrl(url)
-
+        if (AppState.session.isLoggedIn) {
+            lifecycleScope.launch {
+                // Upgrade first so the URL matches the resulting login type
+                MobileSession.upgradeToBearerIfNeeded()
+                binding.webView.loadUrl(MobileSession.dashboardUrl())
+            }
         } else {
-
-            url = BuildConfig.BASE_URL_WEB
-            binding.webView.loadUrl(url)
+            binding.webView.loadUrl(BuildConfig.BASE_URL_WEB)
         }
 
         if (!isPageLoadedComplete)
@@ -1095,9 +1083,7 @@ class HomeActivity : AppCompatActivity() {
             AppState.session.accessToken = bearerAccess
             AppState.session.refreshToken = oLoginResponse.refreshToken ?: ""
             AppState.session.token = ""
-            // The dashboard's login cookie is what restores the web view on the
-            // next launch. Save it to disk now rather than waiting for the web
-            // view's periodic save, in case the app is closed right after login.
+            // Save the login cookie now: it's the offline fallback for reopening the web view
             CookieManager.getInstance().flush()
         } else {
             // Legacy Basic (or external-JWT passthrough) server
@@ -1385,14 +1371,8 @@ class HomeActivity : AppCompatActivity() {
     private fun handleNotification(intent: Intent?) {
         hideKeyboard()
         if (intent?.hasExtra("survey_path") == true) {
-            val surveyUrl = intent.getStringExtra("survey_path")
+            val surveyUrl = intent.getStringExtra("survey_path") ?: return
             val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
-
-            val oSurveyUrl =
-                BuildConfig.BASE_URL_WEB.dropLast(1) + surveyUrl + "?a=" + Utils.toBase64(
-                    AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
-                        .removePrefix("http://")
-                )
 
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.cancel(notificationId)
@@ -1403,7 +1383,9 @@ class HomeActivity : AppCompatActivity() {
             binding.webView.settings.domStorageEnabled = true
             binding.webView.settings.allowFileAccess = true
             binding.webView.clearHistory()
-            binding.webView.loadUrl(oSurveyUrl);
+            lifecycleScope.launch {
+                binding.webView.loadUrl(MobileSession.dashboardUrl(surveyUrl))
+            }
 
             binding.webView.webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest) {

@@ -9,11 +9,12 @@ import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
-import digital.lamp.mindlamp.appstate.AppState
+import androidx.lifecycle.lifecycleScope
+import digital.lamp.mindlamp.auth.MobileSession
 import digital.lamp.mindlamp.databinding.ActivityWebviewOverviewBinding
 import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.DebugLogs
-import digital.lamp.mindlamp.utils.Utils
+import kotlinx.coroutines.launch
 
 /**
  * This activity is responsible for notification action.
@@ -33,11 +34,6 @@ class NotificationActionActivity : AppCompatActivity() {
         val surveyUrl = intent.getStringExtra("survey_path")
         val notificationId = intent.getIntExtra("notification_id", AppConstants.NOTIFICATION_ID)
 
-        val oSurveyUrl = BuildConfig.BASE_URL_WEB.dropLast(1) + surveyUrl + "?a=" + Utils.toBase64(
-            AppState.session.token + ":" + AppState.session.serverAddress.removePrefix("https://")
-                .removePrefix("http://")
-        )
-
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(notificationId)
 
@@ -46,7 +42,9 @@ class NotificationActionActivity : AppCompatActivity() {
         binding.webviewOverview.settings.javaScriptEnabled = true
         binding.webviewOverview.settings.domStorageEnabled = true
         binding.webviewOverview.settings.allowFileAccess = true
-        binding.webviewOverview.loadUrl(oSurveyUrl)
+        lifecycleScope.launch {
+            binding.webviewOverview.loadUrl(MobileSession.dashboardUrl(surveyUrl ?: "/"))
+        }
 
         binding.webviewOverview.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
