@@ -768,7 +768,12 @@ class HomeActivity : AppCompatActivity() {
                 checkHealthConnectSensorsAdded()
             }
             REQUEST_LOCATION_ACCESSFINE_REQUEST_CODE -> {
-                checkBackgroundLocationPermissionAPI30()
+                // Re-requesting a denied permission here loops forever on Android 16+
+                if (checkSinglePermission(Manifest.permission.ACCESS_FINE_LOCATION, this)) {
+                    checkBackgroundLocationPermissionAPI30()
+                } else {
+                    checkHealthConnectSensorsAdded()
+                }
             }
             PERMISSION_REQUEST_CODE -> {
                 val allPermissionsGranted = grantResults.isNotEmpty() &&
