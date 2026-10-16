@@ -1745,7 +1745,12 @@ class HomeActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch { MobileSession.upgradeToBearerIfNeeded() }
+        lifecycleScope.launch {
+            // The open dashboard is still logged in the old way: reload it
+            if (MobileSession.upgradeToBearerIfNeeded()) {
+                binding.webView.loadUrl(MobileSession.dashboardUrl())
+            }
+        }
     }
 
     override fun onStop() {

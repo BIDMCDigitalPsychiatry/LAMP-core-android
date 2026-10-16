@@ -44,16 +44,16 @@ object MobileSession {
      * rather than on failure, since the server's legacy flag keeps Basic
      * requests succeeding. Any failure leaves the Basic login untouched.
      */
-    suspend fun upgradeToBearerIfNeeded() {
+    suspend fun upgradeToBearerIfNeeded(): Boolean {
         lock.withLock {
             val session = AppState.session
-            if (!session.isLoggedIn || session.authScheme == "bearer" || session.token.isEmpty()) return
+            if (!session.isLoggedIn || session.authScheme == "bearer" || session.token.isEmpty()) return false
             val now = System.currentTimeMillis()
-            if (now - lastUpgradeAttempt < UPGRADE_RETRY_INTERVAL_MS) return
+            if (now - lastUpgradeAttempt < UPGRADE_RETRY_INTERVAL_MS) return false
             lastUpgradeAttempt = now
 
             val separator = session.token.indexOf(':')
-            if (separator < 0) return
+            if (separator < 0) return false
             val upgraded = withContext(Dispatchers.IO) {
                 try {
                     if (!serverUsesSessionAuth()) return@withContext false
@@ -75,6 +75,7 @@ object MobileSession {
                 session.authScheme = "bearer"
                 session.token = ""
             }
+            return upgraded
         }
     }
 
