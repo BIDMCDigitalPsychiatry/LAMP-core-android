@@ -26,6 +26,8 @@ class SensorStreamUploadWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        // Seal frames that a dead process left open, even when no tier runs any more.
+        HighRateAccelerometerCollector.recoverOrphans(applicationContext)
         if (!SensorStreamUploads.isSignedIn()) return@withContext Result.success()
         if (!SensorStreamUploads.canUpload(applicationContext)) return@withContext Result.retry()
         // Upload only the signed-in participant's frames, to that participant.

@@ -24,14 +24,24 @@ object HighRateAccelerometerCollector {
     private val lock = Any()
     private var session: Session? = null
 
-    /** Identifies this process; open frames of other processes are recovered on first start. */
+    /** Identifies this process; [recoverOrphans] seals the open frames of other processes. */
     private val processId = UUID.randomUUID().toString().substring(0, 8)
     private var sessionCounter = 0
-    private var recovered = false
+    private val orphanRecovery = OrphanRecovery(processId)
 
     /** The tier being collected, or `null` when stopped. */
     val runningTier: SensorTier?
         get() = synchronized(lock) { session?.tier }
+
+    /**
+     * Seals the open frames that dead processes left, for every participant, once per process.
+     * Returns how many frames it sealed. Call it off the main thread.
+     */
+    fun recoverOrphans(context: Context): Int {
+        val frames = orphanRecovery.recoverOnce(context.applicationContext.filesDir, CodecSelector.forDevice())
+        orphanRecovery.lastError?.let { LampLog.e(TAG, "recovery failed: ${it.message}") }
+        return frames.size
+    }
 
     /** Returns the frame store of [participantId]. */
     fun store(context: Context, participantId: String) =
@@ -47,11 +57,8 @@ object HighRateAccelerometerCollector {
             if (current != null && current.tier == tier && current.owner == participantId) return
             current?.stop()
             val app = context.applicationContext
-            val recover = !recovered
-            recovered = true
             session = Session(
-                app, tier, participantId, store(app, participantId), "$processId-${sessionCounter++}",
-                processId, recover
+                app, tier, participantId, store(app, participantId), "$processId-${sessionCounter++}"
             ).also { it.start() }
         }
     }
@@ -69,9 +76,7 @@ object HighRateAccelerometerCollector {
         val tier: SensorTier,
         val owner: String,
         private val store: FrameStore,
-        private val baseId: String,
-        private val processId: String,
-        private val recover: Boolean
+        private val baseId: String
     ) : SensorEventListener2 {
         private val thread = HandlerThread("lamp-accel-${tier.nominalHz}hz").apply { start() }
         private val handler = Handler(thread.looper)
@@ -93,7 +98,7 @@ object HighRateAccelerometerCollector {
 
         fun start() {
             handler.post {
-                if (recover) recoverOrphans()
+                recoverOrphans()
                 clock.startSession()
                 // A wake-up sensor wakes the CPU to deliver its FIFO, so batches survive doze.
                 val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER, true)
@@ -194,8 +199,7 @@ object HighRateAccelerometerCollector {
 
         private fun recoverOrphans() {
             try {
-                val frames = store.recoverOpenFrames(processId, compressor)
-                if (frames.isNotEmpty()) sealedAny = true
+                if (HighRateAccelerometerCollector.recoverOrphans(context) > 0) sealedAny = true
             } catch (e: Exception) {
                 LampLog.e(TAG, "recovery failed: ${e.message}")
             }
