@@ -42,6 +42,13 @@ import digital.lamp.mindlamp.sensor.*
 import digital.lamp.mindlamp.sensor.GravityData
 import digital.lamp.mindlamp.sensor.RotationData
 import digital.lamp.mindlamp.sensor.healthconnect.GoogleHealthConnect
+import digital.lamp.mindlamp.sensor.stream.ForegroundServiceTypes
+import digital.lamp.mindlamp.sensor.stream.Gps1mCollector
+import digital.lamp.mindlamp.sensor.stream.Gps1mUploadWorker
+import digital.lamp.mindlamp.sensor.stream.HighRateAccelerometerCollector
+import digital.lamp.mindlamp.sensor.stream.SensorStreamSettings
+import digital.lamp.mindlamp.sensor.stream.SensorStreamUploadWorker
+import digital.lamp.mindlamp.sensor.stream.SensorStreamRouting
 import digital.lamp.mindlamp.sheduleing.*
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_DATA_WORK_NAME
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_WORK_MANAGER_TAG
@@ -114,11 +121,7 @@ class LampForegroundService : Service(),
                 getString(digital.lamp.mindlamp.R.string.active_data_collection)
             )
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                startForeground(1010, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
-            } else {
-                startForeground(1010, notification)
-            }
+            startForegroundWithTypes(notification)
         } catch (e: Exception) {
             DebugLogs.writeToFile("Foreground start exception: ${e.message}")
             stopSelf() // fail gracefully
@@ -345,11 +348,13 @@ class LampForegroundService : Service(),
                         var accelerometerDataRequired = false
                         var sensorSpec = ""
                         var frequency: Double? = null
+                        // A configured lamp.accelerometer*hz tier replaces the legacy
+                        // lamp.accelerometer stream; lamp.device_motion still runs.
+                        val legacyMotionSpecs =
+                            SensorStreamRouting.from(sensorSpecList.map { it.spec }).legacyMotionSpecs
 
                         sensorSpecList.forEach {
-                            if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
-                                it.spec == Sensors.DEVICE_MOTION.sensor_name
-                            ) {
+                            if (it.spec in legacyMotionSpecs) {
                                 accelerometerDataRequired = true
                                 if (accelerometerDataRequired)
                                     sensorSpec += it.spec!!
@@ -533,6 +538,8 @@ class LampForegroundService : Service(),
                             )
                         }
                     }
+
+                    12 -> startSensorStreams(sensorSpecList)
                 }
             }
 
@@ -545,6 +552,74 @@ class LampForegroundService : Service(),
 
     }
 
+
+    /**
+     * Starts or stops the `lamp.accelerometer*hz` and `lamp.gps1m` collectors.
+     *
+     * These specs take their rate from the spec name, so the 5 Hz and 1 Hz clamps above don't
+     * apply. Their collectors are singletons that keep running across `Lamp.stopLAMP`.
+     */
+    private fun startSensorStreams(sensorSpecList: List<SensorSpecs>) {
+        try {
+            val specs = sensorSpecList.map { it.spec }
+            val routing = SensorStreamRouting.from(specs)
+            // Data is collected for, and only uploaded to, the signed-in participant.
+            val participantId = AppState.session.userId
+            val signedIn = participantId.isNotEmpty()
+            val tier = routing.accelerometerTier
+            if (tier != null && signedIn) {
+                HighRateAccelerometerCollector.start(applicationContext, tier, participantId)
+            } else {
+                HighRateAccelerometerCollector.stop()
+            }
+
+            val gps1mConfigured = routing.runsGps1m && signedIn
+            val gps1mWasConfigured = SensorStreamSettings.isGps1mConfigured(this)
+            SensorStreamSettings.setGps1mConfigured(this, gps1mConfigured)
+            if (gps1mConfigured && Gps1mCollector.hasFineLocation(this)) {
+                if (!gps1mWasConfigured) {
+                    // Add the location type to the running foreground service.
+                    startForegroundWithTypes(
+                        LampNotificationManager.showNotification(
+                            this,
+                            getString(digital.lamp.mindlamp.R.string.active_data_collection)
+                        )
+                    )
+                }
+                Gps1mCollector.start(applicationContext, participantId)
+            } else {
+                Gps1mCollector.stop()
+            }
+
+            SensorStreamUploadWorker.enqueue(applicationContext)
+            Gps1mUploadWorker.enqueue(applicationContext)
+        } catch (e: Exception) {
+            DebugLogs.writeToFile("Sensor stream start exception: ${e.message}")
+        }
+    }
+
+    /**
+     * Calls `startForeground` with the types from [ForegroundServiceTypes]. If Android refuses
+     * the `location` type (for example, when started from the background with only
+     * while-in-use location access), it retries with `health` alone.
+     */
+    private fun startForegroundWithTypes(notification: android.app.Notification) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(1010, notification)
+            return
+        }
+        val types = ForegroundServiceTypes.select(
+            SensorStreamSettings.isGps1mConfigured(this),
+            Gps1mCollector.hasFineLocation(this)
+        )
+        try {
+            startForeground(1010, notification, types)
+        } catch (e: SecurityException) {
+            if (types == ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH) throw e
+            DebugLogs.writeToFile("Location foreground type refused: ${e.message}")
+            startForeground(1010, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
+        }
+    }
 
     /**
      * called when the service is destroyed.
