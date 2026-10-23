@@ -9,7 +9,10 @@ class UploadPolicyTest {
     fun followsContractResponseTable() {
         val table = mapOf(
             200 to UploadAction.DELETE,
-            201 to UploadAction.DELETE,
+            // The contract deletes only on 200; any other status keeps the frame for a retry.
+            201 to UploadAction.RETRY_LATER,
+            202 to UploadAction.RETRY_LATER,
+            204 to UploadAction.RETRY_LATER,
             409 to UploadAction.QUARANTINE,
             400 to UploadAction.QUARANTINE,
             413 to UploadAction.QUARANTINE,
