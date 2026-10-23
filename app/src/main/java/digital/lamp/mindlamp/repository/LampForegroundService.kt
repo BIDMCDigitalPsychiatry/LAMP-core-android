@@ -48,7 +48,7 @@ import digital.lamp.mindlamp.sensor.stream.Gps1mUploadWorker
 import digital.lamp.mindlamp.sensor.stream.HighRateAccelerometerCollector
 import digital.lamp.mindlamp.sensor.stream.SensorStreamSettings
 import digital.lamp.mindlamp.sensor.stream.SensorStreamUploadWorker
-import digital.lamp.mindlamp.sensor.stream.SensorTier
+import digital.lamp.mindlamp.sensor.stream.SensorStreamRouting
 import digital.lamp.mindlamp.sheduleing.*
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_DATA_WORK_NAME
 import digital.lamp.mindlamp.sheduleing.ScheduleConstants.SYNC_WORK_MANAGER_TAG
@@ -348,11 +348,13 @@ class LampForegroundService : Service(),
                         var accelerometerDataRequired = false
                         var sensorSpec = ""
                         var frequency: Double? = null
+                        // A configured lamp.accelerometer*hz tier replaces the legacy
+                        // lamp.accelerometer stream; lamp.device_motion still runs.
+                        val legacyMotionSpecs =
+                            SensorStreamRouting.from(sensorSpecList.map { it.spec }).legacyMotionSpecs
 
                         sensorSpecList.forEach {
-                            if (it.spec == Sensors.ACCELEROMETER.sensor_name ||
-                                it.spec == Sensors.DEVICE_MOTION.sensor_name
-                            ) {
+                            if (it.spec in legacyMotionSpecs) {
                                 accelerometerDataRequired = true
                                 if (accelerometerDataRequired)
                                     sensorSpec += it.spec!!
@@ -560,14 +562,15 @@ class LampForegroundService : Service(),
     private fun startSensorStreams(sensorSpecList: List<SensorSpecs>) {
         try {
             val specs = sensorSpecList.map { it.spec }
-            val tier = SensorTier.highestOf(specs)
+            val routing = SensorStreamRouting.from(specs)
+            val tier = routing.accelerometerTier
             if (tier != null) {
                 HighRateAccelerometerCollector.start(applicationContext, tier)
             } else {
                 HighRateAccelerometerCollector.stop()
             }
 
-            val gps1mConfigured = specs.contains(Sensors.GPS_1M.sensor_name)
+            val gps1mConfigured = routing.runsGps1m
             val gps1mWasConfigured = SensorStreamSettings.isGps1mConfigured(this)
             SensorStreamSettings.setGps1mConfigured(this, gps1mConfigured)
             if (gps1mConfigured && Gps1mCollector.hasFineLocation(this)) {
