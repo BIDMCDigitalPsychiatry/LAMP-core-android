@@ -11,7 +11,6 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import digital.lamp.mindlamp.utils.LampLog
-import java.io.File
 
 /**
  * Requests one high-accuracy fix per minute for `lamp.gps1m` and queues each fix as a
@@ -26,6 +25,7 @@ object Gps1mCollector {
     private val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             val context = appContext ?: return
+            val participantId = owner ?: return
             // An exception here would escape the HandlerThread and kill the process.
             try {
                 val events = result.locations.map { location ->
@@ -37,7 +37,7 @@ object Gps1mCollector {
                         if (location.hasAccuracy()) location.accuracy else null
                     )
                 }
-                val written = queue(context).appendAll(events)
+                val written = queue(context, participantId).appendAll(events)
                 if (written < events.size) LampLog.e(TAG, "lamp.gps1m queued $written of ${events.size} fixes")
                 Gps1mUploadWorker.enqueue(context)
             } catch (e: Exception) {
@@ -49,18 +49,28 @@ object Gps1mCollector {
     @Volatile
     private var appContext: Context? = null
 
+    /** The participant whose queue receives new fixes. */
+    @Volatile
+    private var owner: String? = null
+
     val isRunning: Boolean get() = synchronized(lock) { client != null }
 
-    fun queue(context: Context) = Gps1mQueue(File(context.applicationContext.filesDir, "gps1m"))
+    /** Returns the `lamp.gps1m` queue of [participantId]. */
+    fun queue(context: Context, participantId: String) =
+        SensorStreamFiles.gps1mQueue(context.applicationContext.filesDir, participantId)
 
     fun hasFineLocation(context: Context): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED
 
-    /** Starts location updates. Does nothing if running or without `ACCESS_FINE_LOCATION`. */
+    /**
+     * Starts location updates for [participantId]. If already running, new fixes go to
+     * [participantId]'s queue. Does nothing without `ACCESS_FINE_LOCATION`.
+     */
     @SuppressLint("MissingPermission")
-    fun start(context: Context) {
+    fun start(context: Context, participantId: String) {
         synchronized(lock) {
+            owner = participantId
             if (client != null) return
             if (!hasFineLocation(context)) {
                 LampLog.e(TAG, "lamp.gps1m needs ACCESS_FINE_LOCATION")
@@ -87,6 +97,7 @@ object Gps1mCollector {
             thread?.quitSafely()
             client = null
             thread = null
+            owner = null
         }
     }
 }

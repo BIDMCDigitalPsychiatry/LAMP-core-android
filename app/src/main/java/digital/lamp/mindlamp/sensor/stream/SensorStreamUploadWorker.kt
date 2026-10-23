@@ -28,13 +28,15 @@ class SensorStreamUploadWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         if (!SensorStreamUploads.isSignedIn()) return@withContext Result.success()
         if (!SensorStreamUploads.canUpload(applicationContext)) return@withContext Result.retry()
-        val store = HighRateAccelerometerCollector.store(applicationContext)
+        // Upload only the signed-in participant's frames, to that participant.
+        val participantId = AppState.session.userId
+        val store = HighRateAccelerometerCollector.store(applicationContext, participantId)
         val authorization = SensorStreamUploads.authorizationHeader()
         for (frame in store.sealed()) {
             if (isStopped) return@withContext Result.retry()
             val code = try {
                 val request = MultipartFrameRequest.build(
-                    AppState.session.serverAddress, AppState.session.userId, authorization,
+                    AppState.session.serverAddress, participantId, authorization,
                     frame.meta, frame.bytes()
                 )
                 SensorStreamUploads.httpClient.newCall(request).execute().use { it.code }

@@ -9,14 +9,15 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.SystemClock
 import digital.lamp.mindlamp.utils.LampLog
-import java.io.File
 import java.util.UUID
 
 /**
  * Collects `TYPE_ACCELEROMETER` at one [SensorTier] and writes frames to a [FrameStore].
  *
  * The collector is a process-wide singleton. [start] is idempotent, and its lifecycle is
- * independent of `Lamp.stopLAMP`, which `LampForegroundService` calls every 5 minutes.
+ * independent of `Lamp.stopLAMP`, which `LampForegroundService` calls every 5 minutes. Frames
+ * go to the store of the participant passed to [start], so they're never uploaded for anyone
+ * else.
  */
 object HighRateAccelerometerCollector {
     private const val TAG = "HighRateAccel"
@@ -32,19 +33,26 @@ object HighRateAccelerometerCollector {
     val runningTier: SensorTier?
         get() = synchronized(lock) { session?.tier }
 
-    fun store(context: Context) = FrameStore(File(context.applicationContext.filesDir, "sensor_stream"))
+    /** Returns the frame store of [participantId]. */
+    fun store(context: Context, participantId: String) =
+        SensorStreamFiles.frameStore(context.applicationContext.filesDir, participantId)
 
-    /** Starts collecting at [tier]. Does nothing if that tier is already running. */
-    fun start(context: Context, tier: SensorTier) {
+    /**
+     * Starts collecting at [tier] for [participantId]. Does nothing if that tier is already
+     * running for that participant.
+     */
+    fun start(context: Context, tier: SensorTier, participantId: String) {
         synchronized(lock) {
             val current = session
-            if (current != null && current.tier == tier) return
+            if (current != null && current.tier == tier && current.owner == participantId) return
             current?.stop()
             val app = context.applicationContext
             val recover = !recovered
             recovered = true
-            session = Session(app, tier, store(app), "$processId-${sessionCounter++}", processId, recover)
-                .also { it.start() }
+            session = Session(
+                app, tier, participantId, store(app, participantId), "$processId-${sessionCounter++}",
+                processId, recover
+            ).also { it.start() }
         }
     }
 
@@ -59,6 +67,7 @@ object HighRateAccelerometerCollector {
     private class Session(
         private val context: Context,
         val tier: SensorTier,
+        val owner: String,
         private val store: FrameStore,
         private val baseId: String,
         private val processId: String,

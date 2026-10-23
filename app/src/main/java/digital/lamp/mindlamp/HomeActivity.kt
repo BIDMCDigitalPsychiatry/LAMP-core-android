@@ -93,6 +93,7 @@ import digital.lamp.mindlamp.model.DataWrapper
 import digital.lamp.mindlamp.model.LoginResponse
 import digital.lamp.mindlamp.repository.LampForegroundService
 import digital.lamp.mindlamp.sensor.healthconnect.viewmodel.HealthConnectViewModel
+import digital.lamp.mindlamp.sensor.stream.SensorStreamLogout
 import digital.lamp.mindlamp.sheduleing.NetworkConnectionLiveData
 import digital.lamp.mindlamp.sheduleing.PowerSaveModeReceiver
 import digital.lamp.mindlamp.streakwidget.StreakWidgetProvider
@@ -1025,6 +1026,8 @@ class HomeActivity : AppCompatActivity() {
 
         Lamp.stopLAMP(this)
         stopLampService()
+        // Unsent sensor-stream data belongs to this participant; don't upload it for the next one.
+        SensorStreamLogout.clear(this)
 
         GlobalScope.launch(Dispatchers.IO) {
             try {

@@ -563,14 +563,17 @@ class LampForegroundService : Service(),
         try {
             val specs = sensorSpecList.map { it.spec }
             val routing = SensorStreamRouting.from(specs)
+            // Data is collected for, and only uploaded to, the signed-in participant.
+            val participantId = AppState.session.userId
+            val signedIn = participantId.isNotEmpty()
             val tier = routing.accelerometerTier
-            if (tier != null) {
-                HighRateAccelerometerCollector.start(applicationContext, tier)
+            if (tier != null && signedIn) {
+                HighRateAccelerometerCollector.start(applicationContext, tier, participantId)
             } else {
                 HighRateAccelerometerCollector.stop()
             }
 
-            val gps1mConfigured = routing.runsGps1m
+            val gps1mConfigured = routing.runsGps1m && signedIn
             val gps1mWasConfigured = SensorStreamSettings.isGps1mConfigured(this)
             SensorStreamSettings.setGps1mConfigured(this, gps1mConfigured)
             if (gps1mConfigured && Gps1mCollector.hasFineLocation(this)) {
@@ -583,7 +586,7 @@ class LampForegroundService : Service(),
                         )
                     )
                 }
-                Gps1mCollector.start(applicationContext)
+                Gps1mCollector.start(applicationContext, participantId)
             } else {
                 Gps1mCollector.stop()
             }

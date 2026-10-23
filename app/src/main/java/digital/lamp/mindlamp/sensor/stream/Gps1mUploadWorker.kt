@@ -30,8 +30,10 @@ class Gps1mUploadWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         if (!SensorStreamUploads.isSignedIn()) return@withContext Result.success()
         if (!SensorStreamUploads.canUpload(applicationContext)) return@withContext Result.retry()
-        val queue = Gps1mCollector.queue(applicationContext)
-        val url = MultipartFrameRequest.participantUrl(AppState.session.serverAddress, AppState.session.userId) +
+        // Upload only the signed-in participant's events, to that participant.
+        val participantId = AppState.session.userId
+        val queue = Gps1mCollector.queue(applicationContext, participantId)
+        val url = MultipartFrameRequest.participantUrl(AppState.session.serverAddress, participantId) +
             "/sensor_event"
         val authorization = SensorStreamUploads.authorizationHeader()
         while (!isStopped) {

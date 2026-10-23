@@ -18,12 +18,12 @@ class HighRateAccelerometerCollectorTest {
 
     @Test
     fun collectsAndSealsAFrameOnStop() {
-        val store = HighRateAccelerometerCollector.store(context)
+        val store = HighRateAccelerometerCollector.store(context, OWNER)
         store.root.deleteRecursively()
         val before = System.currentTimeMillis()
 
-        HighRateAccelerometerCollector.start(context, SensorTier.HZ50)
-        HighRateAccelerometerCollector.start(context, SensorTier.HZ50) // idempotent
+        HighRateAccelerometerCollector.start(context, SensorTier.HZ50, OWNER)
+        HighRateAccelerometerCollector.start(context, SensorTier.HZ50, OWNER) // idempotent
         assertEquals(SensorTier.HZ50, HighRateAccelerometerCollector.runningTier)
         Thread.sleep(3_000)
         HighRateAccelerometerCollector.stop()
@@ -56,5 +56,9 @@ class HighRateAccelerometerCollectorTest {
         }
         assertTrue(sealed.sumOf { it.meta.sampleCount } > 10)
         store.root.deleteRecursively()
+    }
+
+    private companion object {
+        const val OWNER = "U-collector-test"
     }
 }
