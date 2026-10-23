@@ -15,7 +15,7 @@ android {
         versionCode 1039
         versionName "2025.11.24"
         buildConfigField 'boolean', 'DO_LOG', 'true'
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk.abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         android.buildFeatures.buildConfig true
     }
@@ -112,11 +112,18 @@ dependencies {
     implementation 'com.google.android.material:material:1.8.0'
 
     testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'junit:junit:4.13.2'
 
 
 //    // Retrofit
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
+    // zstd fallback codec for sensor-stream frames on 32-bit ABIs (16 KB aligned .so files)
+    implementation 'com.github.luben:zstd-jni:1.5.7-4@aar'
 
 
     //Coroutines
@@ -145,6 +152,8 @@ dependencies {
     //fitness and auth
     implementation "com.google.android.gms:play-services-fitness:21.1.0"
     implementation "com.google.android.gms:play-services-auth:20.5.0"
+    // Same version LAMP-kotlin resolves; 21.x breaks LAMP-kotlin's lamp.gps at runtime.
+    implementation "com.google.android.gms:play-services-location:18.0.0"
 
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
