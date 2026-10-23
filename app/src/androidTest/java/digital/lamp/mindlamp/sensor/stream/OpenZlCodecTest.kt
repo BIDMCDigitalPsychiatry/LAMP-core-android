@@ -89,9 +89,18 @@ class OpenZlCodecTest {
         File(out, "android_frame.openzl").writeBytes(compressed)
         File(out, "android_multipart.bin").writeBytes(buffer.readByteArray())
         File(out, "android_multipart.content-type.txt").writeText(body.contentType().toString())
-        val metaMap = LinkedHashMap<String, Any>()
-        meta.formFields().forEach { (k, v) -> metaMap[k] = v }
-        metaMap["byte_length"] = meta.byteLength
+        val metaMap = linkedMapOf<String, Any>(
+            "sensor_spec" to meta.sensorSpec,
+            "start_timestamp" to meta.startTimestamp,
+            "end_timestamp" to meta.endTimestamp,
+            "sample_count" to meta.sampleCount,
+            "codec" to meta.codec,
+            "codec_format_version" to meta.codecFormatVersion,
+            "platform" to meta.platform,
+            "unit" to meta.unit,
+            "sha256" to meta.sha256,
+            "byte_length" to meta.byteLength
+        )
         File(out, "android_meta.json").writeText(GsonBuilder().setPrettyPrinting().create().toJson(metaMap))
 
         assertEquals("openzl", meta.codec)

@@ -1,41 +1,94 @@
 package digital.lamp.mindlamp.sensor.stream
 
 import com.google.android.gms.location.LocationRequest
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import java.io.File
+import java.io.FileOutputStream
 
 /**
  * The `lamp.gps1m` location request: one high-accuracy fix per 60 s.
+ *
+ * Uses the play-services-location 18.x API (`LocationRequest.create()`), the version
+ * LAMP-kotlin's `lamp.gps` needs at runtime.
  */
 object Gps1mRequest {
     const val SPEC = "lamp.gps1m"
     const val INTERVAL_MS = 60_000L
     const val FASTEST_INTERVAL_MS = 60_000L
 
-    val priority: Int get() = TODO("not implemented")
+    val priority: Int get() = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-    fun create(): LocationRequest = TODO("not implemented")
+    fun create(): LocationRequest = LocationRequest.create()
+        .setInterval(INTERVAL_MS)
+        .setFastestInterval(FASTEST_INTERVAL_MS)
+        .setPriority(priority)
 }
 
 /**
  * Builds `lamp.gps1m` sensor events with the `lamp.gps` data shape.
  */
 object Gps1mEvents {
-    fun toJson(timestamp: Long, latitude: Double, longitude: Double, altitude: Double?, accuracy: Float?): String = TODO("not implemented")
+    private val gson = Gson()
 
-    fun toJsonArray(events: List<String>): String = TODO("not implemented")
+    /** Returns one `sensor_event` JSON object. Missing altitude or accuracy is omitted. */
+    fun toJson(timestamp: Long, latitude: Double, longitude: Double, altitude: Double?, accuracy: Float?): String {
+        val data = JsonObject().apply {
+            addProperty("latitude", latitude)
+            addProperty("longitude", longitude)
+            altitude?.let { addProperty("altitude", it) }
+            accuracy?.let { addProperty("accuracy", it.toDouble()) }
+        }
+        val event = JsonObject().apply {
+            addProperty("timestamp", timestamp)
+            addProperty("sensor", Gps1mRequest.SPEC)
+            add("data", data)
+        }
+        return gson.toJson(event)
+    }
+
+    /** Wraps events in the JSON array that `POST .../sensor_event` accepts. */
+    fun toJsonArray(events: List<String>): String {
+        val array = JsonArray()
+        events.forEach { array.add(JsonParser().parse(it)) }
+        return gson.toJson(array)
+    }
 }
 
 /**
- * A small file queue of `lamp.gps1m` events, one JSON file per fix.
+ * A small file queue of `lamp.gps1m` events, one JSON file per fix, oldest first.
  */
 class Gps1mQueue(val dir: File) {
     class Batch(val files: List<File>, val events: List<String>)
 
-    fun append(eventJson: String): Unit = TODO("not implemented")
+    private var lastName = 0L
 
-    fun size(): Int = TODO("not implemented")
+    @Synchronized
+    fun append(eventJson: String) {
+        dir.mkdirs()
+        // Names sort in append order, even for two fixes in the same millisecond.
+        lastName = maxOf(lastName + 1, System.currentTimeMillis() * 1000)
+        val target = File(dir, "%020d.json".format(lastName))
+        val tmp = File(dir, target.name + ".tmp")
+        FileOutputStream(tmp).use { it.write(eventJson.toByteArray(Charsets.UTF_8)) }
+        tmp.renameTo(target)
+    }
 
-    fun next(limit: Int): Batch = TODO("not implemented")
+    fun size(): Int = files().size
 
-    fun remove(batch: Batch): Unit = TODO("not implemented")
+    /** Returns up to [limit] of the oldest events without removing them. */
+    fun next(limit: Int): Batch {
+        val files = files().take(limit)
+        return Batch(files, files.map { it.readText(Charsets.UTF_8) })
+    }
+
+    /** Removes an uploaded batch. */
+    fun remove(batch: Batch) {
+        batch.files.forEach { it.delete() }
+    }
+
+    private fun files(): List<File> =
+        dir.listFiles { f -> f.name.endsWith(".json") }?.sortedBy { it.name } ?: emptyList()
 }
