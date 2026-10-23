@@ -19,7 +19,55 @@ class FramePartitionerTest {
         }
     }
 
+    /** Throws from [onFrameClosed] for the first [failures] frames, as a full disk would. */
+    private class FailingRecorder(var failures: Int) : FramePartitioner.Listener {
+        val appended = mutableListOf<AccelRecord>()
+        val closed = mutableListOf<FramePartitioner.ClosedFrame>()
+        val failed = mutableListOf<FramePartitioner.ClosedFrame>()
+        override fun onRecordsAppended(key: FramePartitioner.FrameKey, records: List<AccelRecord>) {
+            appended.addAll(records)
+        }
+        override fun onFrameClosed(frame: FramePartitioner.ClosedFrame) {
+            if (failures > 0) {
+                failures--
+                throw java.io.IOException("disk")
+            }
+            closed.add(frame)
+        }
+        override fun onFrameCloseFailed(frame: FramePartitioner.ClosedFrame, error: Exception) {
+            failed.add(frame)
+        }
+    }
+
     private fun rec(ts: Long) = AccelRecord(ts, 0f, 0f, 9.80665f)
+
+    @Test
+    fun sealFailureMidBatchKeepsTheRestOfTheBatch() {
+        val recorder = FailingRecorder(failures = 1)
+        val partitioner = FramePartitioner(recorder)
+        partitioner.accept(listOf(rec(1_790_000_399_000L)))
+        // The first window-k+1 record closes window k, whose seal fails.
+        partitioner.accept((0 until 10).map { rec(1_790_000_400_000L + it) })
+        assertEquals(11, recorder.appended.size)
+        assertEquals(1, partitioner.openFrameCount)
+        assertEquals(listOf(5_966_667L), recorder.failed.map { it.key.window })
+        partitioner.closeAll()
+        assertEquals(listOf(10), recorder.closed.map { it.sampleCount })
+    }
+
+    @Test
+    fun closeAllClosesEveryFrameWhenOneSealFails() {
+        val recorder = FailingRecorder(failures = 0)
+        val partitioner = FramePartitioner(recorder)
+        partitioner.accept(listOf(rec(1_790_000_399_000L), rec(1_790_000_400_000L)))
+        partitioner.accept(listOf(rec(1_790_000_399_500L))) // late record reopens window k
+        assertEquals(2, partitioner.openFrameCount)
+        recorder.failures = 1
+        partitioner.closeAll()
+        assertEquals(0, partitioner.openFrameCount)
+        assertEquals(1, recorder.failed.size)
+        assertEquals(2, recorder.closed.size)
+    }
 
     @Test
     fun windowIndexAndDeadline() {

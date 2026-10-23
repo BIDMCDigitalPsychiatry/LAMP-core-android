@@ -54,6 +54,19 @@ class Gps1mTest {
     }
 
     @Test
+    fun failedAppendIsSkippedNotThrown() {
+        // A regular file where the queue directory should be makes every write fail.
+        val blocked = tmp.newFile("gps1m")
+        val queue = Gps1mQueue(blocked)
+        val events = (1..3).map { Gps1mEvents.toJson(it.toLong(), 1.0, 2.0, null, null) }
+        assertEquals(0, queue.appendAll(events))
+
+        val ok = Gps1mQueue(tmp.newFolder("ok"))
+        assertEquals(3, ok.appendAll(events))
+        assertEquals(events, ok.next(10).events)
+    }
+
+    @Test
     fun queueKeepsEventsUntilRemoved() {
         val queue = Gps1mQueue(tmp.newFolder("gps1m"))
         val events = (1..5).map { Gps1mEvents.toJson(it.toLong(), 1.0, 2.0, null, null) }

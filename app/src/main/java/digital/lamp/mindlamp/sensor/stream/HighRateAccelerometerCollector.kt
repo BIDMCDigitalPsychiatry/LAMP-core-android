@@ -123,12 +123,19 @@ object HighRateAccelerometerCollector {
         private fun finish() {
             if (finished) return
             finished = true
-            sensorManager.unregisterListener(this)
-            handler.removeCallbacks(drain)
-            drainPending()
-            partitioner.closeAll()
-            if (sealedAny) SensorStreamUploadWorker.enqueue(context)
-            thread.quitSafely()
+            // An exception here would escape the HandlerThread and kill the process. A frame
+            // that can't be sealed keeps its raw file, which a later process recovers.
+            try {
+                sensorManager.unregisterListener(this)
+                handler.removeCallbacks(drain)
+                drainPending()
+                partitioner.closeAll()
+                if (sealedAny) SensorStreamUploadWorker.enqueue(context)
+            } catch (e: Throwable) {
+                LampLog.e(TAG, "finish failed: ${e.message}")
+            } finally {
+                thread.quitSafely()
+            }
         }
 
         private fun drainPending() {
@@ -168,6 +175,11 @@ object HighRateAccelerometerCollector {
                     LampLog.e(TAG, "${compressor.codec} seal failed, using zstd: ${e.message}")
                     store.seal(tier.spec, sessionId, frame, ZstdCompressor())
                 }
+            }
+
+            override fun onFrameCloseFailed(frame: FramePartitioner.ClosedFrame, error: Exception) {
+                // The raw file stays in open/, so recovery seals it later.
+                LampLog.e(TAG, "frame ${frame.key} not sealed: ${error.message}")
             }
         })
 

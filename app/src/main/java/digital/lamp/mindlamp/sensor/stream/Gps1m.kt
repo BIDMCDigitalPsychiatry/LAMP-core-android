@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 
 /**
  * The `lamp.gps1m` location request: one high-accuracy fix per 60 s.
@@ -73,7 +74,23 @@ class Gps1mQueue(val dir: File) {
         val target = File(dir, "%020d.json".format(lastName))
         val tmp = File(dir, target.name + ".tmp")
         FileOutputStream(tmp).use { it.write(eventJson.toByteArray(Charsets.UTF_8)) }
-        tmp.renameTo(target)
+        if (!tmp.renameTo(target)) {
+            tmp.delete()
+            throw IOException("could not write $target")
+        }
+    }
+
+    /**
+     * Appends each of [eventsJson] and returns how many were written. A failed write (for
+     * example, a full disk) is skipped instead of thrown, so one bad fix can't stop the rest.
+     */
+    fun appendAll(eventsJson: List<String>): Int = eventsJson.count { event ->
+        try {
+            append(event)
+            true
+        } catch (e: IOException) {
+            false
+        }
     }
 
     fun size(): Int = files().size

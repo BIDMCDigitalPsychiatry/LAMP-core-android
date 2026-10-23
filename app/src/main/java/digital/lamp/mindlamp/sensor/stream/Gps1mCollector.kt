@@ -26,9 +26,9 @@ object Gps1mCollector {
     private val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             val context = appContext ?: return
-            val queue = queue(context)
-            result.locations.forEach { location ->
-                queue.append(
+            // An exception here would escape the HandlerThread and kill the process.
+            try {
+                val events = result.locations.map { location ->
                     Gps1mEvents.toJson(
                         location.time,
                         location.latitude,
@@ -36,9 +36,13 @@ object Gps1mCollector {
                         if (location.hasAltitude()) location.altitude else null,
                         if (location.hasAccuracy()) location.accuracy else null
                     )
-                )
+                }
+                val written = queue(context).appendAll(events)
+                if (written < events.size) LampLog.e(TAG, "lamp.gps1m queued $written of ${events.size} fixes")
+                Gps1mUploadWorker.enqueue(context)
+            } catch (e: Exception) {
+                LampLog.e(TAG, "lamp.gps1m fix not queued: ${e.message}")
             }
-            Gps1mUploadWorker.enqueue(context)
         }
     }
 

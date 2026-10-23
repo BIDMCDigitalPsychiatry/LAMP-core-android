@@ -21,7 +21,9 @@ object FrameWindow {
  *
  * A frame closes when a record from a later window arrives, when [closeExpired] passes the
  * window's deadline, when it reaches [maxRecordsPerFrame], or on [closeAll]. A record for a
- * window whose frame already closed starts a new partial frame; no record is dropped.
+ * window whose frame already closed starts a new partial frame; no record is dropped. When
+ * [Listener.onFrameClosed] throws, the frame goes to [Listener.onFrameCloseFailed] and the rest
+ * of the batch is still processed.
  * This class isn't thread-safe; call it from one thread.
  */
 class FramePartitioner(
@@ -44,6 +46,12 @@ class FramePartitioner(
 
         /** Receives each frame once, after its last record. */
         fun onFrameClosed(frame: ClosedFrame)
+
+        /**
+         * Receives a frame whose [onFrameClosed] threw. Its records already reached
+         * [onRecordsAppended], so you can recover them later.
+         */
+        fun onFrameCloseFailed(frame: ClosedFrame, error: Exception) {}
     }
 
     private class OpenFrame(val key: FrameKey, val late: Boolean) {
@@ -90,7 +98,13 @@ class FramePartitioner(
         flushPending(frame)
         open.remove(frame.key.window)
         highestClosedWindow = maxOf(highestClosedWindow, frame.key.window)
-        listener.onFrameClosed(ClosedFrame(frame.key, AccelRecordPacker.sortStable(frame.records), frame.late))
+        val closed = ClosedFrame(frame.key, AccelRecordPacker.sortStable(frame.records), frame.late)
+        // One failed seal mustn't abort the batch or the other frames being closed.
+        try {
+            listener.onFrameClosed(closed)
+        } catch (e: Exception) {
+            listener.onFrameCloseFailed(closed, e)
+        }
     }
 
     private fun flushPending() {
