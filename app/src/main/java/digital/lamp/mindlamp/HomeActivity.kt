@@ -84,6 +84,7 @@ import digital.lamp.lamp_kotlin.lamp_core.models.TokenData
 import digital.lamp.lamp_kotlin.sensor_core.Lamp
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.auth.MobileSession
+import digital.lamp.mindlamp.auth.showLoginRetryDialog
 import digital.lamp.mindlamp.auth.SessionExpiredNotifier
 import digital.lamp.mindlamp.database.AppDatabase
 import digital.lamp.mindlamp.database.dao.ActivityDao
@@ -156,6 +157,7 @@ class HomeActivity : AppCompatActivity() {
     private var mSensorSpecsList: ArrayList<SensorSpecs> = arrayListOf()
     private var isPageLoadedComplete = false
     private var isRetryDialogShown = false
+    private var isLoginRetryDialogShown = false
     private var isApiAlertDialogShown = false
 
     private lateinit var binding: ActivityHomeBinding
@@ -617,7 +619,7 @@ class HomeActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 // Upgrade first so the URL matches the resulting login type
                 MobileSession.upgradeToBearerIfNeeded()
-                binding.webView.loadUrl(MobileSession.dashboardUrl())
+                loadDashboard()
             }
         } else {
             binding.webView.loadUrl(BuildConfig.BASE_URL_WEB)
@@ -1388,9 +1390,7 @@ class HomeActivity : AppCompatActivity() {
             binding.webView.settings.domStorageEnabled = true
             binding.webView.settings.allowFileAccess = true
             binding.webView.clearHistory()
-            lifecycleScope.launch {
-                binding.webView.loadUrl(MobileSession.dashboardUrl(surveyUrl))
-            }
+            loadDashboard(surveyUrl)
 
             binding.webView.webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest) {
@@ -1753,7 +1753,32 @@ class HomeActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // The open dashboard is still logged in the old way: reload it
             if (MobileSession.upgradeToBearerIfNeeded()) {
-                binding.webView.loadUrl(MobileSession.dashboardUrl())
+                loadDashboard()
+            }
+        }
+    }
+
+    /**
+     * Opens the dashboard logged in. If the login link can't be fetched, stops
+     * the page-load timer (so its dialog doesn't stack) and offers a retry.
+     */
+    private fun loadDashboard(path: String = "/") {
+        lifecycleScope.launch {
+            val url = MobileSession.dashboardUrl(path)
+            if (url != null) {
+                binding.webView.loadUrl(url)
+                return@launch
+            }
+            // Launch and onResume can both get here right after an upgrade: show one dialog
+            if (isLoginRetryDialogShown) return@launch
+            isLoginRetryDialogShown = true
+            reloadWebpageTimer?.cancel()
+            wepPageLoadingTimerIsRunning = false
+            binding.progressBar.visibility = View.GONE
+            showLoginRetryDialog(this@HomeActivity) {
+                isLoginRetryDialogShown = false
+                binding.progressBar.visibility = View.VISIBLE
+                loadDashboard(path)
             }
         }
     }

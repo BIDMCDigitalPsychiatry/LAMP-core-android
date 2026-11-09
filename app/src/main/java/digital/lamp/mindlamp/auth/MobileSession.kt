@@ -5,6 +5,7 @@ import digital.lamp.mindlamp.BuildConfig
 import digital.lamp.mindlamp.appstate.AppState
 import digital.lamp.mindlamp.utils.Utils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -24,6 +25,10 @@ import java.util.concurrent.TimeUnit
 object MobileSession {
 
     private const val UPGRADE_RETRY_INTERVAL_MS = 60 * 60 * 1000L
+    // Login link: 3 tries of up to 8 s, 1 s then 3 s apart (under HomeActivity's 30 s page-load timer)
+    private const val LOGIN_TOKEN_ATTEMPTS = 3
+    private const val LOGIN_TOKEN_TIMEOUT_S = 8L
+    private val LOGIN_TOKEN_RETRY_DELAYS_MS = longArrayOf(1_000L, 3_000L)
     private val JSON = "application/json".toMediaType()
 
     // For the unauthenticated /server-info and /login calls
@@ -81,17 +86,19 @@ object MobileSession {
 
     /**
      * Dashboard URL for [path] ("/" for home). Basic users get the ?a= login.
-     * Bearer users get a fresh single-use login token on every open; if none
-     * can be fetched (offline), the plain URL falls back to the web view cookie.
+     * Bearer users get a fresh single-use login token on every open, retried a
+     * few times on a weak connection. Returns null if it still can't be fetched,
+     * so the caller offers a retry instead of opening the dashboard logged out.
      */
-    suspend fun dashboardUrl(path: String = "/"): String {
+    suspend fun dashboardUrl(path: String = "/"): String? {
         lock.withLock {
             val web = BuildConfig.BASE_URL_WEB // "https://<dashboard>/#/"
             if (AppState.session.authScheme != "bearer") {
                 return web.dropLast(1) + path + "?a=" + Utils.toBase64(AppState.session.token + ":" + serverHost())
             }
-            val token = withContext(Dispatchers.IO) { oneTimeLoginToken() }
-                ?: return web.dropLast(1) + path
+            val token = loginTokenWithRetry()
+                // If the session ended meanwhile, open the login page instead
+                ?: return if (AppState.session.isLoggedIn) null else web
             // The dashboard reads the token from the query string, before the hash
             return web.substringBefore("#") + "?finishLoginToken=" + enc(token) +
                 "&serverAddress=" + enc(serverHost()) + "#" + path
@@ -107,6 +114,17 @@ object MobileSession {
         }
     }
 
+    // A weak connection often recovers within seconds, so retry before giving up
+    private suspend fun loginTokenWithRetry(): String? {
+        for (attempt in 0 until LOGIN_TOKEN_ATTEMPTS) {
+            if (attempt > 0) delay(LOGIN_TOKEN_RETRY_DELAYS_MS[attempt - 1])
+            withContext(Dispatchers.IO) { oneTimeLoginToken() }?.let { return it }
+            // The refresh token was rejected and the session cleared, so retrying won't help
+            if (!AppState.session.isLoggedIn) return null
+        }
+        return null
+    }
+
     // Sent through the shared client so an expired access token is refreshed.
     // mobileKeys is present when the server rotated the session and must be saved.
     private fun oneTimeLoginToken(): String? {
@@ -115,7 +133,9 @@ object MobileSession {
                 .url("${serverBase()}/mobile-token/one-time-login")
                 .header("Authorization", Utils.authHeader())
                 .build()
-            ApiClient.client.newCall(request).execute().use { resp ->
+            val call = ApiClient.client.newCall(request)
+            call.timeout().timeout(LOGIN_TOKEN_TIMEOUT_S, TimeUnit.SECONDS)
+            call.execute().use { resp ->
                 if (!resp.isSuccessful) return null
                 val json = JSONObject(resp.body?.string() ?: return null)
                 json.optJSONObject("mobileKeys")?.let { persistTokens(it) }

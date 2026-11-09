@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import digital.lamp.mindlamp.auth.MobileSession
+import digital.lamp.mindlamp.auth.showLoginRetryDialog
 import digital.lamp.mindlamp.databinding.ActivityWebviewOverviewBinding
 import digital.lamp.mindlamp.utils.AppConstants
 import digital.lamp.mindlamp.utils.DebugLogs
@@ -42,9 +43,7 @@ class NotificationActionActivity : AppCompatActivity() {
         binding.webviewOverview.settings.javaScriptEnabled = true
         binding.webviewOverview.settings.domStorageEnabled = true
         binding.webviewOverview.settings.allowFileAccess = true
-        lifecycleScope.launch {
-            binding.webviewOverview.loadUrl(MobileSession.dashboardUrl(surveyUrl ?: "/"))
-        }
+        loadDashboard(surveyUrl ?: "/")
 
         binding.webviewOverview.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
@@ -56,6 +55,15 @@ class NotificationActionActivity : AppCompatActivity() {
 
         binding.btnBack.setOnClickListener {
             onBackPressed()
+        }
+    }
+
+    // Opens the dashboard logged in, or offers a retry if the login link can't be fetched
+    private fun loadDashboard(path: String) {
+        lifecycleScope.launch {
+            val url = MobileSession.dashboardUrl(path)
+            if (url != null) binding.webviewOverview.loadUrl(url)
+            else showLoginRetryDialog(this@NotificationActionActivity) { loadDashboard(path) }
         }
     }
 

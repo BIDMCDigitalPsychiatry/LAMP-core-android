@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.lifecycleScope
 import digital.lamp.mindlamp.auth.MobileSession
+import digital.lamp.mindlamp.auth.showLoginRetryDialog
 import digital.lamp.mindlamp.databinding.ActivityExceptionBinding
 
 import digital.lamp.mindlamp.databinding.CustomWebviewLayoutBinding
@@ -42,10 +43,17 @@ class NotificationActivity : AppCompatActivity() {
         binding.customWebview.clearHistory()
         binding.customWebview.settings.javaScriptEnabled = true
         binding.customWebview.settings.domStorageEnabled = true
-        lifecycleScope.launch {
-            binding.customWebview.loadUrl(MobileSession.dashboardUrl(surveyUrl ?: "/"))
-        }
+        loadDashboard(surveyUrl ?: "/")
 
         NotificationManagerCompat.from(this).cancel(notificationId)
+    }
+
+    // Opens the dashboard logged in, or offers a retry if the login link can't be fetched
+    private fun loadDashboard(path: String) {
+        lifecycleScope.launch {
+            val url = MobileSession.dashboardUrl(path)
+            if (url != null) binding.customWebview.loadUrl(url)
+            else showLoginRetryDialog(this@NotificationActivity) { loadDashboard(path) }
+        }
     }
 }
