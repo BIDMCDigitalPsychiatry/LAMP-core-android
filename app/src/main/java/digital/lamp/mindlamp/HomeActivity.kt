@@ -1077,7 +1077,9 @@ class HomeActivity : AppCompatActivity() {
 
         AppState.session.isLoggedIn = true
         val bearerAccess = oLoginResponse.accessToken
+        // Session logins also carry the password for old store apps; this app uses the tokens instead
         val basicAuth = oLoginResponse.authorizationToken
+            .takeUnless { oLoginResponse.authScheme == "session" && bearerAccess != null }
         // Use the session/Bearer flow ONLY for a pure session login: an access
         // token AND no Basic credential. A payload that also carries an
         // authorizationToken (username:password) stays on Basic, so a login that
